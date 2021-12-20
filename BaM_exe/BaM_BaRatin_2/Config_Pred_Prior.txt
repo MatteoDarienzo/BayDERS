@@ -1,0 +1,12 @@
+'BaM_BaRatin_2\Hgrid.txt'
+551
+1
+.true.
+.true.
+500
+'Qrc_Prior.spag'
+.true.
+.true.
+'Qrc_Prior.env'
+.true.
+.true.

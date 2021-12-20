@@ -1,0 +1,12 @@
+'BaM_BaRatin_2\Hgrid.txt'
+851
+1
+.false.
+.false.
+-1
+'Qrc_Maxpost.spag'
+.true.
+.true.
+'Qrc_Maxpost.env'
+.true.
+.false.

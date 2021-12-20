@@ -1,0 +1,12 @@
+'BaM_BaRatin_2\Hgrid.txt'
+851
+1
+.true.
+.true.
+-1
+'Qrc_TotalU.spag'
+.true.
+.true.
+'Qrc_TotalU.env'
+.true.
+.false.

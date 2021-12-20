@@ -1,0 +1,12 @@
+'BaM_BaRatin_2\limni.txt'
+1
+1
+.true.
+.true.
+500
+'Qt_prior.spag'
+.true.
+.true.
+'Qt_prior.env'
+.true.
+.false.

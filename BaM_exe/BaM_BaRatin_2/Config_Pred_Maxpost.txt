@@ -1,0 +1,12 @@
+'BaM_BaRatin_2\limni.txt'
+1
+1
+.false.
+.false.
+-1
+'Qt_maxpost.spag'
+.true.
+.true.
+'Qt_Maxpost.env'
+.true.
+.false.

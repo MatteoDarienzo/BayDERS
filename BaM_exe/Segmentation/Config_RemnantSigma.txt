@@ -1,0 +1,6 @@
+'Constant'
+1
+gamma1
+0.1
+Uniform
+0,50

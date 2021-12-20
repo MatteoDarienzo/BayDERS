@@ -1,0 +1,10 @@
+'Linear'
+2
+gamma1
+0.1
+'Uniform'
+0,100
+gamma2
+1
+'Uniform'
+0,100

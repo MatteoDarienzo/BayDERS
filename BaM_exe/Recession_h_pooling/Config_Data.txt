@@ -1,0 +1,12 @@
+'Recession_h_pooling\Curves_Data.txt'
+1
+5290
+4
+1
+0
+0
+0
+2
+3
+0
+0
