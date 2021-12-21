@@ -2,6 +2,13 @@
 BAYesian Detection and Estimation of Rating Shifts
 
 
+v. 1.0.0
+Author: Matteo Darienzo (INRAE, CIMA Foundation)
+Contributions from: Benjamin Renard, Jérome Le Coz, Michel Lang (INRAE)
+2021
+
+
+
 Purpose:
 
 Software BayDERS (BAYesian Detection and Estimation of Rating Shifts) provides tools for the retrospective detection and estimation of stage-discharge rating shifts. These tools mainly use hydrometric information such as gaugings and stage record as input data to provide rating shift times with quantitative uncertainty. The user interface is available under R-studio. Source codes are written in R.
