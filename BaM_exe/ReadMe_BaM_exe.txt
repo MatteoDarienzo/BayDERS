@@ -1,4 +1,9 @@
- 
+The uncertainty quantification at mostly all steps of the tools in BayDERS is performed through BaM (BAyesian Modelling), developed by Benjamin Renard (INRAE) with the use of a few Fortran libraries developed by Dmitri Kavetski (University of Adelaide).
+
+BaM represents a probabilistic Bayesian approach and is based on the Monte Carlo Markov Chain algorithm (MCMC) to explore the posterior distribution of inferred parameters. For a better description of this algorithm, please see Renard et al. [2006]. 
+https://github.com/BaM-tools/BaM
+
+
 #############
 IMPORTANT !!!
 #############                                     
@@ -11,8 +16,6 @@ in this folder "BaM_exe":
 - libgfortran-3.dll
 - libquadmath-0.dll
 - libwinpthread-1.dll 
-
-
 
 
 In some cases, you may also need to upload the following libraries:
