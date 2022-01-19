@@ -171,13 +171,14 @@ if (file_limni != FALSE) {
   print("1) Stage record not available !") 
   print("   recession analysis cannot be performed !") 
   print("   adjustment of shift times cannot be done !")
-  limni      = NULL;
-  h_limni    = NULL; 
-  t_limni    = NULL;
-  df.limni   = NULL;
+  limni        = NULL;
+  h_limni      = NULL; 
+  t_limni      = NULL;
+  df.limni     = NULL;
   t_limni.date = NULL;
   
 }
+
 
 
 
@@ -239,14 +240,18 @@ if (file_gaugings != FALSE) {
       t_gaug.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, 
                                                              tz="Europe/Paris",
                                                              tryFormats = c("%Y-%m-%d",
-                                                                            "%d/%m/%Y")), tz="Europe/Paris",
+                                                                            #"%d/%m/%Y",
+                                                                            "%d/%m/%Y %H:%M")), tz="Europe/Paris",
                                                   tryFormats = c("%Y-%m-%d",
-                                                                 "%d/%m/%Y")))
+                                                                 #"%d/%m/%Y",
+                                                                 "%d/%m/%Y %H:%M")))
       t_gaug.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, 
                                                            tz="Europe/Paris", tryFormats = c("%Y-%m-%d",
-                                                                                             "%d/%m/%Y")),
+                                                                                             #"%d/%m/%Y",
+                                                                                             "%d/%m/%Y %H:%M")),
                                                 tryFormats = c("%Y-%m-%d",
-                                                               "%d/%m/%Y")))/86400 
+                                                               #"%d/%m/%Y",
+                                                               "%d/%m/%Y %H:%M")))/86400 
       setTxtProgressBar(pb, i)
     }  
     close(pb)
@@ -273,6 +278,8 @@ if (file_gaugings != FALSE) {
     }
     gaug.date = t_gaug.date
     
+    
+    
   } else if (tGaug.type =="numeric"){
   ###################################
     # t_gaug        = t_limni.numeric2 - t_limni.numeric2[1]
@@ -295,6 +302,9 @@ if (file_gaugings != FALSE) {
     gaug.date = as.POSIXct(as.POSIXlt(gaug.date))
     gaug.date = gaug.date  + (Gaug.time - floor(Gaug.time)) * 24 * 3600
 
+    
+    
+    
   } else {
   ########
     message("***** Fatal Error: 'tGaug.type' not available! *****")
@@ -339,6 +349,9 @@ if (file_gaugings != FALSE) {
                              "t.true" = t_gaug.true)
   nobs.gaug = length(Q_Gaug)
   print(paste0("2) Gaugings correctly loaded (",file_gaugings,")"))
+  
+  
+  
   
   
   
@@ -399,6 +412,9 @@ if (file_gaugings != FALSE) {
 
 
 
+
+
+
 ###########################################################################################
 #                       Official dates of RC update:
 ###########################################################################################
@@ -444,6 +460,7 @@ if (official.shift.times != FALSE) {
     
     
     
+    
     if (Gaugings[1,tGaug.col] <= t_limni[1]) {
       officialShiftsTime <- officialShifts[,1] - Gaugings[1,tGaug.col]
     } else {
@@ -472,6 +489,10 @@ if (official.shift.times != FALSE) {
   officialShiftsTime = NULL
   data.annotate.off  = NULL
 }
+
+
+
+
 
 
 

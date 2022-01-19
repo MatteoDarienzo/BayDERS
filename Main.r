@@ -493,6 +493,7 @@
                                                               df.limni.ST          = df.limni, 
                                                               officialShiftsTime   = officialShiftsTime)  
                     
+                    
                     # apply a linear regression to the relation V - deltab:
                     # using deltab (from baratinSPD) and V (from cumulative sediment transport for each reference event):^ù
                     ST.linear.estim = linear.estimation(dir_code             = dir_code, 
