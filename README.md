@@ -6,7 +6,7 @@ BAYesian Detection and Estimation of Rating Shifts
 - Author: Matteo Darienzo (INRAE and CIMA Foundation)
 - Contributions from: Benjamin Renard, Jérome Le Coz, Michel Lang (INRAE)
 - Year: 2021
-
+- Funders: CNR, EDF, SCHAPI, INRAE
 
 
 Purpose:
