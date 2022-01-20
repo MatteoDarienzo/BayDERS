@@ -11,7 +11,7 @@ data.period          <- "1816 - 1967"                       # Insert the study p
 
 # Gaugings:
 ###########
-file_gaugings        <-  "JauBeaucaireOLD_withHours.csv" # name of the csv file with gaugings (put FALSE if not available!)
+file_gaugings        <-  "JauBeaucaireOLD.csv" # name of the csv file with gaugings (put FALSE if not available!)
 u.m.Hgaug            <- "m"              # options: "m", "cm", "mm" or "ft"
 u.m.Qgaug            <- "m^3*s^-1"       # options: "m^3.s-1" or "ft^3.s-1"
 u.m.time             <- "days"           # options: "days" or date format "c(Y,M,d,h,m,s)"

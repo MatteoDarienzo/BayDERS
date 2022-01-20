@@ -115,21 +115,57 @@ if (file_limni != FALSE) {
                        style = 3,             # Progress bar style (also available style = 1 and style = 2)
                        width = 50,            # Progress bar width. Defaults to getOption("width")
                        char = "=")            # Character used to create the bar
+  
   for (i in 1:length(t_limni)){
     t_limni.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_limni[i], origin = date_origin, 
-                                                            tz="Europe/Paris", tryFormats = c("%Y-%m-%d",
-                                                                                              "%d/%m/%Y")),
+                                                            tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
+                                                                                              "%Y-%m-%d %H:%M",
+                                                                                              "%Y-%m-%d",
+                                                                                              
+                                                                                              "%d-%m-%Y %H:%M:%S",
+                                                                                              "%d-%m-%Y %H:%M",
+                                                                                              "%d-%m-%Y",
+                                                                                              
+                                                                                              "%d/%m/%Y %H:%M:%S",
+                                                                                              "%d/%m/%Y %H:%M",
+                                                                                              "%d/%m/%Y",
+                                                                                              
+                                                                                              "%Y/%m/%d %H:%M:%S",
+                                                                                              "%Y/%m/%d %H:%M",
+                                                                                              "%Y/%m/%d"
+                                                                                              )),
                                                  tryFormats = c("%Y-%m-%d",
-                                                                "%d/%m/%Y"))) 
+                                                                "%d/%m/%Y %H:%M"))) 
     t_limni.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_limni[i], origin = date_origin, 
-                                                          tz="Europe/Paris", tryFormats = c("%Y-%m-%d",
-                                                                                            "%d/%m/%Y")),
+                                                          tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
+                                                                                            "%Y-%m-%d %H:%M",
+                                                                                            "%Y-%m-%d",
+                                                                                            
+                                                                                            "%d-%m-%Y %H:%M:%S",
+                                                                                            "%d-%m-%Y %H:%M",
+                                                                                            "%d-%m-%Y",
+                                                                                            
+                                                                                            "%d/%m/%Y %H:%M:%S",
+                                                                                            "%d/%m/%Y %H:%M",
+                                                                                            "%d/%m/%Y",
+                                                                                            
+                                                                                            "%Y/%m/%d %H:%M:%S",
+                                                                                            "%Y/%m/%d %H:%M",
+                                                                                            "%Y/%m/%d"
+                                                                                            )),
                                                tryFormats = c("%Y-%m-%d",
                                                               "%d/%m/%Y")))/86400 
     setTxtProgressBar(pb, i)
   }  
   close(pb)
   t_limni.numeric2 = t_limni.numeric  - origin.numeric
+  
+  dt_increase = 0.1     # if limni data have equal timing we can shift the timings. change this if you want to increase the delay [day] 
+  while ((length(which(duplicated(t_limni.numeric2)==T))) > 0) {
+    t_limni.numeric2[which(duplicated(t_limni.numeric2) == T)] =  t_limni.numeric2[which(duplicated(t_limni.numeric2) == T)] + dt_increase 
+  }
+  
+  
   t_limni          = t_limni.numeric2
   t_limni.true     = t_limni.numeric2
 
@@ -239,23 +275,54 @@ if (file_gaugings != FALSE) {
     for (i in 1:length(t_gaug)){
       t_gaug.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, 
                                                              tz="Europe/Paris",
-                                                             tryFormats = c("%Y-%m-%d",
-                                                                            #"%d/%m/%Y",
-                                                                            "%d/%m/%Y %H:%M")), tz="Europe/Paris",
+                                                             tryFormats = c("%Y-%m-%d %H:%M:%S",
+                                                                            "%Y-%m-%d %H:%M",
+                                                                            "%Y-%m-%d",
+                                                                            
+                                                                            "%d-%m-%Y %H:%M:%S",
+                                                                            "%d-%m-%Y %H:%M",
+                                                                            "%d-%m-%Y",
+                                                                            
+                                                                            "%d/%m/%Y %H:%M:%S",
+                                                                            "%d/%m/%Y %H:%M",
+                                                                            "%d/%m/%Y",
+                                                                            
+                                                                            "%Y/%m/%d %H:%M:%S",
+                                                                            "%Y/%m/%d %H:%M",
+                                                                            "%Y/%m/%d"
+                                                                            )), tz="Europe/Paris",
                                                   tryFormats = c("%Y-%m-%d",
-                                                                 #"%d/%m/%Y",
                                                                  "%d/%m/%Y %H:%M")))
       t_gaug.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, 
-                                                           tz="Europe/Paris", tryFormats = c("%Y-%m-%d",
-                                                                                             #"%d/%m/%Y",
-                                                                                             "%d/%m/%Y %H:%M")),
+                                                           tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
+                                                                                             "%Y-%m-%d %H:%M",
+                                                                                             "%Y-%m-%d",
+                                                                                             
+                                                                                             "%d-%m-%Y %H:%M:%S",
+                                                                                             "%d-%m-%Y %H:%M",
+                                                                                             "%d-%m-%Y",
+                                                                                             
+                                                                                             "%d/%m/%Y %H:%M:%S",
+                                                                                             "%d/%m/%Y %H:%M",
+                                                                                             "%d/%m/%Y",
+                                                                                             
+                                                                                             "%Y/%m/%d %H:%M:%S",
+                                                                                             "%Y/%m/%d %H:%M",
+                                                                                             "%Y/%m/%d"
+                                                                                             )),
                                                 tryFormats = c("%Y-%m-%d",
-                                                               #"%d/%m/%Y",
                                                                "%d/%m/%Y %H:%M")))/86400 
       setTxtProgressBar(pb, i)
     }  
     close(pb)
     t_gaug.numeric2 = t_gaug.numeric  - origin.numeric
+    
+    
+    dt_increase = 0.1     # cif gaugings data have equal timing we can shift the timings. change this if you want to increase the delay [day] 
+    while ((length(which(duplicated(t_gaug.numeric2)==T))) > 0) {
+      t_gaug.numeric2[which(duplicated(t_gaug.numeric2) == T)] =  t_gaug.numeric2[which(duplicated(t_gaug.numeric2) == T)] + dt_increase 
+    }
+
     t_gaug          = t_gaug.numeric2
     t_gaug.true     = t_gaug.numeric2
     
@@ -441,14 +508,42 @@ if (official.shift.times != FALSE) {
                            char = "=")            # Character used to create the bar.
       for (i in 1:length(t_gaug)){
         t_gaug.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, 
-                                                               tz="Europe/Paris",
-                                                               tryFormats = c("%Y-%m-%d",
-                                                                              "%d/%m/%Y")), tz="Europe/Paris",
+                                                               tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
+                                                                                                 "%Y-%m-%d %H:%M",
+                                                                                                 "%Y-%m-%d",
+                                                                                                 
+                                                                                                 "%d-%m-%Y %H:%M:%S",
+                                                                                                 "%d-%m-%Y %H:%M",
+                                                                                                 "%d-%m-%Y",
+                                                                                                 
+                                                                                                 "%d/%m/%Y %H:%M:%S",
+                                                                                                 "%d/%m/%Y %H:%M",
+                                                                                                 "%d/%m/%Y",
+                                                                                                 
+                                                                                                 "%Y/%m/%d %H:%M:%S",
+                                                                                                 "%Y/%m/%d %H:%M",
+                                                                                                 "%Y/%m/%d"
+                                                               )),
+                                                    tz="Europe/Paris",
                                                     tryFormats = c("%Y-%m-%d",
                                                                    "%d/%m/%Y")))
         t_gaug.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, 
-                                                             tz="Europe/Paris", tryFormats = c("%Y-%m-%d",
-                                                                                               "%d/%m/%Y")),
+                                                             tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
+                                                                                               "%Y-%m-%d %H:%M",
+                                                                                               "%Y-%m-%d",
+                                                                                               
+                                                                                               "%d-%m-%Y %H:%M:%S",
+                                                                                               "%d-%m-%Y %H:%M",
+                                                                                               "%d-%m-%Y",
+                                                                                               
+                                                                                               "%d/%m/%Y %H:%M:%S",
+                                                                                               "%d/%m/%Y %H:%M",
+                                                                                               "%d/%m/%Y",
+                                                                                               
+                                                                                               "%Y/%m/%d %H:%M:%S",
+                                                                                               "%Y/%m/%d %H:%M",
+                                                                                               "%Y/%m/%d"
+                                                             )),
                                                   tryFormats = c("%Y-%m-%d",
                                                                  "%d/%m/%Y")))/86400 
         setTxtProgressBar(pb, i)
