@@ -97,6 +97,7 @@ if (file_gaugings        != "synthet_gaugings.csv") {
 #              Limnigraph (stage record, water level): read stage data h(t):
 ##############################################################################
 if (file_limni != FALSE) {
+  
   limni <- read.csv2(paste(dir.case_study,"/",file_limni,sep=""),fileEncoding="UTF-8", #quote="",
                      sep=";", dec=".",header= TRUE, na.strings=c(";","NA") )
   #limni = na.omit(limni)
@@ -105,7 +106,7 @@ if (file_limni != FALSE) {
 
   if (tLimni.type =="date") {
   #**************************
-  t_limni          = limni[,1]
+  t_limni          = limni[,tLimni.col]
   origin.numeric   = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
   t_limni.numeric  = 0; t_limni.date=0;
   message("- Converting stage record dates (if <1970).") 
@@ -173,8 +174,15 @@ if (file_limni != FALSE) {
   
   } else if (tLimni.type == "numeric"){
   #************************************ 
+    dt_increase = 0.1     # if limni data have equal timing we can shift the timings. change this if you want to increase the delay [day] 
+    while ((length(which(duplicated(limni[,tLimni.col])==T))) > 0) {
+      limni[,tLimni.col][which(duplicated(limni[,tLimni.col]) == T)] =  limni[,tLimni.col][which(duplicated(limni[,tLimni.col]) == T)] + dt_increase 
+    }
+    
     t_limni      = limni[,tLimni.col] - limni[1,tLimni.col]
     t_limni.true = limni[,tLimni.col]
+    
+    
     # transforming times in dates:
     t_limni.date = as.Date(floor(t_limni.true), origin = date_origin)
     t_limni.date = as.POSIXct(as.POSIXlt(t_limni.date))
@@ -184,6 +192,7 @@ if (file_limni != FALSE) {
   } else {
     message("***** Error: tLimni.type not available! *****")
   }
+  
   
 
   #conversion of the stage record to stage in "m":
@@ -380,7 +389,6 @@ if (file_gaugings != FALSE) {
   #print(paste0("Initial time of simulation = ", initial.time))
   
   
-  
   Q_Gaug    <- Gaugings[,QGaug.col]
   Q_BaRatin <- matrix(-9999,length(Q_Gaug),1)
   Q_BaRatin[1:length(Q_Gaug)] = Q_Gaug[1:length(Q_Gaug)] 
@@ -416,12 +424,6 @@ if (file_gaugings != FALSE) {
                              "t.true" = t_gaug.true)
   nobs.gaug = length(Q_Gaug)
   print(paste0("2) Gaugings correctly loaded (",file_gaugings,")"))
-  
-  
-  
-  
-  
-  
   
   
   
@@ -465,6 +467,12 @@ if (file_gaugings != FALSE) {
   uQ_Gaug        = NULL;
   t_Gaug         = NULL;
 }
+
+
+
+
+
+
 
 
 
@@ -554,10 +562,12 @@ if (official.shift.times != FALSE) {
     
     
     
-    
-    
-    if (Gaugings[1,tGaug.col] <= t_limni[1]) {
-      officialShiftsTime <- officialShifts[,1] - Gaugings[1,tGaug.col]
+    if (!is.null(Gaugings)) {
+      if (Gaugings[1,tGaug.col] <= t_limni[1]) {
+        officialShiftsTime <- officialShifts[,1] - Gaugings[1,tGaug.col]
+      } else {
+        officialShiftsTime <- officialShifts[,1] - limni[1,tLimni.col]
+      }
     } else {
       officialShiftsTime <- officialShifts[,1] - limni[1,tLimni.col]
     }
@@ -568,9 +578,9 @@ if (official.shift.times != FALSE) {
     officialShiftsTime <- officialShifts[,1] - Gaugings[1,tGaug.col]
   }
   
+  
   if (!is.null(officialShiftsTime)) {
-    data.annotate.off =  data.frame(xeffect = officialShiftsTime,
-                                    xpotent = officialShiftsTime)
+    data.annotate.off =  data.frame(xeffect = officialShiftsTime,  xpotent = officialShiftsTime)
   } else {
     data.annotate.off =NULL
   }
@@ -600,24 +610,22 @@ if (official.shift.times != FALSE) {
 
 
 
-
-
 ################################################################################################
 # Plot the stage record with the gauged stage:
 ################################################################################################
 limni.labels            =  c("Time [days]", "Stage h [m]") 
 limni.save              =  "Stage_record" # Name of the study Limni (for plots)
-                
+
 if (!is.null(df.limni)) {
   print("   Plotting stage record with gaugings.")
   limni.plot <- ggplot() +
-    geom_line(aes(x=t_limni, y=df.limni$h_limni), color = "gray70",    size =0.4)+
+    geom_line(aes(x=t_limni, y=df.limni$h_limni), color = "lightblue",    size =0.2)+
     #scale_x_continuous(expand=c(0,0))+
     #scale_x_date(expand=c(0,0))+
     labs()+
     xlab(limni.labels[1]) +
     ylab(limni.labels[2])+
-    geom_point(aes(x = t_Gaug,  y = h_Gaug) , pch=21,    fill= "blue",   size = 3) + 
+    geom_point(aes(x = t_Gaug,  y = h_Gaug) , pch=21,    fill= "blue",   size = 2) + 
     # geom_point(aes(x = gaug.date[1:index.lastgauging.retro], 
     #                y= h_Gaug[1:index.lastgauging.retro]) ,
     #            pch=21, fill= "blue", size = 3)+
@@ -631,9 +639,9 @@ if (!is.null(df.limni)) {
     #          label= c("Retrospective \n Analysis", "Real Time", "Initialisation \n t0"),
   #          color = c("blue", "green", "red"), size=5) +
   coord_cartesian(clip = 'off')+
-    theme_bw(base_size=15)+
+    theme_bw(base_size=20)+
     theme(axis.text         = element_text(size=15)
-          ,axis.title       = element_text(size=15,face="bold")
+          ,axis.title       = element_text(size=15)
           ,panel.grid.major = element_blank()
           ,panel.grid.minor = element_blank()
           ,legend.text      = element_text(size=20)
@@ -644,15 +652,15 @@ if (!is.null(df.limni)) {
   
   if (!is.null(data.annotate.off)) {
     limni.plot = limni.plot+ 
-      geom_vline(xintercept = data.annotate.off$xeffect, color="red", size=1, linetype="dashed")
-      
+      geom_vline(xintercept = data.annotate.off$xeffect, color="red", size=0.5, linetype="dashed")
+    
   }
   # limni.plot = limni.plot+
   #   geom_vline(xintercept = limni.date[index.start.realtime], 
   #              color="red", size=1.5, linetype="dashed")
   
   ggsave(limni.plot, filename =paste0(dir.case_study,"/",limni.save,".png"),
-         bg = "transparent", width = 10, height =6, dpi = 200)
+         bg = "transparent", width = 14, height =6, dpi = 200)
   plot(limni.plot)
 }                  
 
@@ -718,40 +726,59 @@ for (i in 1:length(generic.grid)) {
 }  
 
 
+
+
 # grid for y axis:
-Qmin = min(Q_Gaug,  na.rm= TRUE)
-Qmax = max(Q_Gaug,  na.rm= TRUE)+ max(uQ_Gaug,  na.rm= TRUE)
-generic.grid.Qlog = c(0.0001, 0.001, 0.01,0.1, 1, 10,100, 1000, 10000, 100000)
-generic.grid.Q = seq(0,100000, 100)
-for (i in 1:length(generic.grid.Qlog)) {
-  if((Qmin >= generic.grid.Qlog[i]) & (Qmin <= generic.grid.Qlog[i+1])) {
-    Qmin_grid.log = generic.grid.Qlog[i]
+if (!is.null(Q_Gaug)) {
+  Qmin = min(Q_Gaug,  na.rm= TRUE)
+  Qmax = max(Q_Gaug,  na.rm= TRUE) + max(uQ_Gaug,  na.rm= TRUE)
+  generic.grid.Qlog = c(0.0001, 0.001, 0.01,0.1, 1, 10,100, 1000, 10000, 100000)
+  generic.grid.Q = seq(0,100000, 100)
+  for (i in 1:length(generic.grid.Qlog)) {
+    if((Qmin >= generic.grid.Qlog[i]) & (Qmin <= generic.grid.Qlog[i+1])) {
+      Qmin_grid.log = generic.grid.Qlog[i]
+    }
   }
-}
-for (i in 1:length(generic.grid.Qlog)) {
-  if((Qmax >= generic.grid.Qlog[i]) & (Qmax <= generic.grid.Qlog[i+1])) {
-    Qmax_grid.log = generic.grid.Qlog[i+1]
+  for (i in 1:length(generic.grid.Qlog)) {
+    if((Qmax >= generic.grid.Qlog[i]) & (Qmax <= generic.grid.Qlog[i+1])) {
+      Qmax_grid.log = generic.grid.Qlog[i+1]
+    }
   }
-}
-for (i in 1:length(generic.grid.Q)) {
-  if((Qmax >= generic.grid.Q[i]) & (Qmax <= generic.grid.Q[i+1])) {
-    if (grid.RC == "Manual") {
-      Qmax_grid = grid_RC.ylim[2]
-    } else { 
-      Qmax_grid = generic.grid.Q[i+1]
+  for (i in 1:length(generic.grid.Q)) {
+    if((Qmax >= generic.grid.Q[i]) & (Qmax <= generic.grid.Q[i+1])) {
+      if (grid.RC == "Manual") {
+        Qmax_grid = grid_RC.ylim[2]
+      } else { 
+        Qmax_grid = generic.grid.Q[i+1]
+      }
+    }
+  }
+  ticks.log <- generic.grid.Qlog[which(generic.grid.Qlog >= Qmin_grid.log  & generic.grid.Qlog <= Qmax_grid.log)]
+  
+  #time grid:
+  time.grid = seq(0, 10000000, 1000)
+  for (i in 1:length(time.grid)) {
+    if((time.grid[i+1] > tail(t_Gaug,1) & (time.grid[i] < tail(t_Gaug,1)))) {
+      tmax_grid = time.grid[i+1]
+    }
+  }
+  
+  
+} else {
+  # no gaugings:
+  Qmin_grid         = grid_RC.ylim[1]
+  Qmax_grid         = grid_RC.ylim[2]
+  Qmin_grid.log     = grid_RC.ylim.log[1]
+  Qmax_grid.log     = grid_RC.ylim.log[2]
+  ticks.log         = ticks_RC.y.log       = c(0.1, 1, 10, 100, 1000, 10000)    # grid for RC-log plots
+  time.grid = seq(0, 10000000, 1000)
+  for (i in 1:length(time.grid)) {
+    if((time.grid[i+1] > tail(df.limni$t_limni,1) & (time.grid[i] < tail(df.limni$t_limni,1)))) {
+      tmax_grid = time.grid[i+1]
     }
   }
 }
-ticks.log <- generic.grid.Qlog[which(generic.grid.Qlog >= Qmin_grid.log  & generic.grid.Qlog <= Qmax_grid.log)]
 
-
-#time grid:
-time.grid = seq(0, 10000000, 1000)
-for (i in 1:length(time.grid)) {
-  if((time.grid[i+1] > tail(t_Gaug,1) & (time.grid[i] < tail(t_Gaug,1)))) {
-    tmax_grid = time.grid[i+1]
-  }
-}
 
 
 
@@ -778,7 +805,7 @@ for (i in 1:length(time.grid)) {
 #each color will represent a distinct period of RC stability.
 ################################
 color.generation = function(n) {
-################################
+  ################################
   # Generate the vector "colo" with the colors names for the different periods.
   # Notice that the colors need a high contrast !!
   colo.max = rep(c("red","blue","chartreuse", "orange","darkviolet",  "forestgreen",  
@@ -827,8 +854,8 @@ if (propagat == TRUE){
   cat(paste0("  Prior pdf of parameter 'a' = ", a.distr, "\n  **************************************\n"))
   
   for (c in 1:ncontrols){
-     cat(paste0("  Priors of control ",c,":\n"))
-     if (control.type[c] == "rect.channel") {
+    cat(paste0("  Priors of control ",c,":\n"))
+    if (control.type[c] == "rect.channel") {
       if (a.distr== "LogNormal"){
         # Transform priors from gaussian to lognormal:
         # function which takes gaussian mean and stdev and gives lognormal mean and stdev
@@ -889,13 +916,13 @@ if (b.distr== "LogNormal"){
 } 
 cat(paste0("  Prior pdf of parameter 'b' = ", b.distr, "\n  **************************************\n"))
 for (c in 1:ncontrols){
-    cat(paste0("  b",c," = "))
-    if (b.distr== "LogNormal"){
-      # Transform priors from gaussian to lognormal:
-      # function which takes gaussian mean and stdev and gives lognormal mean and stdev
-      st_b.prior[c] = round(Transf_Gauss_lognorm(E = b.prior[c], stdev = st_b.prior[c])$sd, digits = 4)
-    }
-    cat(paste0(bdistr, "(",  b.prior[c], ", ", st_b.prior[c], ")\n"))
+  cat(paste0("  b",c," = "))
+  if (b.distr== "LogNormal"){
+    # Transform priors from gaussian to lognormal:
+    # function which takes gaussian mean and stdev and gives lognormal mean and stdev
+    st_b.prior[c] = round(Transf_Gauss_lognorm(E = b.prior[c], stdev = st_b.prior[c])$sd, digits = 4)
+  }
+  cat(paste0(bdistr, "(",  b.prior[c], ", ", st_b.prior[c], ")\n"))
 }
 Sys.sleep(1.5)
 
@@ -984,11 +1011,6 @@ message("
 ############################################
 
 ")
-
-
-
-
-
 
 
 
