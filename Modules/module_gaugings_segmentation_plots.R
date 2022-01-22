@@ -1279,28 +1279,32 @@ plot.time.shifts.gaugings <- function(dir,
 #######################################################################################################################
     #plot 1:
     # filter the time series of stage record removing the long periods with missing data (putting a NA instead):
-    dt_limni = new_NA_limni= 0
-    t_limni_filtered = df.limni$t_limni
-    h_limni_filtered = df.limni$h_limni
+    if (!is.null(df.limni)){
+       dt_limni = new_NA_limni= 0
+       t_limni_filtered = df.limni$t_limni
+       h_limni_filtered = df.limni$h_limni
     
-    for (tt in 2:length(df.limni$t_limni)){
-      dt_limni[tt] =  df.limni$t_limni[tt] - df.limni$t_limni[tt-1]
+       for (tt in 2:length(df.limni$t_limni)){
+         dt_limni[tt] =  df.limni$t_limni[tt] - df.limni$t_limni[tt-1]
+       }
+       for (tt in 2:length(df.limni$t_limni)){
+          if (dt_limni[tt] > 10*mean(dt_limni)){
+             t_limni_filtered[(tt+ new_NA_limni): (length(t_limni_filtered)+1)] <- c(t_limni_filtered[tt+ new_NA_limni] -10, 
+                                                                                     t_limni_filtered[(tt+ new_NA_limni) : length(t_limni_filtered)])
+              h_limni_filtered[(tt+ new_NA_limni): (length(h_limni_filtered)+1)] <- c(NA, 
+                                                                                      h_limni_filtered[(tt+ new_NA_limni) : length(h_limni_filtered)])
+              new_NA_limni = new_NA_limni +1 
+          }
+       } 
+       df.limni_filtered = data.frame(t_limni = t_limni_filtered, 
+                                      h_limni = h_limni_filtered)
     }
-    for (tt in 2:length(df.limni$t_limni)){
-        if (dt_limni[tt] > 10*mean(dt_limni)){
-          t_limni_filtered[(tt+ new_NA_limni): (length(t_limni_filtered)+1)] <- c(t_limni_filtered[tt+ new_NA_limni] -10, 
-                                                                                  t_limni_filtered[(tt+ new_NA_limni) : length(t_limni_filtered)])
-          h_limni_filtered[(tt+ new_NA_limni): (length(h_limni_filtered)+1)] <- c(NA, 
-                                                                                   h_limni_filtered[(tt+ new_NA_limni) : length(h_limni_filtered)])
-          new_NA_limni = new_NA_limni +1 
-        }
-    } 
-    df.limni_filtered = data.frame(t_limni = t_limni_filtered, 
-                                   h_limni = h_limni_filtered)
+    
+    
     
     # stage record plot:
     t.plot = ggplot()
-    if (is.null(df.limni)==FALSE) {
+    if (!is.null(df.limni)){
       t.plot= t.plot + 
         geom_line(data = df.limni_filtered, aes(x = t_limni, y = h_limni), color = "gray70",size = 0.2)+
         scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))

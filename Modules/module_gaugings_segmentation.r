@@ -233,7 +233,7 @@ A few information:
          write(h_limni.P, file =paste0(dir_code,"/BaM_exe/BaM_BaRatin_2/limni.txt"),
                ncolumns = 1, sep = "\n")
          nobs.limni.P = length(h_limni.P)
-      }
+      } else { nobs.limni.P = NULL}
       
       
       
@@ -263,10 +263,18 @@ A few information:
                   st_c.prior        = st_c.prior, # RC priors
                   b.prior           = b.prior, # RC priors
                   st_b.prior        = st_b.prior,  # RC priors
-                  Bw.prior, Cr.prior, g.prior,  # if propagation TRUE 
-                  Bc.prior, KS.prior, S0.prior,
-                  st_Bw.prior, st_Cr.prior, st_g.prior, 
-                  st_Bc.prior, st_KS.prior, st_S0.prior,
+                  Bw.prior, 
+                  Cr.prior,
+                  g.prior,  # if propagation TRUE 
+                  Bc.prior,
+                  KS.prior, 
+                  S0.prior,
+                  st_Bw.prior,
+                  st_Cr.prior,
+                  st_g.prior, 
+                  st_Bc.prior, 
+                  st_KS.prior, 
+                  st_S0.prior,
                   ncontrol          = ncontrols, #hydraulic configuration
                   M                 = M, #hydraulic configuration
                   remnant.err.model = remnant.err.model, 
@@ -1204,7 +1212,7 @@ A few information:
       if ((!is.null(stage.record$t_limni)) & (floodpeakalways == TRUE))  {
          for (interv in 1:length(tshift.interval.start)) {
                t_limni.interval[[interv]] = stage.record$t_limni[which((stage.record$t_limni >= tshift.interval.start[interv]) &
-                                                                      (stage.record$t_limni <= tshift.interval.end[interv]))]
+                                                                       (stage.record$t_limni <= tshift.interval.end[interv]))]
                h_limni.interval[[interv]] = stage.record$h_limni[t_limni.interval[[interv]]]
                tshift.interval.adj[interv] = t_limni.interval[[interv]][which.max(h_limni.interval[[interv]])]
          }
