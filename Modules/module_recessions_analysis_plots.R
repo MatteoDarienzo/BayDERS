@@ -344,6 +344,7 @@ recession.sensitivity.chi.for.paper  <- function(t_limni, h_limni,
 
 ###############################################################################################################
 plot.extracted.recessions.paper <- function(Data_rec, 
+                                            stage.record,
                                             hmin_grid,
                                             hmax_grid, 
                                             dir.extraction, 
@@ -364,7 +365,8 @@ plot.extracted.recessions.paper <- function(Data_rec,
   hmax_grid_not_shifted  = hmax_grid  - stage.scale.shift
   
   rec.time.plot <- ggplot(Data_rec_not_shifted, aes(x = treal, y= h, color=ind.rec)) + 
-    geom_point(size = 0.8) + 
+    geom_line(data = stage.record,  aes(x = t_limni, y = h_limni*100), color = "gray90", size =0.2) +
+    geom_point(size = 1.2) + 
     coord_cartesian(clip = "off")+
     #geom_point(aes(x=curves$tpeak, y=curves$Qpeak, fill= curves$RCi), size = 4) +
     scale_color_gradientn(colours = rainbow(5)) +
@@ -397,7 +399,7 @@ plot.extracted.recessions.paper <- function(Data_rec,
   # Plot extracted curves against recession time t*:
   #*************************************************
   rec.curves.plot <-   ggplot(Data_rec_not_shifted, aes(x = t, y = h, color = ind.rec)) + 
-                       geom_point(size = 0.8) +
+                       geom_point(size = 1.2) +
                        geom_text( aes(x=0,
                                       y=Inf,
                                       hjust=0,vjust=1,
@@ -2434,7 +2436,7 @@ initial.ts.plot.rec <- function(CdT.P ,
   if (is.null(df.limni)==FALSE) {
     initial.ts.plot= initial.ts.plot + 
       geom_line(data = df.limni, aes(x = t_limni, y = h_limni), color = "darkgray",size = 0.2)+
-      scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(t_limni,1))) +
+      scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(df.limni$t_limni,1))) +
       scale_y_continuous(name=limni.labels[2], limits = grid_limni.ylim[1:2], expand = c(0,0))+
       coord_cartesian(clip = 'off')
   } else {
@@ -2481,7 +2483,7 @@ initial.ts.plot.rec <- function(CdT.P ,
   init.ts.dens = ggplot()
   if (is.null(df.limni)==FALSE) {
     init.ts.dens= init.ts.dens + 
-      scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(t_limni,1)))
+      scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(df.limni$t_limni,1)))
   } else {
     init.ts.dens= init.ts.dens + 
       scale_x_continuous(name=limni.labels[1], expand = c(0,0), limits = c(0, tail(t_Gaug,1)))

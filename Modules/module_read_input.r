@@ -98,14 +98,13 @@ if (file_gaugings        != "synthet_gaugings.csv") {
 ##############################################################################
 if (file_limni != FALSE) {
   
-  limni <- read.csv2(paste(dir.case_study,"/",file_limni,sep=""),fileEncoding="UTF-8", #quote="",
-                     sep=";", dec=".",header= TRUE, na.strings=c(";","NA") )
+  #limni <- read.csv2(paste(dir.case_study,"/",file_limni,sep=""),  header= TRUE)
   
-  limni <- read.csv2(paste(dir.case_study,"/",file_limni,sep=""),fileEncoding="UTF-8", quote=" ",
-                      sep=";", dec=".",header= TRUE, na.strings=c(",","NA") )
+  limni <- read.csv2(paste0(dir.case_study,"/",file_limni),fileEncoding="UTF-8", 
+                     quote="", sep=";", dec=".", header= TRUE, na.strings=c(",", " ", "NA") )
   
   
-  #limni = na.omit(limni)
+  limni = na.omit(limni)
   
   limni = limni[seq(1, length(limni[,1]), limni_filter), ] 
 

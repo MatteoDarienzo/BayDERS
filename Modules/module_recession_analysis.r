@@ -59,10 +59,15 @@ averaget <- function(t,m) {
 
 
 
+
+
+
+
+
 #######################################################
 # FINDING THE ALL THE LoCAL MINIMUM (when h(i)<h(i-1)):
 #######################################################
-localmin <- function(t, h) {
+localmin <- function(t, h, toll) {
 ###########################
   hmin = 0; 
   tmin = 0  ;
@@ -72,7 +77,7 @@ localmin <- function(t, h) {
   i = 1; k = 1;
   while (i < tmax) {
     i = i+1
-    if (h[i] < h[i-1]) {
+    if (h[i] <= h[i-1] + toll) {
       k = k + 1 
       hmin[k] = h[i]
       tmin[k] = t[i]
@@ -90,30 +95,51 @@ localmin <- function(t, h) {
 
 #############################################################################
 # FINDING THE ALL THE MINIMUM of THE MINIMUM (when hmin(i)< hmin(i-1)):  hrec
-rec <- function(tmin, hmin, chi, delta.t.max,  delta.t.min) {
+rec <- function(tmin, hmin, chi, delta.t.max,  delta.t.min, toll) {
 #############################################################################
   # initialize:
   t_max = length(tmin) 
-  hrec = 0; trec =0 ; trecmax = 0; hrecmax = 0  ; 
-  hrec[1] = hmin[1] ; trec[1] = tmin[1]
-  hrecmax[1] = hmin[1]; trecmax[1] = tmin[1] ; 
-  j = 2 ; m = 1 ; k = 1
+  hrec = trec =  trecmax = hrecmax = 0 
+  hrec[1]    = hmin[1] 
+  trec[1]    = tmin[1]
+  hrecmax[1] = hmin[1]
+  trecmax[1] = tmin[1]
+  j = 2 
+  m = 1 
+  k = 1
+  min_loc3 = data.frame(tmin,  hmin)
+  eliminate.index =c()
+  
+  
+  for (ccc in 2:length( min_loc3$tmin)) {
+    if (( min_loc3$tmin[ccc] -  min_loc3$tmin[ccc-1]) < delta.t.min) {
+      eliminate.index = c(eliminate.index, ccc)
+    }
+  }
+  if (length(eliminate.index) > 1) {
+    min_loc4                = min_loc3[-eliminate.index,]
+  } else {
+    min_loc4                = min_loc3
+  }
+  
+  
+  
   
   # loop in time series of "tmin":
   while (j <= t_max) {
     # print(paste0('timestep = ', tmin[j] - trec[m]))
     # print(paste0('jump =     ', hmin[j] - hrec[m]))
     
-    if (hmin[j] < hrec[m]) {
+    if (min_loc4$hmin[j] <= hrec[m] + toll) {
       # ok, recession point
       m = m + 1 
-      hrec[m] = hmin[j]
-      trec[m] = tmin[j]
+      hrec[m] = min_loc4$hmin[j]
+      trec[m] = min_loc4$tmin[j]
       
     } else {
 
-      if (((abs(hmin[j] - hrec[m])) > chi ) | ((tmin[j]-trec[m]) > delta.t.max)) { # stop the recession
-        print("step > deltamax or > chi")
+      if (((abs(min_loc4$hmin[j] - hrec[m])) >= chi ) | ((min_loc4$tmin[j]-trec[m]) >= delta.t.max)) { # stop the recession
+        #print("step > deltamax or > chi")
         m = m + 1
         k = k + 1
         hrec[m] = hmin[j]
@@ -124,27 +150,17 @@ rec <- function(tmin, hmin, chi, delta.t.max,  delta.t.min) {
     }
     j = j+1      # faire attention ici !!!!!!!!!!!!!!
   }
-  min_loc3 = data.frame(trec,  hrec)
+  min_loc5 = data.frame(trec,  hrec)
   
   
-  eliminate.index =0
-  for (ccc in 2:length( min_loc3$trec)) {
-    if ((min_loc3$trec[ccc] - min_loc3$trec[ccc-1]) < delta.t.min) {
-      eliminate.index = c(eliminate.index, ccc)
-    }
-  }
-  if (length(eliminate.index) > 1) {
-    min_loc4                = min_loc3[-eliminate.index,]
-  } else {
-    min_loc4 = min_loc3
-  }
+
   
-  
-  
- 
-  
-  return(min_loc4)
+
+  return(min_loc5)
 }
+
+
+
 
 
 
@@ -173,16 +189,15 @@ extract_curve <- function(trec, hrec, chi, delta.t.max) {
   tpeak[1]  = trec[1]; 
   hpeak[1]  = hrec[1];
   tfinal=0; hfinal=0; tf.real=0;
-  gradient.max = -0.5
+  #gradient.max = -0.5
   
   
   #loop on trec:
-  while (l < tmaxrec-5) {
+  while (l < tmaxrec) {
     l = l+1  # index of recession dataset
     
-    if ((hrec[l] < hrec[l-1])  & (abs(hrec[l] < hrec[l-1]) < chi) & 
-        (trec[l] - trec[l-1] < delta.t.max)) {
-    
+    if ((hrec[l] <= hrec[l-1] + toll)  & (abs(hrec[l] - hrec[l-1]) < chi) &  (trec[l] - trec[l-1] < delta.t.max)) {
+        # ongoing recession:
         n = n +1
         nc = nc +1
         hcurve[l]  =  hrec[l]
@@ -196,8 +211,8 @@ extract_curve <- function(trec, hrec, chi, delta.t.max) {
         tf.real[l] =  0
       
     } else {
-      
-      p  = p+1   # new recession!
+      # stop ongoing recession ==> new recession !!!
+      p  = p+1   
       nc = 0
       
       # # remove all values with angular coeff high:
@@ -215,18 +230,18 @@ extract_curve <- function(trec, hrec, chi, delta.t.max) {
       #   min_loc5 = min_loc4
       # }
       # 
-      hcurve[l]   = hrec[l]
-      tcurve[l]   = 0
-      t.real[l]   = trec[l]
-      hpeak[l]    = hrec[l]
-      tpeak[l]    = trec[l]
-      tfinal[l-1] = tcurve[l-1]
-      hfinal[l-1] = hrec[l-1]
-      tf.real[l-1]= hrec[l-1]
-      tfinal[l]   = 0
-      hfinal[l]   = 0
-      tf.real[l] = 0
-      RCi[l] = p
+      hcurve[l]    = hrec[l]
+      tcurve[l]    = 0
+      t.real[l]    = trec[l]
+      hpeak[l]     = hrec[l]
+      tpeak[l]     = trec[l]
+      tfinal[l-1]  = tcurve[l-1]
+      hfinal[l-1]  = hrec[l-1]
+      tf.real[l-1] = hrec[l-1]
+      tfinal[l]    = 0
+      hfinal[l]    = 0
+      tf.real[l]   = 0
+      RCi[l]       = p
     }
   }
   curves = data.frame(tcurve, 
@@ -403,6 +418,14 @@ recession.selection <- function(  dir.exe,
                                   stage.record
                                   ) {
 ##########################################################################################################
+  
+  if (is.null(stage.record)){
+    message("***************************************************************************")
+    message("***** ERROR: stage record (with times and values), 'df.limni' is required !!! ")
+    message("***************************************************************************")
+  }
+  
+  
   # read inputs and options for computation:
   source(file.options.general)
   source(file.options.recess)
@@ -414,6 +437,8 @@ recession.selection <- function(  dir.exe,
   #limits.x.recess        = c(0, 150, 30)                       # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
   stage.scale.shift      = 10000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
   BayesianOption         = 2
+  toll                   = 0.1   # [cm] tolerance for the recession extraction. 
+  
   
   dir.segment.rec.test1  = paste0(dir.segment.rec,"/",name.folder.results.recession)
   dir.extraction         = paste0(dir.segment.rec.test1,"/1_curves_extraction")
@@ -445,15 +470,18 @@ recession.selection <- function(  dir.exe,
   # cat(paste0("prior.param.rec=",    prior.param.rec),  file = file.options, append = TRUE, sep="\n") 
 
   #---------------------------------------------------------------------------------------------
+  # ! stage.scale.shift is in cm !
+  # transform to cm:
+  
   if (stage.limni.u.m. == "cm"){
       stage.rec.df.raw = data.frame(t = stage.record$t_limni[index.period],
                                     h = stage.record$h_limni[index.period] +  stage.scale.shift)
   } else if (stage.limni.u.m. == "m") {
       stage.rec.df.raw = data.frame(t = stage.record$t_limni[index.period],
-                                    h = stage.record$h_limni[index.period] +  stage.scale.shift/100)
+                                    h = stage.record$h_limni[index.period]*100 +  stage.scale.shift)
   } else if (stage.limni.u.m. == "mm") {
       stage.rec.df.raw = data.frame(t = stage.record$t_limni[index.period],
-                                    h = stage.record$h_limni[index.period] +  stage.scale.shift/1000)
+                                    h = stage.record$h_limni[index.period]/10 +  stage.scale.shift)
   } else {
       print("You have inserted a wrong  u.m. for the stage record, put 'm' or 'cm' or 'mm'.")
   }
@@ -469,51 +497,69 @@ recession.selection <- function(  dir.exe,
   
   # # test to study recession events:
   # #plot(stage.rec.df$t, stage.rec.df$h)
-  # period2study = c(19500 , 20500)
-  # indexess = seq(which.min(abs(stage.rec.df$t - period2study[1])), which.min(abs(stage.rec.df$t - period2study[2])), 1)
-  # test.rec = stage.rec.df[indexess,]
-  # gtest=ggplot() + geom_point(aes(x=test.rec$t, y=test.rec$h)) + geom_line(aes(x=test.rec$t, y=test.rec$h))
+  period2study = c(0 , 25500)
+  indexess = seq(which.min(abs(stage.rec.df$t - period2study[1])), which.min(abs(stage.rec.df$t - period2study[2])), 1)
+  test.rec = stage.rec.df[indexess,]
+  gtest=ggplot() + geom_point(aes(x=test.rec$t, y=test.rec$h)) + geom_line(aes(x=test.rec$t, y=test.rec$h))
 
+  
+  
+  
+  
   
   # ALL CURVES EXTRACTION START:
   #*********************************************************************************************
+  message('- Total number of stage data:')
+  print(length(stage.rec.df$t))
+  
   # find all local decreasing points:
-  if (stage.limni.u.m. == "cm"){
-    min_loc.h <- localmin(t = stage.rec.df$t, 
-                          h = stage.rec.df$h)
-  } else if (stage.limni.u.m. =="m") {
-    min_loc.h <- localmin(t = stage.rec.df$t, 
-                          h = stage.rec.df$h*100)
-  }
-  # indexessx   = seq(which.min(abs(min_loc.h$t - period2study[1])), 
-  #                   which.min(abs(min_loc.h$t - period2study[2])),
-  #                   1)
-  # gtest       = gtest + geom_point(aes(x=min_loc.h$t[indexessx], y=min_loc.h$h[indexessx]/100), color ="red", size= 3)  
+  message('- Find all stage data decreasing: h(t) < h(t-1)')
+  min_loc.h   = localmin( t = stage.rec.df$t, 
+                          h = stage.rec.df$h,
+                          toll =toll)
+  indexessx   = seq(which.min(abs(min_loc.h$t - period2study[1])), 
+                    which.min(abs(min_loc.h$t - period2study[2])), 1)
+  gtest       = gtest + geom_point(aes(x=min_loc.h$t[indexessx], y=min_loc.h$h[indexessx]), color ="red", size= 2)  
 
   
+  
+  
+  
+  
+  
   # find all those points in recession phase:
+  message('- Among all decreasing stage data find all recession data.')
   recess.h    = rec(tmin        = min_loc.h$tmin, 
                     hmin        = min_loc.h$hmin, 
                     chi         = chi,
                     delta.t.max = delta.t.max, 
-                    delta.t.min = delta.t.min 
+                    delta.t.min = delta.t.min, 
+                    toll        = toll
                     )
-  # indexessxx  = seq(which.min(abs(recess.h$trec - period2study[1])), 
-  #                   which.min(abs(recess.h$trec - period2study[2])),
-  #                   1)
-  # gtest       = gtest + geom_point(aes(x=recess.h$trec[indexessxx], y=recess.h$hrec[indexessxx]/100), color ="green", size= 3)  
+  indexessxx  = seq(which.min(abs(recess.h$trec - period2study[1])), 
+                    which.min(abs(recess.h$trec - period2study[2])), 1)
+  gtest       = gtest + geom_point(aes(x=recess.h$trec[indexessxx], y=recess.h$hrec[indexessxx]), color ="green", size= 2)  
 
   
   # separate and extract recessions:
-  curves.h    = extract_curve(recess.h$trec,  
-                              recess.h$hrec,
-                              chi, 
-                              delta.t.max)
-  # indexessxxx = seq(which.min(abs(curves.h$t.real - period2study[1])),
-  #                   which.min(abs(curves.h$t.real - period2study[2])),
-  #                   1)
-  # gtest       = gtest+geom_point(aes(x=curves.h$t.real[indexessxxx], y=curves.h$hcurve[indexessxxx]/100), color = "blue", size= 3)  
-  # gtest
+  message('- Separate recessions using parameters "chi" and deltatmax".')
+  curves.h    = extract_curve(trec         = recess.h$trec,  
+                              hrec         = recess.h$hrec,
+                              chi          = chi, 
+                              delta.t.max  = delta.t.max)
+  
+  
+  
+  indexessxxx = seq(which.min(abs(curves.h$t.real - period2study[1])),
+                    which.min(abs(curves.h$t.real - period2study[2])),
+                    1)
+  gtest       = gtest+geom_point(aes(x=curves.h$t.real[indexessxxx], y=curves.h$hcurve[indexessxxx]), color = "blue", size= 2)
+  gtest
+  
+  
+  
+  
+  
   
   
   
@@ -544,13 +590,15 @@ recession.selection <- function(  dir.exe,
   
   # all recession stage values:
   Data_h = data.frame(  RCi      = curves.h$RCi, 
-                        hcurve = curves.h$hcurve, 
-                        tcurve = curves.h$tcurve, 
-                        treal  = curves.h$t.real, 
-                        tpeak  = curves.h$tpeak,
-                        hpeak  = curves.h$hpeak, 
-                        tfinal = curves.h$tfinal,
-                        hfinal = curves.h$hfinal)
+                        hcurve   = curves.h$hcurve, 
+                        tcurve   = curves.h$tcurve, 
+                        treal    = curves.h$t.real, 
+                        tpeak    = curves.h$tpeak,
+                        hpeak    = curves.h$hpeak, 
+                        tfinal   = curves.h$tfinal,
+                        hfinal   = curves.h$hfinal)
+  message('- Number of stage-recession data:')
+  print(length(curves.h$hcurve))
     
     
     
@@ -570,7 +618,12 @@ recession.selection <- function(  dir.exe,
         icurve.h = icurve.h
       }
     }
+    
+    message('- Number of stage-recessions:')
+    print(icurve.h)
+    
     # Saving results of recession curves extraction (in stage h) :
+    message('- Saving intermediate results of recession curves extraction in file "Extract_rec_curves.csv".')
     write.table(Data_h, file=paste0(dir.extraction,"/Extract_rec_curves.csv"), sep=";")
     
     
@@ -604,37 +657,127 @@ recession.selection <- function(  dir.exe,
     
     
 
+    message('\n\n\n**************************')
+    message('Extracted stage-recessions')
+    message('**************************')
+    message('Loop on all recessions. Select only recessions with:')
+    message('- recession length >= tgood')
+    message('- number of recession points >= Nmin')
+    message('- gradient <= gradient.max')
+    
+    
+    
     #***********************
-    for (i in 2:ncurves.h) {  # cycle on all available curves:     
+    for (i in 2:ncurves.h) {  # LOOP on all available curves:     
     #***********************
-        d.h[[i]] = data.frame( t  = curves.h$tcurve[(index.h[i-1]+1):(index.h[i]-1)],
+      d.h[[i]] = data.frame(   t  = curves.h$tcurve[(index.h[i-1]+1):(index.h[i]-1)],
                                h  = curves.h$hcurve[(index.h[i-1]+1):(index.h[i]-1)],
-                               uh = abs(0/100*curves.h$hcurve[(index.h[i-1]+1):(index.h[i]-1)]))
+                               uh = uh.rec) #abs(0/100*curves.h$hcurve[(index.h[i-1]+1):(index.h[i]-1)]))
       
-        #print(i)
+      
+        ############################################
+        # NOW, REMOVE VALUES WITH TOO HIGH GRADIENT:
+        #******************************************
+        eliminate.index = c();  # first value always removed !!! 
+        coeff_ang       = 0
+        gradient.max    = gradient.max
         
+        
+        moving_average = 4
+        stop           = 1
+        
+        if (length(d.h[[i]]$t) > moving_average){   # if at least 4 points !!
+          # compute the tangent on the 4 data moving average.
+          # lin = lm(formula = d.h[[i]]$h[1:moving_average] ~  d.h[[i]]$t[1:moving_average])
+          # mm = lin$coefficients[[2]]
+          # # for (ddd in (1:moving_average)) {
+          # #   coeff_ang[ddd] = (d.h[[i]]$h[ddd] - d.h[[i]]$h[ddd+1])/(d.h[[i]]$t[ddd-1] - d.h[[i]]$t[ddd])
+          # #   if (coeff_ang[ddd]  <  gradient.max) {
+          # #     eliminate.index = c(eliminate.index, ddd)
+          # #     # print(paste0('high gradient ' , ddd))
+          # #   } else {
+          # #     # print('ok')
+          # #   }
+          # # }
+          # if (mm  <=  gradient.max) {
+          #   eliminate.index = c(seq(1:moving_average))
+          #   #print(paste0('high initial gradient ' ))
+          # }
+          # 
+          # 
+          
+          #for (rr in 1:length(length(d.h[[i]]$t))){
+            
+
+         
+          for (ccc in ((moving_average+1):(length( d.h[[i]]$t )))) {
+            #linn = lm(formula = d.h[[i]]$h[(ccc-moving_average):ccc] ~  d.h[[i]]$t[(ccc-moving_average):ccc])
+            linn = lm(formula = d.h[[i]]$h[1:ccc] ~  d.h[[i]]$t[1:ccc])
+            
+            coeff_ang[ccc]  = linn$coefficients[[2]]
+            # coeff_ang[ccc] = (mean(d.h[[i]]$h[(ccc - moving_average):ccc]) - mean(d.h[[i]]$h[ccc])) /
+            #                  (d.h[[i]]$t[ccc - moving_average]  - d.h[[i]]$t[ccc])
+            
+            
+            if (coeff_ang[ccc]  <=  gradient.max) {
+              
+              stop = ccc
+              #print(paste0('high gradient ' , ccc))
+            } else {
+              # print('ok')
+            }
+          }
+          
+          
+          eliminate.index = c(seq(1:stop))
+        }
+        
+        
+        
+        
+        
+        if (length(eliminate.index) > 1) {
+          # Remove data:
+          ##############
+          # deltan = nobs.h - length(eliminate.index)
+          # if (deltan < Nmin.rec){
+          #   eliminate.index = eliminate.index[ (Nmin.rec- deltan +1) : length(eliminate.index)]
+          # }
+          init_time_rec =  d.h[[i]]$t[1]
+          d.h[[i]]      =  d.h[[i]][- eliminate.index,]
+          # now shift the recession times earlier:
+          d.h[[i]]$t    =  d.h[[i]]$t - d.h[[i]]$t[1] #+ init_time_rec
+        }
+        
+        #nobs.h       = length(d.h[[i]]$t)
+        #print(paste0('                    with ', nobs.h, ' points (after adjustment)'))
+        
+        
+
         # Select only recessin with length > tgood and with a number of point > Nmin :
+        if  (length(d.h[[i]]$t) > Nmin.rec) {
         #***********************************************************************
-        if ((tail(d.h[[i]]$t,1) >= tgood) & (length(d.h[[i]]$t) >= Nmin.rec) ) {  
+        if (tail(d.h[[i]]$t,1) >= tgood) {  
          #*********************************************************************** 
            curve_good.h                = curve_good.h + 1
            hpeakgood.h[curve_good.h]   = hpeak.h[i]; 
            t.real.good.h[curve_good.h] = tpeak.h[i];
            index.good.h[curve_good.h]  = index.h[i];
-           iiii[curve_good.h]          = i ;
-           Nburn.rec                   = tail(which(curves.h$tcurve[(index.h[i-1]+1):(index.h[i]-1)] <= tburn.rec),1)
-
-           print(paste0("rec # =", iiii[curve_good.h] ))
+           iiii[curve_good.h]          = i;
+           Nburn.rec                   = max(tail(which(curves.h$tcurve[(index.h[i-1]+1):(index.h[i]-1)] < tburn.rec), 1), 0)
            
            d.h.selected[[curve_good.h]]  = data.frame(t  = curves.h$tcurve[(index.h[i-1] +  1 + Nburn.rec):(index.h[i]-1)],
                                                       h  = curves.h$hcurve[(index.h[i-1]+ 1 + Nburn.rec):(index.h[i]-1)],
                                                       uh = uh.rec) 
-           d.h.selected.with.true.time[[curve_good.h]]  = data.frame(t  =  curves.h$tcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)],
-                                                                     h  =  curves.h$hcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)],
-                                                                     uh =  uh.rec,
-                                                                     treal = curves.h$tcurve[(index.h[i-1] + 1+ Nburn.rec):(index.h[i]-1)] +
-                                                                              t.real.good.h[curve_good.h],
+           d.h.selected.with.true.time[[curve_good.h]]  = data.frame(t       = curves.h$tcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)],
+                                                                     h       = curves.h$hcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)],
+                                                                     uh      = uh.rec,
+                                                                     treal   = curves.h$tcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)] + t.real.good.h[curve_good.h],
+                                                                     tpeak   = t.real.good.h[curve_good.h],
                                                                      ind.rec = rep(curve_good.h, length(curves.h$tcurve[(index.h[i-1] + 1+Nburn.rec):(index.h[i]-1)])))
+           nobs.h       = length(d.h.selected[[curve_good.h]]$t)
+           print(paste0("Recession # ", curve_good.h, ' (', i, ') with ', nobs.h, ' points' ))
+           
            
            # } else if ((rec.model == "1expWithAsymptNorm") |(rec.model == "2expWithAsymptNorm")) {
            #   d.h.selected[[curve_good.h]]  = data.frame(curves.h$tcurve[(index.h[i-1]+Nburn.rec):(index.h[i]-1)],
@@ -654,88 +797,46 @@ recession.selection <- function(  dir.exe,
            
            
            
-           # NOW, REMOVE VALUES WITH TOO HIGH GRADIENT:
-           #******************************************
-           eliminate.index=1;  # first value always removed !!! 
-           coeff_ang=0
-           gradient.max = gradient.max
-           if (length(d.h.selected.with.true.time[[curve_good.h]]$t) > 10){
-              moving_average = 5
-              for (ddd in (2:moving_average)) {
-                coeff_ang[ddd] = (d.h.selected.with.true.time[[curve_good.h]]$h[ddd-1] - d.h.selected.with.true.time[[curve_good.h]]$h[ddd])/
-                  (d.h.selected.with.true.time[[curve_good.h]]$treal[ddd-1] - d.h.selected.with.true.time[[curve_good.h]]$treal[ddd])
-                if (coeff_ang[ddd]  <  gradient.max) {
-                  eliminate.index = c(eliminate.index, ddd)
-                  #print(paste0('high gradient ' , ddd))
-                } else {
-                  #print('ok')
-                }
-              }
-              for (ccc in ((moving_average+1):(length( d.h.selected.with.true.time[[curve_good.h]]$t)))) {
-                coeff_ang[ccc] = (mean(d.h.selected.with.true.time[[curve_good.h]]$h[(ccc-moving_average):ccc]) - 
-                                  mean(d.h.selected.with.true.time[[curve_good.h]]$h[ccc]))/
-                                 (d.h.selected.with.true.time[[curve_good.h]]$treal[ccc-moving_average] -
-                                  d.h.selected.with.true.time[[curve_good.h]]$treal[ccc])
-                if (coeff_ang[ccc]  <  gradient.max) {
+        
 
-                  eliminate.index = c(eliminate.index, ccc)
-                  #print(paste0('high gradient ' , ccc))
-                } else {
-                 # print('ok')
-                }
-              }
-           }
-           if (length(eliminate.index > 1)) {
-             init_time_rec =  d.h.selected[[curve_good.h]]$t[1]
-             d.h.selected[[curve_good.h]]                  = d.h.selected[[curve_good.h]][-eliminate.index,]
-             d.h.selected.with.true.time[[curve_good.h]]   = d.h.selected.with.true.time[[curve_good.h]][-eliminate.index,]
-             # now shift the recession times earlier:
-             d.h.selected.with.true.time[[curve_good.h]]$t = d.h.selected.with.true.time[[curve_good.h]]$t - d.h.selected.with.true.time[[curve_good.h]]$t[1] + init_time_rec
-             d.h.selected[[curve_good.h]]$t                = d.h.selected[[curve_good.h]]$t - d.h.selected[[curve_good.h]]$t[1] + init_time_rec
-           }
-           
-          
            
 
            # SAVE VALUES:
            #*************
-           #nobs.h <- index.h[i] - 1 - index.h[i-1]
-           nobs.h       = length(d.h.selected[[curve_good.h]]$t)
-           if (nobs.h > 5) {
-           ##################
               curve_data.h = paste0(dir.BaM.rec.pool,"/Curves_Data.txt")
-              
               write.table(d.h.selected[[curve_good.h]] , 
                           file = curve_data.h, append = FALSE, sep = "\t", eol = "\n", 
                           na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh"))
            
-              if (tail(d.h.selected.with.true.time[[curve_good.h]]$t, 1) >= 80) {         ####### Change this eventually !!!!!!
+              
+              # Longest recessions:
+              if (tail(d.h.selected.with.true.time[[curve_good.h]]$t, 1) >= 80) {       ####### Change this eventually !!!!!!
                  Nrec_longer_100 = Nrec_longer_100 + 1
               } 
            
-           
-              if ((tail(d.h[[i]]$t,1) >= 170)){  # JUST AS A TEST!!
-                cat(paste0("curve_good.h = ", curve_good.h, '\n', "tin          = ", t.real.good.h[curve_good.h]))
-                #print(d.h.selected.with.true.time[[curve_good.h]])
-                gggg = gggg + geom_point(data = d.h.selected.with.true.time[[curve_good.h]], aes(x= t, y =h))
-              }
               
-           } else {
-             d.h.selected.with.true.time[[curve_good.h]] = NULL
-             d.h.selected[[curve_good.h]] = NULL
-             curve_good.h = curve_good.h - 1
-           }
+              # if ((tail(d.h[[i]]$t,1) >= 170)){  # JUST AS A TEST!!
+              #   #cat(paste0("curve_good.h = ", curve_good.h, '\n', "tin          = ", t.real.good.h[curve_good.h]))
+              #   #print(d.h.selected.with.true.time[[curve_good.h]])
+              #   #gggg = gggg + geom_point(data = d.h.selected.with.true.time[[curve_good.h]], aes(x= t, y =h))
+              # }
+        }
         }
     }
-    #######################
+    ################################################
+    
+    
     
     
     
     df.curves   = bind_rows( d.h.selected, .id = "column_label")
     df.curves.t = bind_rows( d.h.selected.with.true.time, .id = "column_label")
-    # write.table(df.curves , 
-    #             file=paste0(dir.BaM.rec.pool, "/Curves_Data.txt"), sep = "\t", eol = "\n", 
-    #             na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh", "Period"))
+    write.table(df.curves,
+                file=paste0(dir.BaM.rec.pool, "/Curves_Data.txt"), sep = "\t", eol = "\n",
+                na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh", "Period"))
+   
+    
+    
     ###########
     # plot:
     ###########
@@ -754,6 +855,7 @@ recession.selection <- function(  dir.exe,
     print(path.plot.extracted.rec)
     rec.plot.test = NULL
     rec.plot.test = plot.extracted.recessions.paper(Data_rec          = df.curves.t,
+                                                    stage.record      = stage.record,
                                                     hmin_grid         = hmin_grid, 
                                                     hmax_grid         = hmax_grid, 
                                                     dir.extraction    = dir.extraction, 
@@ -854,6 +956,8 @@ recession.regression   <-  function(dir.exe,
   limits.x.recess        = c(0, 150, 30)                       # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
   limits.x               = limits.x.recess
   plot.recession.uncert  = TRUE
+  limni.time.limits      = NULL
+  asymptote.limits       = stage.limits
 
   
   # directories :
@@ -900,7 +1004,7 @@ recession.regression   <-  function(dir.exe,
             
             #shift the pprior of asymptotic parameter:
             prior.rec[length(prior.rec)-4] =  as.numeric(prior.rec[length(prior.rec)-4])  + stage.scale.shift
-            prior.rec[length(prior.rec)-3] =  as.numeric(prior.rec[length(prior.rec)-3]) + stage.scale.shift  
+            prior.rec[length(prior.rec)-3] =  as.numeric(prior.rec[length(prior.rec)-3])  + stage.scale.shift  
             prior.rec[length(prior.rec)-1] =  as.numeric(prior.rec[length(prior.rec)-1])  + stage.scale.shift
             
             dir.rec.pool.model = paste0(dir.rec.pool,"/model_",rec.mod)   
@@ -938,6 +1042,14 @@ recession.regression   <-  function(dir.exe,
             write.table(d.h, file = curve_data, append = FALSE, sep = "\t", eol = "\n",
                         na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh", "Period"))
            
+            
+            if (prior.gamma.rec[7] == "'Uniform'"){
+                prior.gamma.rec[5] =  as.numeric(prior.gamma.rec[5])/stage.scale.shift
+                prior.gamma.rec[6] =  as.numeric(prior.gamma.rec[6])/stage.scale.shift
+                prior.gamma.rec[8] =  as.numeric(prior.gamma.rec[8])/stage.scale.shift
+            }
+            
+            
              # Launch BaM application in Bayesian pooling:
             message("***************************************************************"); flush.console()
             message("Applying BaM Regression by pooling method !!!  Please, wait ... "); flush.console()
@@ -960,6 +1072,7 @@ recession.regression   <-  function(dir.exe,
             # Launch BaM.exe (Benjamin Renard)
             system2("BaM_recession_multi_model_final.exe")
             ##############################################
+            
             # Read results from BaM :
             list.files.pool <- c( paste0(dir.BaM.recession.pool,"/Results_MCMC_Cooked.txt"),
                                   paste0(dir.BaM.recession.pool,"/Results_Residuals.txt"),
@@ -971,11 +1084,20 @@ recession.regression   <-  function(dir.exe,
             }
             end_time <- Sys.time()
             print(c("computat. time for Bayesian regression of all recessions by pooling =", end_time - start_time))
+            
+            
+            
+            #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             } else {
               message("*********************"); flush.console()
               message("READ RESULTS ONLY !!!"); flush.console()
               message("*********************"); flush.console()
+            
             }
+            
+            
+            
+            
             ########################
             # PLOT RESULTS:
             ########################  
@@ -2822,6 +2944,7 @@ BaM_config.pooling <- function( dir.exe ,
   cat(",",file =file.remnant, append = TRUE, sep=",")
   cat(prior.gamma[2],file =file.remnant, append = TRUE, sep="\n")
   #----------------------------------------------------------------
+  
   cat("gamma2", file = file.remnant, append = TRUE, sep="\n")             #! Parameter Name
   cat(prior.gamma[8], file = file.remnant, append = TRUE, sep="\n")       #! Initial Guess
   cat(prior.gamma[7], file = file.remnant, append = TRUE, sep="\n")       #! Initial Guess
@@ -2987,11 +3110,11 @@ read.results.regression.rec = function(dir.recess,
       a1.mcmc = mcmc.rec[,which.recession]
       a1.summary = summary.rec[,which.recession]
       a1.df = data.frame(  t(c(quantile(a1.mcmc[,1], p = c(0.025, 0.5, 0.975)),
-                               mean=mean(a1.mcmc[,1]), 
-                               stdev =std(a1.mcmc[,1]), 
+                               mean    = mean(a1.mcmc[,1]), 
+                               stdev   = std(a1.mcmc[,1]), 
                                maxpost = a1.summary[16,1])))
       names(a1.df) = c("2.5%", "50%", "97.5%", "mean", "stdev" , "maxpost")
-      for (i in which.recession){
+      for (i in which.recession[-1]){
         a1.df = rbind(a1.df, t(c(quantile(a1.mcmc[,i], p = c(0.025, 0.5, 0.975)), mean=mean(a1.mcmc[,i]), 
                                  stdev =std(a1.mcmc[,i]), maxpost = a1.summary[16,i]) ))
       }
@@ -3043,7 +3166,7 @@ read.results.regression.rec = function(dir.recess,
                                stdev =std(a4.mcmc[,1]), 
                                maxpost = a4.summary[16,1])))
       names(a4.df) = c("2.5%", "50%", "97.5%", "mean", "stdev" , "maxpost")
-      for (i in which.recession){
+      for (i in which.recession[-1]){
         a4.df = rbind(a4.df, t(c(quantile(a4.mcmc[,i], p = c(0.025, 0.5, 0.975)), mean=mean(a4.mcmc[,i]), 
                                  stdev =std(a4.mcmc[,i]), maxpost = a4.summary[16,i]) ))
       }    
@@ -5645,14 +5768,12 @@ A few information:
   interval = list(); ts.real = NULL; hflood =NULL;   tflood=NULL; hflood2 =NULL;  tflood2=NULL
   if (nS.ok > 1) { # if at least one shift has been detected:
     for (i in 1:length(tau.results.df$tau.MAP)) {
-      interval[[i]] = which((t_limni >= min(tau.results.df$tau.q2[i], 
-                                            tau.results.df$tau.MAP[i])) &
-                            (t_limni <= max(tau.results.df$tau.MAP[i], 
-                                              tau.results.df$tau.q97[i])))
+      interval[[i]] = which((stage.record$t_limni >= min(tau.results.df$tau.q2[i],  tau.results.df$tau.MAP[i])) &
+                            (stage.record$t_limni <= max(tau.results.df$tau.MAP[i], tau.results.df$tau.q97[i])))
       #maximum stage value (if known):
       if (!is.null(interval[[i]])) {
         hflood[i] = max(h_limni[interval[[i]]])
-        tflood[i] = t_limni[which.max(h_limni[interval[[i]]])  +  interval[[i]][1]]
+        tflood[i] = stage.record$t_limni[which.max(stage.record$h_limni[interval[[i]]])  +  interval[[i]][1]]
       } else {
         tflood[i] = tau.MAP[i]
       }

@@ -58,7 +58,8 @@ BaRatin_SPD.bac_app <- function(dir_code,
                       nperiod.from.segm.gaugings.1 = tail(g.s.results.1[[4]],1)
                       shift.times.gaugings.1       = read.table(file =paste0(dir.segment.SPD,"/shift_times.txt"), header = TRUE)
                       
-                      names(shift.times.gaugings.1) = c("t2", "t10", "tMAP", "t90","t97", "t.adj")
+                      #names(shift.times.gaugings.1) = c("t2", "t10", "tMAP", "t90","t97", "t.adj")
+                      names(shift.times.gaugings.1) = c("tMAP",	"t.adj", "t2", "t10", "t90", "t97")
                       data.annotate.gaug.1 <- data.frame( q2   = shift.times.gaugings.1$t2,
                                                           q10  = shift.times.gaugings.1$t10,
                                                           MAP  = shift.times.gaugings.1$tMAP,
@@ -429,6 +430,10 @@ For this application you are:
      } else {
         message("No computation. Reading and plotting the results from previous simulations! ") 
      }     
+      
+      
+                
+                
       ######################################################################################################
       # Plotting results of BaRatin-SPD in terms of rating curves :
       SPD = plot.SPD(dir.BaM              = dir.BaM, 
@@ -1125,58 +1130,61 @@ plot.SPD <- function(dir.BaM,
                 
                 
                 
+                
+                
+                
      # Boxplots of parameters b (b1, b2, ...):               
                 message("- Plotting the boxplots of the posterior RC parameter 'b' for each period. Wait ... "); flush.console()
                 # SPD.summary               = read.table(file=paste0(dir.SPD.results, "/Results_Summary.txt"))
                 # SPD.mcmc.cooked           = read.table(file=paste0(dir.SPD.results, "/Results_MCMC_Cooked.txt"), header=TRUE)
-                
-                SPD.mcmc.cooked.b  = list()
-                i = 1;  col.num = c(); 
-                #---------------------------------------------
-                   m=1
-                   if (isVar[1] == TRUE){  # b1
-                      col.num[m] = i 
-                   } else {
-                      col.num[m] = 1
-                   }
-                  SPD.mcmc.cooked.b[[1]]        = Results_mcmc.SPD[,  col.num[m]:(col.num[m]+ nperiod - 1)];
-                  names(SPD.mcmc.cooked.b[[1]]) = seq(1, nperiod, 1)
-                  SPD.mcmc.cooked.b[[1]]        = SPD.mcmc.cooked.b[[1]] %>% gather(period, b, na.rm = FALSE, convert = FALSE)
-                  SPD.mcmc.cooked.b[[1]]        = cbind(SPD.mcmc.cooked.b[[1]], label =rep(paste0("b_",1), length(SPD.mcmc.cooked.b[[1]]$period)))
-                  #---------------------------------------------
-                  m=2
-                  if (isVar[2] == TRUE){   #a1
-                    if (isVar[1] == TRUE){
-                      col.num[m] = nperiod + i
-                    } else {
-                      col.num[m] = col.num[m-1] + i
-                    }
-                  } else {
-                    if (isVar[1] == TRUE){
-                      col.num[m] = nperiod + 1
-                    } else {
-                      col.num[m] = col.num[m-1] + 1
-                    }
-                  }
-                  #---------------------------------------------
-                  m=3
-                  if (isVar[3] == TRUE){   #c1
-                    if (isVar[2] == TRUE){
-                      col.num[m] = col.num[m-1] - i + nperiod + i
-                    } else {
-                      col.num[m] = col.num[m-1] + i
-                    }
-                  } else {
-                    if (isVar[2] == TRUE){
-                      col.num[m] = col.num[m-1] - i + nperiod + 1
-                    } else {
-                      col.num[m] = col.num[m-1] + 1
-                    }
-                  }
-                  
 
-                  #---------------------------------------------------
-                  if (ncontrols >1){
+                SPD.mcmc.cooked.b  = list()
+                i = 1;  col.num = c();
+                #---------------------------------------------
+                m=1
+                if (isVar[1] == TRUE){  # b1
+                  col.num[m] = i
+                } else {
+                  col.num[m] = 1
+                }
+                SPD.mcmc.cooked.b[[1]]        = Results_mcmc.SPD[,  col.num[m]:(col.num[m]+ nperiod - 1)];
+                names(SPD.mcmc.cooked.b[[1]]) = seq(1, nperiod, 1)
+                SPD.mcmc.cooked.b[[1]]        = SPD.mcmc.cooked.b[[1]] %>% gather(period, b, na.rm = FALSE, convert = FALSE)
+                SPD.mcmc.cooked.b[[1]]        = cbind(SPD.mcmc.cooked.b[[1]], label =rep(paste0("b_",1), length(SPD.mcmc.cooked.b[[1]]$period)))
+                #---------------------------------------------
+                m=2
+                if (isVar[2] == TRUE){   #a1
+                  if (isVar[1] == TRUE){
+                    col.num[m] = nperiod + i
+                  } else {
+                    col.num[m] = col.num[m-1] + i
+                  }
+                } else {
+                  if (isVar[1] == TRUE){
+                    col.num[m] = nperiod + 1
+                  } else {
+                    col.num[m] = col.num[m-1] + 1
+                  }
+                }
+                #---------------------------------------------
+                m=3
+                if (isVar[3] == TRUE){   #c1
+                  if (isVar[2] == TRUE){
+                    col.num[m] = col.num[m-1] - i + nperiod + i
+                  } else {
+                    col.num[m] = col.num[m-1] + i
+                  }
+                } else {
+                  if (isVar[2] == TRUE){
+                    col.num[m] = col.num[m-1] - i + nperiod + 1
+                  } else {
+                    col.num[m] = col.num[m-1] + 1
+                  }
+                }
+
+
+                #---------------------------------------------------
+                if (ncontrols >1){
                   for (ccc in 2:ncontrols) {
                     for (par in 1:3){
                       m= m + 1
@@ -1193,14 +1201,15 @@ plot.SPD <- function(dir.BaM,
                           col.num[m] = col.num[m-1] + 1
                         }
                       }
-                      if (par ==1) { # "b"
+                      
+                      if (par ==1){ # "b"
                         if (isVar[m] == TRUE) {
                           SPD.mcmc.cooked.b[[ccc]]        = Results_mcmc.SPD[,  col.num[m]:(col.num[m]+ nperiod - 1)];
                           names(SPD.mcmc.cooked.b[[ccc]]) = seq(1, nperiod, 1)
                           SPD.mcmc.cooked.b[[ccc]]        = SPD.mcmc.cooked.b[[ccc]] %>% gather(period, b, na.rm = FALSE, convert = FALSE)
                           SPD.mcmc.cooked.b[[ccc]]        = cbind(SPD.mcmc.cooked.b[[ccc]],label = rep(paste0("b_",ccc), length(SPD.mcmc.cooked.b[[ccc]]$period)))
                         } else {
-                          SPD.mcmc.cooked.b[[ccc]]        = cbind(rep(Results_mcmc.SPD[,  col.num[m]], nperiod))
+                          SPD.mcmc.cooked.b[[ccc]]        = data.frame(cbind(replicate(nperiod, Results_mcmc.SPD[,  col.num[m]])))
                           names(SPD.mcmc.cooked.b[[ccc]]) = seq(1, nperiod, 1)
                           SPD.mcmc.cooked.b[[ccc]]        = SPD.mcmc.cooked.b[[ccc]] %>% gather(period, b, na.rm = FALSE, convert = FALSE)
                           SPD.mcmc.cooked.b[[ccc]]        = cbind(SPD.mcmc.cooked.b[[ccc]],label = rep(paste0("b_",ccc), length(SPD.mcmc.cooked.b[[ccc]]$period)))
@@ -1208,111 +1217,115 @@ plot.SPD <- function(dir.BaM,
                       }
                     }
                   }
-                  }
+                }
 
-                  if ((ncontrols <=1)) {
-                     colorss = c("black")
-                  } else if (ncontrols ==2){
-                     colorss = c("black", "gray70")
-                  } else if (ncontrols > 9) {
-                     colorss = distinctColorPalette(k = ncontrols, altCol = FALSE, runTsne = FALSE)
-                  } else {
-                     colorss = brewer.pal(n=ncontrols, "Greys")
-                  }
-                  labelss = c(paste0("b_",seq(1:ncontrols)))
-                  SPD.bt = ggplot()
-                         for (ccc in 1:ncontrols){
-                           SPD.bt = SPD.bt +
-                           geom_boxplot(data = SPD.mcmc.cooked.b[[ccc]],
-                                        aes(x= period, y= b, color = label),
-                                        outlier.size = 0.1, lwd =0.2)
-                           write.table( SPD.mcmc.cooked.b[[ccc]],  paste0(dir.SPD.results,"/b", ccc, "_per_period.csv"),  sep ="\t", row.names=FALSE)
-                         }
-                         SPD.bt = SPD.bt +
-                         stat_summary(fun = mean, geom="point", shape=16, size=2)+
-                         scale_y_continuous(name = TeX("$b$"))+
-                         scale_color_manual(name = "Legend",
-                                            labels = labelss,
-                                            values = colorss)+
-                         scale_x_discrete(name = "Period", limits = factor(seq(1,nperiod, 1)) )+
-                         theme_bw()+
-                         theme( panel.grid.major = element_blank()
-                               ,panel.grid.minor = element_blank())
-                         ggsave(SPD.bt, filename = paste0(dir.SPD.results,"/b_boxplots.png"),
-                                bg = "transparent", device = "png", width = 6, height =4, dpi = 400)
+                if ((ncontrols <=1)) {
+                  colorss = c("black")
+                } else if (ncontrols ==2){
+                  colorss = c("black", "gray70")
+                } else if (ncontrols > 4) {
+                  colorss = distinctColorPalette(k = ncontrols, altCol = FALSE, runTsne = FALSE)
+                } else {
+                  colorss = brewer.pal(n=ncontrols, "Greys")
+                }
+                labelss = c(paste0("b_",seq(1:ncontrols)))
                 
-                  delta.b.SPD =list()
-                  for (ccc in 1:ncontrols){
-                     if (nperiod > 1){
-                          delta.b.SPD[[ccc]] = data.frame(shifttime = "1", 
-                                                          deltab   = SPD.mcmc.cooked.b[[ccc]]$b[which(SPD.mcmc.cooked.b[[ccc]]$period== 2)] -
-                                                                     SPD.mcmc.cooked.b[[ccc]]$b[which(SPD.mcmc.cooked.b[[ccc]]$period== 1)],
-                                                          label    = rep(paste0("Deltab_", 1))) 
-                          for (tss in 2:(nperiod-1)){
-                               delta.b.SPD[[ccc]] = rbind(delta.b.SPD[[ccc]],
-                                                          data.frame(
-                                                          shifttime = as.character(tss), 
-                                                          deltab    = SPD.mcmc.cooked.b[[ccc]]$b[which(SPD.mcmc.cooked.b[[ccc]]$period== (tss+1))] -
-                                                                      SPD.mcmc.cooked.b[[ccc]]$b[which(SPD.mcmc.cooked.b[[ccc]]$period== tss)],
-                                                          label     = rep(paste0("Deltab_", ccc)))) 
-                           }
-                     } else {
-                       delta.b.SPD[[ccc]] = NULL
-                     }
-                  } 
-                  labelss = c(paste0("Deltab_",seq(1:ncontrols)))
-                  SPD.delta.bt = ggplot()
-                                 for (ccc in 1:ncontrols){
-                                    SPD.delta.bt = SPD.delta.bt +
-                                    geom_boxplot(data = delta.b.SPD[[ccc]],
-                                                 aes(x= shifttime, y= deltab, color = label),
-                                                 outlier.size = 0.1, lwd =0.2)
-                                    write.table( delta.b.SPD[[ccc]],  paste0(dir.SPD.results,"/Deltab", ccc, "_per_period.csv"),  sep ="\t", row.names=FALSE)
-                                    
-                                 }
-                                 SPD.delta.bt = SPD.delta.bt +
-                                 stat_summary(fun = mean, geom="point", shape=16, size=2)+
-                                 scale_y_continuous(name = TeX("$Shifts \\; \\Delta b \\;[m]$"))+
-                                 scale_color_manual(name = "Legend",
-                                                   labels = labelss,
-                                                   values = colorss)+
-                                 scale_x_discrete(name = "Rating shift index", limits = factor(seq(1,nperiod-1, 1)) )+
-                                 theme_bw()+
-                                 theme( panel.grid.major = element_blank()
-                                       ,panel.grid.minor = element_blank())
-                                 ggsave(SPD.delta.bt, filename = paste0(dir.SPD.results,"/deltab_boxplots.png"),
-                                         bg = "transparent", device = "png", width = 6, height =4, dpi = 400)
-                  
+                SPD.bt = ggplot()
+                for (ccc in 1:ncontrols){
+                  SPD.bt = SPD.bt +
+                    geom_boxplot(data = SPD.mcmc.cooked.b[[ccc]],
+                                 aes(x= period, y= b, color = label),
+                                 outlier.size = 0.1, lwd =0.2)
+                  write.table( SPD.mcmc.cooked.b[[ccc]],  paste0(dir.SPD.results,"/b", ccc, "_per_period.csv"),  sep ="\t", row.names=FALSE)
+                }
+                SPD.bt = SPD.bt +
+                  stat_summary(fun = mean, geom="point", shape=16, size=2)+
+                  scale_y_continuous(name = TeX("$b$"))+
+                  scale_color_manual(name = "Legend",
+                                     labels = labelss,
+                                     values = colorss)+
+                  scale_x_discrete(name = "Period", limits = factor(seq(1,nperiod, 1)) )+
+                  theme_bw()+
+                  theme( panel.grid.major = element_blank()
+                         ,panel.grid.minor = element_blank())
+                ggsave(SPD.bt, filename = paste0(dir.SPD.results,"/b_boxplots.png"),
+                       bg = "transparent", device = "png", width = 6, height =4, dpi = 400)
+
+                delta.b.SPD =list()
+                for (ccc in 1:ncontrols){
+                  if (nperiod > 1){
+                    delta.b.SPD[[ccc]] = data.frame(shifttime = "1",
+                                                    deltab   = SPD.mcmc.cooked.b[[ccc]]$b[which(SPD.mcmc.cooked.b[[ccc]]$period== 2)] -
+                                                      SPD.mcmc.cooked.b[[ccc]]$b[which(SPD.mcmc.cooked.b[[ccc]]$period== 1)],
+                                                    label    = rep(paste0("Deltab_", 1)))
+                    for (tss in 2:(nperiod-1)){
+                      delta.b.SPD[[ccc]] = rbind(delta.b.SPD[[ccc]],
+                                                 data.frame(
+                                                   shifttime = as.character(tss),
+                                                   deltab    = SPD.mcmc.cooked.b[[ccc]]$b[which(SPD.mcmc.cooked.b[[ccc]]$period== (tss+1))] -
+                                                     SPD.mcmc.cooked.b[[ccc]]$b[which(SPD.mcmc.cooked.b[[ccc]]$period== tss)],
+                                                   label     = rep(paste0("Deltab_", ccc))))
+                    }
+                  } else {
+                    delta.b.SPD[[ccc]] = NULL
+                  }
+                }
+                labelss = c(paste0("Deltab_",seq(1:ncontrols)))
+                SPD.delta.bt = ggplot()
+                for (ccc in 1:ncontrols){
+                  SPD.delta.bt = SPD.delta.bt +
+                    geom_boxplot(data = delta.b.SPD[[ccc]],
+                                 aes(x= shifttime, y= deltab, color = label),
+                                 outlier.size = 0.1, lwd =0.2)
+                  write.table( delta.b.SPD[[ccc]],  paste0(dir.SPD.results,"/Deltab", ccc, "_per_period.csv"),  sep ="\t", row.names=FALSE)
+
+                }
+                SPD.delta.bt = SPD.delta.bt +
+                  stat_summary(fun = mean, geom="point", shape=16, size=2)+
+                  scale_y_continuous(name = TeX("$Shifts \\; \\Delta b \\;[m]$"))+
+                  scale_color_manual(name = "Legend",
+                                     labels = labelss,
+                                     values = colorss)+
+                  scale_x_discrete(name = "Rating shift index", limits = factor(seq(1,nperiod-1, 1)) )+
+                  theme_bw()+
+                  theme( panel.grid.major = element_blank()
+                         ,panel.grid.minor = element_blank())
+                ggsave(SPD.delta.bt, filename = paste0(dir.SPD.results,"/deltab_boxplots.png"),
+                       bg = "transparent", device = "png", width = 6, height =4, dpi = 400)
+
                 
                 
                 #######################################################################################              
                 #plotting river bed b(t) from BaRatin-SPD:
-                print("ok")  
+                #print("ok")  
                 names(gaug.periods.df) = c("h","Q","uQ","Period","t","color")               
-                                 
-                bt.res = bt.SPD(nperiods           = nperiod,
-                                df.limni           = stage.record,
-                                dir.SPD.results    = dir.SPD.results,
-                                t.shift.for.b      = data.annotate.gaug.1,
-                                h_G                = gaug.periods.df$h,
-                                t_G                = gaug.periods.df$t,
-                                color_G            = gaug.periods.df$color,
-                                times.uncert       = TRUE,
-                                officialShiftsTime = officialShiftsTime ,
-                                ylimits            = grid_RC.xlim)
+                
+                # bt.res = bt.SPD(nperiods           = nperiod,
+                #                 df.limni           = stage.record,
+                #                 dir.SPD.results    = dir.SPD.results,
+                #                 t.shift.for.b      = data.annotate.gaug.1,
+                #                 h_G                = gaug.periods.df$h,
+                #                 t_G                = gaug.periods.df$t,
+                #                 color_G            = gaug.periods.df$color,
+                #                 times.uncert       = TRUE,
+                #                 officialShiftsTime = officialShiftsTime ,
+                #                 ylimits            = grid_RC.xlim)
                 
                 ########################################################################################
                 
                 
                 # perform hydrograph for each stable period
-                if (do.final.hydrograph == TRUE){
-                  
-                  
-                }
-                       
-         return(bt.res)       
+                # if (do.final.hydrograph == TRUE){
+                #   
+                #   
+                # }
+                message("
+############################################
+#              All done !                  #  
+############################################")
+                
+                return()       
 } 
-
 
 
 
@@ -1383,6 +1396,8 @@ bt.SPD <- function(nperiods,
   write.table(bt1.df, paste0(dir.SPD.results,"/bt1_df.txt"), 
               sep ="\t", row.names=FALSE)
   
+  
+  
   ##################
   SPD.mcmc.cooked.b2        = SPD.mcmc.cooked[,(nperiods+3 ):(2*nperiods+2)]; 
   names(SPD.mcmc.cooked.b2) = seq(1,nperiods,1)
@@ -1403,6 +1418,7 @@ bt.SPD <- function(nperiods,
   }
   write.table(bt2.df, paste0(dir.SPD.results,"/bt2_df.txt"), 
               sep ="\t", row.names=FALSE)
+  
   #boxplots of b1 and b2 parameters for each period:
   bt.boxplot   = ggplot()+
                  geom_boxplot(data=SPD.mcmc.cooked.b1, aes(x= period, y= b1, color="b1"), outlier.size = 0.1, lwd =0.2)+
@@ -1423,7 +1439,11 @@ bt.SPD <- function(nperiods,
                 shifts.all = t.shift.for.b$t.adj
                 if (times.uncert ==TRUE) {   # /!\ this has to be changed !!!!!!!!!!!!!!
                      t.shifts.before = c(0, t.shift.for.b$t.adj)
-                     t.shifts.plus = c(t.shift.for.b$t.adj, tail(df.limni$t_limni,1))
+                     if (!is.null(df.limni)){
+                        t.shifts.plus = c(t.shift.for.b$t.adj, tail(df.limni$t_limni,1))
+                     } else{  
+                        t.shifts.plus = c(t.shift.for.b$t.adj, tail(t_G,1))
+                     }
                      bt2.df = cbind(bt2.df, 
                                     t.shifts.before = t.shifts.before , 
                                     t.shifts.plus   = t.shifts.plus)
@@ -1434,7 +1454,12 @@ bt.SPD <- function(nperiods,
                 } else {
                       t.shifts        = shifts[-length(shifts)]
                       t.shifts.before = c(0,t.shifts)
-                      t.shifts.plus   = sort(c(t.shifts, tail(df.limni$t_limni,1)))
+                      if (!is.null(df.limni)){
+                        t.shifts.plus   = sort(c(t.shifts, tail(df.limni$t_limni,1)))
+                      } else{  
+                        t.shifts.plus   = sort(c(t.shifts, tail(t_G,1)))
+                      }
+                      
                 }
                 
                 # index.hmax=0
@@ -1471,43 +1496,49 @@ bt.SPD <- function(nperiods,
                                geom_segment(data = bt1.df, mapping= aes(x    = t.shifts.before, 
                                                                         y    = maxpost, 
                                                                         xend = t.shifts.plus, 
-                                                                        yend = maxpost), 
-                                            color = unique(color_G),  size = 1) +
+                                                                        yend = maxpost), color = unique(color_G),  size = 1.2) 
                                # geom_rect(data = bt1.df , mapping = aes(xmin= t.shifts.before, 
                                #                                           xmax=t.shifts.plus,
                                #                                           ymin= `2.5%`, 
                                #                                           ymax= `97.5%`), 
                                #           fill=color_G, alpha=0.3) +
-                               geom_line(data = df.limni, aes(x = t_limni, y= h_limni), color="gray40", size =0.3)+
-                               geom_point(aes(x=t_G, y = h_G), color= color_G, size=4)+
-                               scale_y_continuous(name = expression("Stage h [m]"), limits =ylimits, expand = c(0,0)) + 
+                               
+                               if (!is.null(df.limni)){
+                                   bt.plot =  bt.plot + geom_line(data = df.limni, aes(x = t_limni, y= h_limni), color="gray40", size =0.3)
+                               }
+                               bt.plot =  bt.plot +
+                               geom_point(aes(x=t_G, y = h_G), color= color_G, size=4) +
+                               scale_y_continuous(name = expression("Stage h [m]"), expand = c(0,0)) + 
                                scale_x_continuous(name = expression("Time [days]"), expand = c(0,0))+
+                               coord_cartesian(clip = 'off')+
                                theme_bw(base_size=20)+
                                theme(axis.text=element_text(size=15),
                                      axis.title=element_text(size=20,face="bold")
                                      ,legend.text=element_text(size=20),legend.title=element_text(size=30)
                                      ,legend.key.size=unit(1.5, "cm"),legend.position="none"
                                      ,panel.grid = element_blank())+
-                               geom_segment(aes(x =t.shift.for.b$t.adj ,   
-                                                y = bt1.df$maxpost[- length(bt1.df$maxpost)] ,
+                               geom_segment(aes(x    = t.shift.for.b$t.adj ,   
+                                                y    = bt1.df$maxpost[- length(bt1.df$maxpost)] ,
                                                 xend = t.shift.for.b$t.adj, 
                                                 yend = bt1.df$maxpost[-1]),
-                                            arrow = arrow(length = unit(0.2, "cm"), ends = "both"), 
-                                            size =0.8,
-                                            color= "black")
+                                            arrow = arrow(length = unit(0.1, "cm"), ends = "both"), size =0.7, color= "black")
                                # geom_point(aes(x = t.shift.for.b$t.adj, 
                                #                y = df.limni$h_limni[index.hmax]),
                                #              size = 10, color="red", pch=21, fill="NA")
                           } else {
-                               bt.plot = bt.plot +
+                          #########
+                               if (!is.null(df.limni)){
+                                   bt.plot =  bt.plot + geom_line(data = df.limni, aes(x = t_limni, y= h_limni), color="gray40", size =0.3)
+                                 }
+                               bt.plot = bt.plot +                                 
                                geom_vline(aes(xintercept = shifts.all), color = "blue", lwd =0.7, linetype = "solid") +
                                geom_segment(mapping = aes(x =t.shifts.before , y = bt.MAP, 
                                                          xend = t.shifts.plus, yend = bt.MAP), color = "red", size = 1) +
                                geom_rect(mapping = aes(xmin= t.shifts.before, xmax=t.shifts.plus, ymin=bt.q10,
                                          ymax= bt.q90), fill="red", alpha=0.3) +
-                               geom_line(data = df.limni, aes(x = t_limni, y= h_limni), color="black", size =0.3)+
                                scale_y_continuous(name = expression("Stage h [m]"), limits =ylimits, expand = c(0,0)) + 
                                scale_x_continuous(name = expression("Time [days]"), expand = c(0,0))+
+                               coord_cartesian(clip = 'off')+
                                geom_point(aes(x=t_G, y = h_G), color=color_G, size=4)+
                                theme_bw(base_size=20)+
                                theme(axis.text=element_text(size=15),axis.title=element_text(size=20,face="bold")
