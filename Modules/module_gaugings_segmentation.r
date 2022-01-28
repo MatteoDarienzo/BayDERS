@@ -818,8 +818,12 @@ A few information:
             i =0
             while (i < length(tau.results.df[[seg.iter]]$tau.MAP)) {
                 i = i +1
+                ###################################### CHOICE 1
                  if (shift.time.adjustment.type == 1) {    # option 1: always chose the MAP of the shift time !!!
                      ts.real[i] = tau.results.df[[seg.iter]]$tau.MAP[i] 
+                     
+                     
+                 ##################################### CHOICE 2      
                  }  else if (shift.time.adjustment.type == 2) {
                      if (any(ts.real==tflood[i]) | any(ts.all.real==tflood[i])){
                          print("searching for a second flood in the interval")
@@ -846,6 +850,8 @@ A few information:
                      ts.morpho.MAP  = c(ts.morpho.MAP, ts.res[i])
                      ts.morpho.q2   = c(ts.morpho.q2, Q2.ts[i])
                      ts.morpho.q97  = c(ts.morpho.q97, Q97.ts[i])
+                     
+               ###################################### CHOICE 3      
                }  else {
                   # Manual selection:
                   # pop-up window for user choice of the TRUE shift time option:

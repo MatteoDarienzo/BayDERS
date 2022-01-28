@@ -328,8 +328,7 @@
                                                           dir.segment.rec       =  dir.segment.rec,
                                                           file.options.general  =  paste0(dir.case_study,"/Options_General.R"),
                                                           file.options.recess   =  paste0(dir.case_study,"/Options_Recession_analysis.R"),
-                                                          data.recess           =  list(rec.extraction$d.h.selected, 
-                                                                                        rec.extraction$t.real.good.h),
+                                                          data.recess           =  list(rec.extraction$d.h.selected, rec.extraction$t.real.good.h),
                                                           initial.time.rec      =  rec.extraction$t.real.good.h,
                                                           which.recession       =  c(1:rec.extraction$Ncurves))  
                     

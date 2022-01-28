@@ -297,7 +297,7 @@ extract_peaks <- function(trec, Qrec) {
 
 
 
-# ##########################################################################################################
+###########################################################################################################
 # recession.identification <- function(t_limni, 
 #                                      h_limni, 
 #                                      dir.case_study, 
@@ -554,7 +554,7 @@ recession.selection <- function(  dir.exe,
                     which.min(abs(curves.h$t.real - period2study[2])),
                     1)
   gtest       = gtest+geom_point(aes(x=curves.h$t.real[indexessxxx], y=curves.h$hcurve[indexessxxx]), color = "blue", size= 2)
-  gtest
+  #gtest
   
   
   
@@ -603,60 +603,38 @@ recession.selection <- function(  dir.exe,
     
     
     # detect all time final of the recession curves:
+    #***********************************************
     tf =  hf =  index.h =  icurve.h =  hpeak.h =  tpeak.h =0
-    
     for (ii in 1:length(curves.h$hcurve)) {
-    #**************************************
       if (curves.h$hfinal[ii] != 0) {
-        icurve.h          = icurve.h + 1 
-        tf[icurve.h]      = curves.h$tfinal[ii]   # Final time t of a recession
-        hf[icurve.h]      = curves.h$hfinal[ii]   # Final stage h of a recession
-        hpeak.h[icurve.h] = curves.h$hpeak[ii]    # peak of a stage-recession
-        tpeak.h[icurve.h] = curves.h$tpeak[ii]    # time of the peak of a recession
-        index.h[icurve.h] = ii                    # recession curve index
+           icurve.h          = icurve.h + 1 
+           tf[icurve.h]      = curves.h$tfinal[ii]   # Final time t of a recession
+           hf[icurve.h]      = curves.h$hfinal[ii]   # Final stage h of a recession
+           hpeak.h[icurve.h] = curves.h$hpeak[ii]    # peak of a stage-recession
+           tpeak.h[icurve.h] = curves.h$tpeak[ii]    # time of the peak of a recession
+           index.h[icurve.h] = ii                    # recession curve index
       } else {
-        icurve.h = icurve.h
+           icurve.h = icurve.h
       }
     }
     
-    message('- Number of stage-recessions:')
+    
+    message('- Number of potential stage-recessions:')
     print(icurve.h)
     
     # Saving results of recession curves extraction (in stage h) :
     message('- Saving intermediate results of recession curves extraction in file "Extract_rec_curves.csv".')
     write.table(Data_h, file=paste0(dir.extraction,"/Extract_rec_curves.csv"), sep=";")
     
-    
-    
-    
-    
-    
-    
-    
     # Select some specific recessions based on user defined options:
-    #**************************************************************************************
+    #***************************************************************
     #initialisation:
-    asymptote.h = curve_good.h = hpeakgood.h =  t.real.good.h = index.good.h = 0 
-    asym.h.maxpost = asym.h.stdev= asym.h.Q10=  asym.h.Q90 = asym.h.mean = 0
-    asym.h.Q2 = 0; asym.h.Q95 =0;  Resultss =NULL; quantiles.rec = NULL;
-    theta1.maxpost = 0; theta1.stdev= 0; theta1.Q10= 0; theta1.Q90 = 0; theta1.mean = 0;
-    theta2.maxpost = 0; theta2.stdev= 0; theta2.Q10= 0; theta2.Q90 = 0; theta2.mean = 0;
-    theta3.maxpost = 0; theta3.stdev= 0; theta3.Q10= 0; theta3.Q90 = 0; theta3.mean = 0;
-    theta4.maxpost = 0; theta4.stdev= 0; theta4.Q10= 0; theta4.Q90 = 0; theta4.mean = 0;
-    theta5.maxpost = 0; theta5.stdev= 0; theta5.Q10= 0; theta5.Q90 = 0; theta5.mean = 0;
-    theta6.maxpost = 0; theta6.stdev= 0; theta6.Q10= 0; theta6.Q90 = 0; theta6.mean = 0;
-    results.regression = 0; 
-    asymptote.df = data.frame(NULL)    
-    asym.df.temp = NULL
-    d.h = NULL;  d.h.selected=NULL;  d.h.selected.with.true.time=NULL; 
-    ncurves.h = icurve.h; 
-    iiii = Nrec_longer_100 = 0
-    gggg = ggplot()
-    
-    
-    
-    
-
+    asymptote.h  = curve_good.h = hpeakgood.h =  t.real.good.h = index.good.h = 0
+    iiii = Nrec_longer_100 = results.regression = 0
+    asym.df.temp = d.h =  d.h.selected=  d.h.selected.with.true.time = Resultss = quantiles.rec = NULL
+    asymptote.df = data.frame(NULL)
+    gggg         = ggplot()
+    ncurves.h    = icurve.h
     message('\n\n\n**************************')
     message('Extracted stage-recessions')
     message('**************************')
@@ -667,78 +645,45 @@ recession.selection <- function(  dir.exe,
     
     
     
-    #***********************
-    for (i in 2:ncurves.h) {  # LOOP on all available curves:     
-    #***********************
-      d.h[[i]] = data.frame(   t  = curves.h$tcurve[(index.h[i-1]+1):(index.h[i]-1)],
+    
+    
+    
+    #****************************************************************************************************
+    for (i in 2:ncurves.h) {     # LOOP on all available curves:     
+    #****************************************************************************************************
+        d.h[[i]] = data.frame( t  = curves.h$tcurve[(index.h[i-1]+1):(index.h[i]-1)],
                                h  = curves.h$hcurve[(index.h[i-1]+1):(index.h[i]-1)],
                                uh = uh.rec) #abs(0/100*curves.h$hcurve[(index.h[i-1]+1):(index.h[i]-1)]))
-      
-      
-        ############################################
+        #*******************************************
         # NOW, REMOVE VALUES WITH TOO HIGH GRADIENT:
-        #******************************************
-        eliminate.index = c();  # first value always removed !!! 
+        #*******************************************
+        # initialise:
+        eliminate.index = c()  # first value always removed !!! 
         coeff_ang       = 0
         gradient.max    = gradient.max
+        moving_average  = 4
+        stop            = 1
         
-        
-        moving_average = 4
-        stop           = 1
-        
-        if (length(d.h[[i]]$t) > moving_average){   # if at least 4 points !!
-          # compute the tangent on the 4 data moving average.
-          # lin = lm(formula = d.h[[i]]$h[1:moving_average] ~  d.h[[i]]$t[1:moving_average])
-          # mm = lin$coefficients[[2]]
-          # # for (ddd in (1:moving_average)) {
-          # #   coeff_ang[ddd] = (d.h[[i]]$h[ddd] - d.h[[i]]$h[ddd+1])/(d.h[[i]]$t[ddd-1] - d.h[[i]]$t[ddd])
-          # #   if (coeff_ang[ddd]  <  gradient.max) {
-          # #     eliminate.index = c(eliminate.index, ddd)
-          # #     # print(paste0('high gradient ' , ddd))
-          # #   } else {
-          # #     # print('ok')
-          # #   }
-          # # }
-          # if (mm  <=  gradient.max) {
-          #   eliminate.index = c(seq(1:moving_average))
-          #   #print(paste0('high initial gradient ' ))
-          # }
-          # 
-          # 
-          
-          #for (rr in 1:length(length(d.h[[i]]$t))){
-            
-
-         
-          for (ccc in ((moving_average+1):(length( d.h[[i]]$t )))) {
-            #linn = lm(formula = d.h[[i]]$h[(ccc-moving_average):ccc] ~  d.h[[i]]$t[(ccc-moving_average):ccc])
-            linn = lm(formula = d.h[[i]]$h[1:ccc] ~  d.h[[i]]$t[1:ccc])
-            
-            coeff_ang[ccc]  = linn$coefficients[[2]]
-            # coeff_ang[ccc] = (mean(d.h[[i]]$h[(ccc - moving_average):ccc]) - mean(d.h[[i]]$h[ccc])) /
-            #                  (d.h[[i]]$t[ccc - moving_average]  - d.h[[i]]$t[ccc])
-            
-            
-            if (coeff_ang[ccc]  <=  gradient.max) {
-              
-              stop = ccc
-              #print(paste0('high gradient ' , ccc))
-            } else {
-              # print('ok')
+        if (length(d.h[[i]]$t) > moving_average){ # if at least "moving_average" points !!
+            # compute the angular coefficient:
+            for (ccc in ((moving_average+1):(length( d.h[[i]]$t )))) {
+               #linn = lm(formula = d.h[[i]]$h[(ccc-moving_average):ccc] ~  d.h[[i]]$t[(ccc-moving_average):ccc])
+               linn = lm(formula = d.h[[i]]$h[1:ccc] ~  d.h[[i]]$t[1:ccc])
+               coeff_ang[ccc]  = linn$coefficients[[2]]
+               # coeff_ang[ccc] = (mean(d.h[[i]]$h[(ccc - moving_average):ccc]) - mean(d.h[[i]]$h[ccc])) /
+               #                  (d.h[[i]]$t[ccc - moving_average]  - d.h[[i]]$t[ccc])
+               if (coeff_ang[ccc]  <=  gradient.max) {
+                  stop = ccc
+               }
             }
-          }
-          
-          
-          eliminate.index = c(seq(1:stop))
+            eliminate.index = c(seq(1:stop))
         }
         
         
         
-        
-        
+        # Remove data:
+        ##############
         if (length(eliminate.index) > 1) {
-          # Remove data:
-          ##############
           # deltan = nobs.h - length(eliminate.index)
           # if (deltan < Nmin.rec){
           #   eliminate.index = eliminate.index[ (Nmin.rec- deltan +1) : length(eliminate.index)]
@@ -746,100 +691,82 @@ recession.selection <- function(  dir.exe,
           init_time_rec =  d.h[[i]]$t[1]
           d.h[[i]]      =  d.h[[i]][- eliminate.index,]
           # now shift the recession times earlier:
-          d.h[[i]]$t    =  d.h[[i]]$t - d.h[[i]]$t[1] #+ init_time_rec
+          d.h[[i]]$t    =  d.h[[i]]$t - d.h[[i]]$t[1] # + init_time_rec
         }
-        
-        #nobs.h       = length(d.h[[i]]$t)
-        #print(paste0('                    with ', nobs.h, ' points (after adjustment)'))
-        
-        
 
-        # Select only recessin with length > tgood and with a number of point > Nmin :
-        if  (length(d.h[[i]]$t) > Nmin.rec) {
-        #***********************************************************************
-        if (tail(d.h[[i]]$t,1) >= tgood) {  
-         #*********************************************************************** 
-           curve_good.h                = curve_good.h + 1
-           hpeakgood.h[curve_good.h]   = hpeak.h[i]; 
-           t.real.good.h[curve_good.h] = tpeak.h[i];
-           index.good.h[curve_good.h]  = index.h[i];
-           iiii[curve_good.h]          = i;
-           Nburn.rec                   = max(tail(which(curves.h$tcurve[(index.h[i-1]+1):(index.h[i]-1)] < tburn.rec), 1), 0)
-           
-           d.h.selected[[curve_good.h]]  = data.frame(t  = curves.h$tcurve[(index.h[i-1] +  1 + Nburn.rec):(index.h[i]-1)],
-                                                      h  = curves.h$hcurve[(index.h[i-1]+ 1 + Nburn.rec):(index.h[i]-1)],
-                                                      uh = uh.rec) 
-           d.h.selected.with.true.time[[curve_good.h]]  = data.frame(t       = curves.h$tcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)],
-                                                                     h       = curves.h$hcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)],
-                                                                     uh      = uh.rec,
-                                                                     treal   = curves.h$tcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)] + t.real.good.h[curve_good.h],
-                                                                     tpeak   = t.real.good.h[curve_good.h],
-                                                                     ind.rec = rep(curve_good.h, length(curves.h$tcurve[(index.h[i-1] + 1+Nburn.rec):(index.h[i]-1)])))
-           nobs.h       = length(d.h.selected[[curve_good.h]]$t)
-           print(paste0("Recession # ", curve_good.h, ' (', i, ') with ', nobs.h, ' points' ))
-           
-           
-           # } else if ((rec.model == "1expWithAsymptNorm") |(rec.model == "2expWithAsymptNorm")) {
-           #   d.h.selected[[curve_good.h]]  = data.frame(curves.h$tcurve[(index.h[i-1]+Nburn.rec):(index.h[i]-1)],
-           #                                              curves.h$Qcurve[(index.h[i-1]+Nburn.rec):(index.h[i]-1)]/curves.h$Qcurve[(index.h[i-1]+Nburn.rec)],
-           #                                              uh.rec/100*curves.h$Qcurve[(index.h[i-1]+Nburn.rec):(index.h[i]-1)])
-           # }
-           # eliminate.index =0
-           # for (ccc in 2:length( d.h.selected[[curve_good.h]]$t)) {
-           #   if ((d.h.selected[[curve_good.h]]$t[ccc] - d.h.selected[[curve_good.h]]$t[ccc-1]) < delta.t.min) {
-           #        eliminate.index = c(eliminate.index, ccc)
-           #   }
-           # }
-           # if (eliminate.index > 0) {
-           #   d.h.selected[[curve_good.h]]                 = d.h.selected[[curve_good.h]][-eliminate.index,]
-           #   d.h.selected.with.true.time[[curve_good.h]]  = d.h.selected.with.true.time[[curve_good.h]][-eliminate.index,]
-           # }
-           
-           
-           
         
-
+        # Select only recessions with length > tgood and with a number of point > Nmin :
+        #********************************************************************************************************************
+        if (length(d.h[[i]]$t) > Nmin.rec) {
+        #********************************************************************************************************************
+           if (tail(d.h[[i]]$t,1) >= tgood) {  
+           #***************************************************************************************************************** 
+                curve_good.h                  = curve_good.h + 1
+                hpeakgood.h[curve_good.h]     = hpeak.h[i]
+                t.real.good.h[curve_good.h]   = tpeak.h[i]
+                index.good.h[curve_good.h]    = index.h[i]
+                iiii[curve_good.h]            = i
+                Nburn.rec                     = max(tail(which(curves.h$tcurve[(index.h[i-1]+1):(index.h[i]-1)] < tburn.rec), 1), 0)
+                d.h.selected[[curve_good.h]]  = data.frame(t  = curves.h$tcurve[(index.h[i-1] +  1 + Nburn.rec):(index.h[i]-1)],
+                                                           h  = curves.h$hcurve[(index.h[i-1]+ 1 + Nburn.rec):(index.h[i]-1)],
+                                                           uh = uh.rec) 
+                d.h.selected.with.true.time[[curve_good.h]]  = data.frame(t       = curves.h$tcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)],
+                                                                          h       = curves.h$hcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)],
+                                                                          uh      = uh.rec,
+                                                                          tpeak   = t.real.good.h[curve_good.h],
+                                                                          treal   = curves.h$tcurve[(index.h[i-1] +1 + Nburn.rec):(index.h[i]-1)] + t.real.good.h[curve_good.h],
+                                                                          ind.rec = rep(curve_good.h, length(curves.h$tcurve[(index.h[i-1] + 1+Nburn.rec):(index.h[i]-1)])))
+                nobs.h       = length(d.h.selected[[curve_good.h]]$t)
+                print(paste0("Recession # ", curve_good.h, ' (', i, ') with ', nobs.h, ' points' ))
            
-
-           # SAVE VALUES:
-           #*************
-              curve_data.h = paste0(dir.BaM.rec.pool,"/Curves_Data.txt")
-              write.table(d.h.selected[[curve_good.h]] , 
-                          file = curve_data.h, append = FALSE, sep = "\t", eol = "\n", 
-                          na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh"))
+                # } else if ((rec.model == "1expWithAsymptNorm") |(rec.model == "2expWithAsymptNorm")) {
+                #   d.h.selected[[curve_good.h]]  = data.frame(curves.h$tcurve[(index.h[i-1]+Nburn.rec):(index.h[i]-1)],
+                #                                              curves.h$Qcurve[(index.h[i-1]+Nburn.rec):(index.h[i]-1)]/curves.h$Qcurve[(index.h[i-1]+Nburn.rec)],
+                #                                              uh.rec/100*curves.h$Qcurve[(index.h[i-1]+Nburn.rec):(index.h[i]-1)])
+                # }
+                # eliminate.index =0
+                # for (ccc in 2:length( d.h.selected[[curve_good.h]]$t)) {
+                #   if ((d.h.selected[[curve_good.h]]$t[ccc] - d.h.selected[[curve_good.h]]$t[ccc-1]) < delta.t.min) {
+                #        eliminate.index = c(eliminate.index, ccc)
+                #   }
+                # }
+                # if (eliminate.index > 0) {
+                #   d.h.selected[[curve_good.h]]                 = d.h.selected[[curve_good.h]][-eliminate.index,]
+                #   d.h.selected.with.true.time[[curve_good.h]]  = d.h.selected.with.true.time[[curve_good.h]][-eliminate.index,]
+                # }
            
-              
-              # Longest recessions:
-              if (tail(d.h.selected.with.true.time[[curve_good.h]]$t, 1) >= 80) {       ####### Change this eventually !!!!!!
-                 Nrec_longer_100 = Nrec_longer_100 + 1
-              } 
+                # SAVE VALUES:
+                #*************
+                curve_data.h = paste0(dir.BaM.rec.pool,"/Curves_Data.txt")
+                write.table(d.h.selected[[curve_good.h]] , 
+                            file = curve_data.h, append = FALSE, sep = "\t", eol = "\n", 
+                            na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh"))
            
-              
-              # if ((tail(d.h[[i]]$t,1) >= 170)){  # JUST AS A TEST!!
-              #   #cat(paste0("curve_good.h = ", curve_good.h, '\n', "tin          = ", t.real.good.h[curve_good.h]))
-              #   #print(d.h.selected.with.true.time[[curve_good.h]])
-              #   #gggg = gggg + geom_point(data = d.h.selected.with.true.time[[curve_good.h]], aes(x= t, y =h))
-              # }
-        }
+                # find out the longest recessions:
+                if (tail(d.h.selected.with.true.time[[curve_good.h]]$t, 1) >= 80) {       ####### Change this eventually !!!!!!
+                   Nrec_longer_100 = Nrec_longer_100 + 1
+                } 
+           
+                # if ((tail(d.h[[i]]$t,1) >= 170)){  # JUST AS A TEST!!
+                #   #cat(paste0("curve_good.h = ", curve_good.h, '\n', "tin          = ", t.real.good.h[curve_good.h]))
+                #   #print(d.h.selected.with.true.time[[curve_good.h]])
+                #   #gggg = gggg + geom_point(data = d.h.selected.with.true.time[[curve_good.h]], aes(x= t, y =h))
+                # }
+           }
         }
     }
     ################################################
-    
-    
-    
-    
-    
+    # write recessions to file:
     df.curves   = bind_rows( d.h.selected, .id = "column_label")
     df.curves.t = bind_rows( d.h.selected.with.true.time, .id = "column_label")
-    write.table(df.curves,
-                file=paste0(dir.BaM.rec.pool, "/Curves_Data.txt"), sep = "\t", eol = "\n",
+    write.table(df.curves,file=paste0(dir.BaM.rec.pool, "/Curves_Data.txt"), sep = "\t", eol = "\n",
                 na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh", "Period"))
    
     
     
-    ###########
-    # plot:
-    ###########
+    ############################
+    # plot extracted recessions:
+    ############################
     message("************************************")
     message("Results of Extracted recessions")
     message("***********************************")    
@@ -849,7 +776,6 @@ recession.selection <- function(  dir.exe,
     Nk            = tail(df.curves.t$ind.rec,1)
     message("- Number of extracted stage-recession periods:")
     print(Nk)
-    
     message("- Plotting extracted results to:")
     path.plot.extracted.rec = paste0(dir.extraction,"/Figure_recession_selection_chi",chi,".pdf")
     print(path.plot.extracted.rec)
@@ -870,7 +796,6 @@ recession.selection <- function(  dir.exe,
     pdf(path.plot.extracted.rec, 14, 6 ,useDingbats=F)
     print(rec.plot.test$plot4paper.extraction)
     dev.off()
-    
     Ncurves = length(d.h.selected)
     print("****************")
     print("   All done!    ")
@@ -937,44 +862,44 @@ recession.regression   <-  function(dir.exe,
                                     data.recess,
                                     initial.time.rec,
                                     which.recession){
-  ##########################################################################################################
+#########################################################################################################
   # read inputs and options for computation:
   source(file.options.general)
   source(file.options.recess)
-  BayesianOption         = 2                                   # Type of Bayesian model (1 = simple, 2 = pooling). only 2 is available!
-  limits.Y.alpha         = c(0, 1000, 200)                     # Limits for the alpha (initial stage) plot.
-  limits.Y.lambda        = c(0, 40, 10)                        # Limits for the lambda (recession rate) plot.
-  plot.b.from.gaugings   = FALSE                               # plot the river bed estimation obtained by using gaugings
-  x.name                 = "Time [days]"                       # x-axis label for plot of time series
-  y.name                 = "Asymptotic stage [m]"              # y-axis label for plot of time series of asymptotic stage
-  save.all.results       = TRUE                                # TRUE = save all segmentation computations
-  plot.gamma.uncertainty = TRUE                                # plot structural uncertainty on the segmentation.
+  BayesianOption         = 2                             # Type of Bayesian model (1 = simple, 2 = pooling). only 2 is available!
+  limits.Y.alpha         = c(0, 1000, 200)               # Limits for the alpha (initial stage) plot.
+  limits.Y.lambda        = c(0, 40, 10)                  # Limits for the lambda (recession rate) plot.
+  plot.b.from.gaugings   = FALSE                         # plot the river bed estimation obtained by using gaugings
+  x.name                 = "Time [days]"                 # x-axis label for plot of time series
+  y.name                 = "Asymptotic stage [m]"        # y-axis label for plot of time series of asymptotic stage
+  save.all.results       = TRUE                          # TRUE = save all segmentation computations
+  plot.gamma.uncertainty = TRUE                          # plot structural uncertainty on the segmentation.
   segm_all_parameters    = FALSE
-  stage.scale.shift      = 10000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
-  stage.limits           = c(-150, 50, 50)                # limits for recession stage is in "cm" !!!
+  stage.scale.shift      = 10000                         # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
+  stage.limits           = c(-150, 50, 50)               # limits for recession stage is in "cm" !!!
   limits.y               = stage.limits
-  limits.x.recess        = c(0, 150, 30)                       # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
+  limits.x.recess        = c(0, 150, 30)                 # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
   limits.x               = limits.x.recess
   plot.recession.uncert  = TRUE
   limni.time.limits      = NULL
   asymptote.limits       = stage.limits
 
   
-  # directories :
-  dir.segment.rec.test1    = paste0(dir.segment.rec,"/",name.folder.results.recession)
-  dir.create(paste0(dir.segment.rec,"/", name.folder.results.recession))
-  dir.BaM.recession.pool  = paste0(dir.exe,"/Recession_h_pooling")
-  dir.estim.recessions    = paste0(dir.segment.rec.test1,"/2_curves_estimation")
-  dir.create( paste0(dir.segment.rec.test1,"/2_curves_estimation"))
-  dir.segm.recessions     = paste0(dir.segment.rec.test1,"/3_curves_segmentation")
-  dir.create( paste0(dir.segment.rec.test1,"/3_curves_segmentation"))
+  
 
   
+  # Directories :
+  dir.segment.rec.test1   = paste0(dir.segment.rec,"/",name.folder.results.recession)
+  dir.BaM.recession.pool  = paste0(dir.exe,"/Recession_h_pooling") 
+  dir.estim.recessions    = paste0(dir.segment.rec.test1,"/2_curves_estimation")
+  dir.segm.recessions     = paste0(dir.segment.rec.test1,"/3_curves_segmentation")
+  dir.create( paste0(dir.segment.rec,"/", name.folder.results.recession))
+  dir.create( paste0(dir.segment.rec.test1,"/2_curves_estimation"))
+  dir.create( paste0(dir.segment.rec.test1,"/3_curves_segmentation"))
   message("Recessions exponential regression - using BaM !!!"); flush.console()
   Ncurves       = length(data.recess[[1]])
   colfunc       = colorRampPalette(c("red","orange","yellow","green","blue","grey","purple"))   
   output_file_h = paste0(dir.estim.recessions,"/Param_rec_h.csv")
-  
   dir.create(paste0(dir.estim.recessions,"/Pooling"))
   dir.rec.pool  = paste0(dir.estim.recessions,"/Pooling")
   Ncurves.pool  = length(which.recession)
@@ -994,63 +919,57 @@ recession.regression   <-  function(dir.exe,
   
   
   
+  
+  
+  
   # Bayesian inference for each selected model:
   read.reg.rec = list()
-  ####################################
+  ###################################
   for (irec in 1:length(rec.model)) {
-  ####################################
+  ###################################
             rec.mod            = rec.model[[irec]]
             prior.rec          = prior.param.rec[[irec]]
-            
             #shift the pprior of asymptotic parameter:
             prior.rec[length(prior.rec)-4] =  as.numeric(prior.rec[length(prior.rec)-4])  + stage.scale.shift
             prior.rec[length(prior.rec)-3] =  as.numeric(prior.rec[length(prior.rec)-3])  + stage.scale.shift  
             prior.rec[length(prior.rec)-1] =  as.numeric(prior.rec[length(prior.rec)-1])  + stage.scale.shift
-            
             dir.rec.pool.model = paste0(dir.rec.pool,"/model_",rec.mod)   
             dir.rec.pool.test  = paste0(dir.rec.pool.model,"/chi_",chi)
-            
             dir.create(paste0(dir.rec.pool,"/model_",rec.mod))
             dir.create(paste0(dir.rec.pool.model,"/chi_",chi))
-            
-            message("##############################################################################################"); flush.console()
+            message("###########################################################################################"); flush.console()
             message(paste0("Stage-recession model =", rec.mod)); flush.console()
-            message("##############################################################################################"); flush.console()            
+            message("###########################################################################################"); flush.console()            
 
+            
             #######################################
             if (estim.plot.results.only == FALSE) {
             #######################################
             #initialisation:
             asymptote.h    = 0; curve_good.h= 0;  hpeakgood.h= 0; t.real.good.h =0; index.good.h = 0; 
             asym.h.maxpost = 0; asym.h.stdev= 0;  asym.h.Q10 = 0; asym.h.Q90 = 0; asym.h.mean = 0;
-            asym.h.Q2      = 0; asym.h.Q95  = 0; 
+            asym.h.Q2      = 0; asym.h.Q95  = 0;  results.regression = 0;
             theta1.maxpost = 0; theta1.stdev= 0;  theta1.Q10 = 0; theta1.Q90 = 0; theta1.mean = 0;
             theta2.maxpost = 0; theta2.stdev= 0;  theta2.Q10 = 0; theta2.Q90 = 0; theta2.mean = 0;
             theta3.maxpost = 0; theta3.stdev= 0;  theta3.Q10 = 0; theta3.Q90 = 0; theta3.mean = 0;
             theta4.maxpost = 0; theta4.stdev= 0;  theta4.Q10 = 0; theta4.Q90 = 0; theta4.mean = 0;
             theta5.maxpost = 0; theta5.stdev= 0;  theta5.Q10 = 0; theta5.Q90 = 0; theta5.mean = 0;
             theta6.maxpost = 0; theta6.stdev= 0;  theta6.Q10 = 0; theta6.Q90 = 0; theta6.mean = 0;
-            results.regression = 0
-            asymptote.df  = data.frame(NULL)
-            asym.df.temp  = NULL  
-            Resultss      = NULL
-            quantiles.rec = NULL
-            
+            asymptote.df   = data.frame(NULL)
+            asym.df.temp   = NULL  
+            Resultss       = NULL
+            quantiles.rec  = NULL
             setwd(dir.exe)
             start_time = Sys.time()
-            curve_data   = "Recession_h_pooling/Curves_Data.txt"
+            curve_data = "Recession_h_pooling/Curves_Data.txt"
             write.table(d.h, file = curve_data, append = FALSE, sep = "\t", eol = "\n",
                         na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh", "Period"))
-           
-            
             if (prior.gamma.rec[7] == "'Uniform'"){
                 prior.gamma.rec[5] =  as.numeric(prior.gamma.rec[5])/stage.scale.shift
                 prior.gamma.rec[6] =  as.numeric(prior.gamma.rec[6])/stage.scale.shift
                 prior.gamma.rec[8] =  as.numeric(prior.gamma.rec[8])/stage.scale.shift
             }
-            
-            
-             # Launch BaM application in Bayesian pooling:
+            # Launch BaM application in Bayesian pooling:
             message("***************************************************************"); flush.console()
             message("Applying BaM Regression by pooling method !!!  Please, wait ... "); flush.console()
             message("***************************************************************"); flush.console()
@@ -1067,12 +986,9 @@ recession.regression   <-  function(dir.exe,
                                burn        = nburn.rec,
                                prior       = prior.rec,
                                prior.gamma = prior.gamma.rec)
-            
-            ##############################################
             # Launch BaM.exe (Benjamin Renard)
             system2("BaM_recession_multi_model_final.exe")
             ##############################################
-            
             # Read results from BaM :
             list.files.pool <- c( paste0(dir.BaM.recession.pool,"/Results_MCMC_Cooked.txt"),
                                   paste0(dir.BaM.recession.pool,"/Results_Residuals.txt"),
@@ -1086,14 +1002,17 @@ recession.regression   <-  function(dir.exe,
             print(c("computat. time for Bayesian regression of all recessions by pooling =", end_time - start_time))
             
             
-            
-            #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            ########
             } else {
-              message("*********************"); flush.console()
-              message("READ RESULTS ONLY !!!"); flush.console()
-              message("*********************"); flush.console()
-            
+            ########
+                 message("*********************"); flush.console()
+                 message("READ RESULTS ONLY !!!"); flush.console()
+                 message("*********************"); flush.console()
             }
+
+            
+            
+            
             
             
             
@@ -1143,87 +1062,85 @@ recession.regression   <-  function(dir.exe,
             #                        npar     = nparam, 
             #                        dir.plot = dir.rec.pool.test)
             residuals.plot = ggplot(Results_residuals.pool)+
-                             geom_point(aes(x = X1_obs, 
-                                            y = Y1_sim), color = "red", size = 1.5)+
-                             geom_point(aes(x = X1_obs,
-                                            y = Y1_obs), color = "black", size=1)+
-                             xlab("Recession time [day]") + ylab("Stage [m]") +
-                             theme_bw()
+                             geom_point(aes(x = X1_obs,  y = Y1_sim), pch =20, fill = "red", size = 1.1)+
+                             geom_point(aes(x = X1_obs,  y = Y1_obs), color = "black", size=1)+
+                             xlab("Recession time [day]") + ylab("Stage [m]") +  theme_bw()
                              ggsave(residuals.plot, filename =paste0(dir.rec.pool.test,"/Residuals.png"),
                                     bg = "transparent", width = 8, height =4, dpi = 200)
             
             
+                             
             # save the asymptotic stage parameter:
             ###############################################################################   
             if (rec.mod == "1expWithAsympt"){   #a1(k), b1, a2(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 1 + which.recession]
-              #write.table(a1.mcmc, file = "a1.mcmc.txt", append = FALSE, row.names = FALSE)
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 1 + which.recession]
+                #write.table(a1.mcmc, file = "a1.mcmc.txt", append = FALSE, row.names = FALSE)
             } else if (rec.mod == "2expWithAsympt"){ # a1(k), b1, a2, b2, a3(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              a2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
-              b2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 3]
-              asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 3 + which.recession]
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                a2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
+                b2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 3]
+                asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 3 + which.recession]
             } else if (rec.mod == "2expWithAsympt_bis"){ # a1(k), b1, a2(k), b2, a3(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              a2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1+ which.recession]
-              b2.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 2]
-              asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 2 + which.recession]
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                a2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1+ which.recession]
+                b2.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 2]
+                asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 2 + which.recession]
             } else if (rec.mod == "2expWithAsympt_rel"){ # a1(k), b1, a2, b2, a3(k)
-              asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 3 + which.recession]
-            }  else if (rec.mod == "3expWithAsympt"){   # a1(k), b1, a2, b2, a3, b3, a4(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              a2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
-              b2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 3]
-              a3.mcmc   = Results_mcmc.pool[, Ncurves.pool + 4]
-              b3.mcmc   = Results_mcmc.pool[, Ncurves.pool + 5]
-              asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 5 + which.recession]
-            }  else if (rec.mod == "3expWithAsympt_bis"){   # a1(k), b1, a2, b2, a3, b3, a4(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              a2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1+ which.recession]
-              b2.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 2]
-              a3.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 3]
-              b3.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 4]
-              asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 4 + which.recession]
-            }  else if (rec.mod == "expexp"){    # a1(k), b1, n1, a2(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
-              asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 2 + which.recession]
-            }  else if (rec.mod == "expexp_bis"){    # a1(k), b1(k), n1, a2(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
-              asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 1 + which.recession]
-            }  else if (rec.mod == "hyperb"){  # a1(k), b1, n1, a2(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
-              asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 2 + which.recession]
-            }  else if (rec.mod == "hyperb_bis"){  # a1(k), b1, n1, a2(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
-              asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 1 + which.recession]
-            }  else if (rec.mod == "Boussinesq"){  # a1(k), b1,  a2(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 1 + which.recession]
-            }  else if (rec.mod == "Coutagne"){   # a1(k), b1, n1, a2(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
-              asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 2 + which.recession]
-            }  else if (rec.mod == "Coutagne_bis"){   # a1(k), b1, n1, a2(k)
-              a1.mcmc   = Results_mcmc.pool[, which.recession]
-              b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
-              n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
-              asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 1 + which.recession]
+                asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 3 + which.recession]
+            } else if (rec.mod == "3expWithAsympt"){   # a1(k), b1, a2, b2, a3, b3, a4(k)
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                a2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
+                b2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 3]
+                a3.mcmc   = Results_mcmc.pool[, Ncurves.pool + 4]
+                b3.mcmc   = Results_mcmc.pool[, Ncurves.pool + 5]
+                asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 5 + which.recession]
+            } else if (rec.mod == "3expWithAsympt_bis"){   # a1(k), b1, a2, b2, a3, b3, a4(k)
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                a2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1+ which.recession]
+                b2.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 2]
+                a3.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 3]
+                b3.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 4]
+                asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 4 + which.recession]
+            } else if (rec.mod == "expexp"){    # a1(k), b1, n1, a2(k)
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
+                asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 2 + which.recession]
+            } else if (rec.mod == "expexp_bis"){    # a1(k), b1(k), n1, a2(k)
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
+                asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 1 + which.recession]
+            } else if (rec.mod == "hyperb"){  # a1(k), b1, n1, a2(k)
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
+                asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 2 + which.recession]
+            } else if (rec.mod == "hyperb_bis"){  # a1(k), b1, n1, a2(k)
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
+                asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 1 + which.recession]
+            } else if (rec.mod == "Boussinesq"){  # a1(k), b1,  a2(k)
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 1 + which.recession]
+            } else if (rec.mod == "Coutagne"){   # a1(k), b1, n1, a2(k)
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
+                asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 2 + which.recession]
+            } else if (rec.mod == "Coutagne_bis"){   # a1(k), b1, n1, a2(k)
+                a1.mcmc   = Results_mcmc.pool[, which.recession]
+                b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
+                n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
+                asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 1 + which.recession]
             }
                              
             # Asymptote:

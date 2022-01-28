@@ -72,13 +72,11 @@ tOfficial.type       = "date"               # "numeric or "date".
 # - a,b,c are the RC parameters for which priors are needed !!!
 
 # Hydraulic configuration:
-ncontrols         = 2         #number of controls
+ncontrols         = 1        #number of controls
 M                 = matrix(0,ncontrols, ncontrols)  #matrix of controls:
-M[1,]             = c(1,0) # control section (rectangular weir in critical condition)
-M[2,]             = c(1,1) # main control channel (rectangular wide channel in uniform condition)
+M[1,]             = c(1) # control section (rectangular weir in critical condition)
 control.type      = 0  #initialisation
 control.type[1]   = "rect.channel"
-control.type[2]   = "rect.channel"
 
 
 
@@ -98,26 +96,26 @@ a.distr    = "LogNormal"  # Prior distribution of RC parameter a ("LogNormal"  s
 # or insert NA if "no control"  
 #**************************************************************
 #if rectangular weir: a = Cr*Bw*sqrt(2*g)
-Cr.prior  = c(NA, NA);            st_Cr.prior = c(NA, NA)
-g.prior   = c(NA, NA);            st_g.prior  = c(NA, NA)
-Bw.prior  = c(NA, NA);            st_Bw.prior = c(NA, NA)
+Cr.prior  = c(NA);            st_Cr.prior = c(NA)
+g.prior   = c(NA);            st_g.prior  = c(NA)
+Bw.prior  = c(NA);            st_Bw.prior = c(NA)
 #if rectangular channel: a = Ks*S0*Bc
-Bc.prior  = c(50, 200);           st_Bc.prior = c(20, 50)
-KS.prior  = c(25,  35);            st_KS.prior = c(5, 10)
-S0.prior  = c(0.0002, 0.0002);     st_S0.prior = c(0.0001, 0.0001)
+Bc.prior  = c(50);            st_Bc.prior = c(20)
+KS.prior  = c(25);            st_KS.prior = c(5)
+S0.prior  = c(0.0002);        st_S0.prior = c(0.0001)
 
 
 #Parameter b:
 #------------
 b.distr = "Gaussian"  #"Fix" or "Gaussian" or "Uniform" or "Flat"
-b.prior  = c(0.5, 4);    st_b.prior = c(1, 1)
+b.prior  = c(0.5);    st_b.prior = c(1)
 
 
 
 #Parameter c:
 #------------
 c.distr = "Gaussian"  #"Fix" or "Gaussian" or "Uniform" or "Flat"
-c.prior = c(1.67, 1.67);     st_c.prior= c(0.025, 0.025)
+c.prior = c(1.67);     st_c.prior= c(0.025)
 
 
 #Remnant error model:

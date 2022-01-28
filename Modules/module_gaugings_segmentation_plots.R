@@ -486,7 +486,8 @@ initial.ts.plot <- function(CdT.P,
                             grid_limni.ylim,
                             dir.seg.gaug, 
                             seg.iter, 
-                            t_Gaug, h_Gaug, 
+                            t_Gaug, 
+                            h_Gaug, 
                             mcmc.segment, 
                             nS) {
 ############################################################################################

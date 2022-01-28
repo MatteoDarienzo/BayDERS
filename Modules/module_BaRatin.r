@@ -99,7 +99,9 @@ BaRatin_config <- function(dir,
                            mcmc.prior,
                            remnant.err.model, g1.prior, g2.prior, g1.distr.type, g2.distr.type) {
 #########################################################################################################
-  Hmax = 10  
+  Hmax = 10  ##### CAREFUL !!!!!!!!!!!!!
+  
+  
   #prior progation of RC parameters:
   prior = BaRatin.propagation(dir, 
                               nsim, 
@@ -205,7 +207,9 @@ BaRatin_config <- function(dir,
   } else {
     cat('""', file = file_BaM , sep="\n", append = TRUE)
   }
-  
+  ###########################################################################################
+  # PREDICTIONS :
+  ###############
   file.Pred1 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_Master.txt",sep="")
   if ((predictionPrior == TRUE)&(predictionRC== TRUE)&(predictionQt == TRUE))  {
     cat(8, file =file.Pred1,sep="\n")
@@ -223,25 +227,28 @@ BaRatin_config <- function(dir,
     cat(3, file =file.Pred1,sep="\n")
   }
   
+  ###########################
   if(predictionPrior==TRUE) {
+  ###########################
     cat("'Config_Pred_Prior.txt'", file =file.Pred1, append = TRUE,sep="\n")
     cat("'Config_Pred_Prior_Qt.txt'", file =file.Pred1, append = TRUE,sep="\n")
-    ##################################################################
-    file.Pred11 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_Prior.txt",sep="")
+    file.Pred11 = paste0(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_Prior.txt")
     cat("'BaM_BaRatin_2\\Hgrid.txt'", file =file.Pred11, sep="\n")
     cat(ngrid, file =file.Pred11, append = TRUE, sep="\n")
     cat("1", file = file.Pred11, append = TRUE,sep="\n")   #n of spaghetti
     cat(".true.", file = file.Pred11, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
     cat(".true.", file = file.Pred11, append = TRUE,sep="\n")                             #!!! Propagate remnant uncertainty for each output variable? (size nY)
-    cat(mcmc.prior, file = file.Pred11, append = TRUE,sep="\n")                                #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
+    cat(mcmc.prior, file = file.Pred11, append = TRUE,sep="\n")                          #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
+    #cat(-1, file = file.Pred11, append = TRUE,sep="\n")                                    #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
     cat("'Qrc_Prior.spag'", file = file.Pred11, append = TRUE,sep="\n")                    # !!! Files containing spaghettis for each output variable (size nY)
     cat(".true.", file = file.Pred11, append = TRUE,sep="\n")                              #!!! Post-processing: transpose spag file (so that each column is a spaghetti)? 
     cat(".true.", file = file.Pred11, append = TRUE,sep="\n")                              #!!! Post-processing: create envelops? (size nY)
     cat("'Qrc_Prior.env'", file = file.Pred11, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
     cat(".true.", file = file.Pred11, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
-    cat(".true." , file = file.Pred11, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
+    cat(".false." , file = file.Pred11, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
+
     ###################################################################
-    file.Pred21 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_Prior_Qt.txt",sep="")
+    file.Pred21 = paste0(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_Prior_Qt.txt")
     cat("'BaM_BaRatin_2\\limni.txt'", file =file.Pred21,sep="\n")
     cat(nlimni, file =file.Pred21, append = TRUE, sep="\n")
     cat("1", file = file.Pred21, append = TRUE,sep="\n")   #n of spaghetti
@@ -254,11 +261,12 @@ BaRatin_config <- function(dir,
     cat("'Qt_prior.env'", file = file.Pred21, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
     cat(".true.", file = file.Pred21, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
     cat(".false." , file = file.Pred21, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
-    ###################################################################
   }
   
+  
+  ###################################################################
   if(predictionRC==TRUE) {  
-    ###################################################################
+  ###################################################################
     #cat("'Config_Pred_Prior.txt'", file = file.Pred1, append = TRUE,sep="\n")
     cat("'Config_Pred_RCMaxpost.txt'", file = file.Pred1, append = TRUE,sep="\n")
     cat("'Config_Pred_RCParamU.txt'", file =file.Pred1, append = TRUE,sep="\n")
@@ -306,11 +314,15 @@ BaRatin_config <- function(dir,
     cat(".true.", file = file.Pred5, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
     cat(".false." , file = file.Pred5, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
   }
+  
+  
+  #############################################################################
   if(predictionQt==TRUE) {
+  #############################################################################
     cat("'Config_Pred_Maxpost.txt'", file =file.Pred1, append = TRUE,sep="\n")
     cat("'Config_Pred_ParamU.txt'", file =file.Pred1, append = TRUE,sep="\n")
     cat("'Config_Pred_TotalU.txt'", file =file.Pred1, append = TRUE,sep="\n")
-    ###################################################################
+
     file.Pred6 = paste0(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_Maxpost.txt")
     cat("'BaM_BaRatin_2\\limni.txt'", file =file.Pred6,sep="\n")
     cat(nlimni, file =file.Pred6, append = TRUE, sep="\n")
@@ -324,7 +336,8 @@ BaRatin_config <- function(dir,
     cat("'Qt_Maxpost.env'", file = file.Pred6, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
     cat(".true.", file = file.Pred6, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
     cat(".false." , file = file.Pred6, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
-    ###################################################################
+
+    
     file.Pred8 = paste0(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_ParamU.txt")
     cat("'BaM_BaRatin_2\\limni.txt'", file =file.Pred8,sep="\n")
     cat(nlimni, file =file.Pred8, append = TRUE, sep="\n")
@@ -338,7 +351,8 @@ BaRatin_config <- function(dir,
     cat("'Qt_ParamU.env'", file = file.Pred8, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
     cat(".true.", file = file.Pred8, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
     cat(".false." , file = file.Pred8, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
-    ###################################################################
+
+    
     file.Pred7 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_TotalU.txt",sep="")
     cat("'BaM_BaRatin_2\\limni.txt'", file =file.Pred7,sep="\n")
     cat(nlimni, file =file.Pred7, append = TRUE, sep="\n")
@@ -356,35 +370,38 @@ BaRatin_config <- function(dir,
 
   
   
-  ###################################################################   RUN OPTIONS
-  file.run = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_RunOptions.txt",sep="")
+  ##########################################################################
+  # RUN OPTIONS 
+  ##########################################################################
+  file.run = paste0(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_RunOptions.txt")
   if (simMCMC == TRUE) {  
-     cat(".true.", file =file.run,sep="\n")                    #Do MCMC?
+     cat(".true.", file =file.run,sep="\n")   # Do the MCMC simulations
   } else {
-     cat(".false.", file =file.run,sep="\n")                    #Do MCMC?    
+     cat(".false.", file =file.run,sep="\n")  # Do not do the MCMC simulation    
   }
-  cat(".true.", file =file.run, append = TRUE, sep="\n")    #Do MCMC summary?
-  cat(".true.", file =file.run, append = TRUE, sep="\n")    #Do Residual diagnostics?
+  cat(".true.", file =file.run, append = TRUE, sep="\n")    # Do MCMC summary?
+  cat(".true.", file =file.run, append = TRUE, sep="\n")    # Do Residual diagnostics?
   if ((predictionRC == TRUE) | (predictionQt == TRUE) | (predictionPrior ==TRUE)) {
-     cat(".true.", file =file.run, append = TRUE, sep="\n")    #Do Predictions?
+     cat(".true.", file =file.run, append = TRUE, sep="\n")    # Do Predictions?
   } else {
-     cat(".false.", file =file.run, append = TRUE, sep="\n")    #Do Predictions?
+     cat(".false.", file =file.run, append = TRUE, sep="\n")   # Do Predictions?
   }
   
   ###################################################################   RESIDUALS CONFIG
   file.residuals = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Residuals.txt",sep="")
-  cat('"Results_Residuals.txt"' , file =file.residuals ,sep="\n")    #Result file
+  cat('"Results_Residuals.txt"' , file =file.residuals ,sep="\n")      # Result file
   
   ###################################################################   SUMMARY CONFIG
   file.summary = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Summary.txt",sep="")
-  cat('"Results_Summary.txt"' , file =file.summary ,sep="\n")    #Result file
+  cat('"Results_Summary.txt"' , file =file.summary ,sep="\n")    #Summary stat results file name
   
   ###################################################################   COOKING CONFIG
   file.cooking = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Cooking.txt",sep="")
-  cat('"Results_MCMC_Cooked.txt"' , file =file.cooking ,sep="\n")    #Result file
-  cat(0.5, file =file.cooking, append = TRUE, sep="\n")            #Burn factor
-  cat(10, file =file.cooking, append = TRUE, sep="\n")             #Nslim
+  cat('"Results_MCMC_Cooked.txt"' , file =file.cooking ,sep="\n")  # mcmc Results file name
+  cat(0.5, file =file.cooking, append = TRUE, sep="\n")            # Burn factor
+  cat(10, file =file.cooking, append = TRUE, sep="\n")             # Nslim
 }
+
 
 
 

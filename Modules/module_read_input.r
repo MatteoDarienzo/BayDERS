@@ -113,7 +113,7 @@ if (file_limni != FALSE) {
   t_limni          = limni[,tLimni.col]
   origin.numeric   = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
   t_limni.numeric  = 0; t_limni.date=0;
-  message("- Converting stage record dates (if <1970).") 
+  message("- Converting stage record dates.") 
   message("  Please wait ...")
   pb <- txtProgressBar(min = 0,               # Minimum value of the progress bar
                        max = length(t_limni), # Maximum value of the progress bar
@@ -275,7 +275,7 @@ if (file_gaugings != FALSE) {
   
   if (tGaug.type== "date"){
   #************************  
-    message("- Converting gaugings dates (if < 1970).") 
+    message("- Converting gaugings dates.") 
     message("  Please wait ...")
     t_gaug           = Gaugings[, tGaug.col]
     origin.numeric   = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
@@ -360,12 +360,13 @@ if (file_gaugings != FALSE) {
     
     
     
+    
+    
   } else if (tGaug.type =="numeric"){
   ###################################
     # t_gaug        = t_limni.numeric2 - t_limni.numeric2[1]
     t_gaug.true     = Gaugings[,tGaug.col]
     Gaug.time       = Gaugings[,tGaug.col]
-    
     if (file_limni != FALSE) {
       if (Gaug.time[1] <= t_limni.true[1]) {
         t_Gaug       = Gaug.time - Gaug.time[1]
@@ -467,12 +468,13 @@ if (file_gaugings != FALSE) {
   # no gaugings availability!
   print("2) Gaugings not available !")
   print("   segmentation of gaugings cannot be performed !")
-  data4BaRatin   = NULL;
-  h_Gaug         = NULL; 
-  Q_Gaug         = NULL;
-  uQ_Gaug        = NULL;
-  t_Gaug         = NULL;
-  Gaugings       = NULL;
+  data4BaRatin   = NULL
+  h_Gaug         = NULL 
+  Q_Gaug         = NULL
+  uQ_Gaug        = NULL
+  t_Gaug         = NULL
+  Gaugings       = NULL
+  gaug.date      = NULL
 }
 
 
@@ -499,103 +501,108 @@ if (file_gaugings != FALSE) {
 #                       Official dates of RC update:
 ###########################################################################################
 if (official.shift.times != FALSE) {
+#***********************************
   if (file_gaugings        != "synthet_gaugings.csv") {
-    
+  #****************************************************
+    # read data file with official rating shifts (or RC update)
     officialShifts <- read.csv2(paste0(dir.case_study, "/",  official.shift.times),
                                 fileEncoding="UTF-8-BOM", quote="", sep= ";", dec=".", header=TRUE)
     
     if (tOfficial.type== "date"){
-      #************************  
-      t_official       = officialShifts[,tOfficial.col]
-      origin.numeric   = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
-      t_limni.numeric  = 0; t_limni.date=0;
-      message("- Converting gaugings dates (if < 1970).") 
+    #****************************  
+      t_official         = officialShifts[,tOfficial.col]
+      origin.numeric     = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
+      t_official.numeric = 0
+      t_official.date    = c()
+      message("- Converting official dates.") 
       message("  Please wait ...")
-      t_gaug           = Gaugings$Date
-      origin.numeric   = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
-      t_gaug.numeric   = 0; t_gaug.date=c();
-      # pb <- txtProgressBar(min = 0,               # Minimum value of the progress bar
-      #                      max = length(t_gaug), # Maximum value of the progress bar
-      #                      style = 3,             # Progress bar style (also available style = 1 and style = 2)
-      #                      width = 50,            # Progress bar width. Defaults to getOption("width")
-      #                      char = "=")            # Character used to create the bar.
-      # for (i in 1:length(t_gaug)){
-      #   t_gaug.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, 
-      #                                                          tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
-      #                                                                                            "%Y-%m-%d %H:%M",
-      #                                                                                            "%Y-%m-%d",
-      #                                                                                            
-      #                                                                                            "%d-%m-%Y %H:%M:%S",
-      #                                                                                            "%d-%m-%Y %H:%M",
-      #                                                                                            "%d-%m-%Y",
-      #                                                                                            
-      #                                                                                            "%d/%m/%Y %H:%M:%S",
-      #                                                                                            "%d/%m/%Y %H:%M",
-      #                                                                                            "%d/%m/%Y",
-      #                                                                                            
-      #                                                                                            "%Y/%m/%d %H:%M:%S",
-      #                                                                                            "%Y/%m/%d %H:%M",
-      #                                                                                            "%Y/%m/%d"
-      #                                                          )),
-      #                                               tz="Europe/Paris",
-      #                                               tryFormats = c("%Y-%m-%d",
-      #                                                              "%d/%m/%Y")))
-      #   t_gaug.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, 
-      #                                                        tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
-      #                                                                                          "%Y-%m-%d %H:%M",
-      #                                                                                          "%Y-%m-%d",
-      #                                                                                          
-      #                                                                                          "%d-%m-%Y %H:%M:%S",
-      #                                                                                          "%d-%m-%Y %H:%M",
-      #                                                                                          "%d-%m-%Y",
-      #                                                                                          
-      #                                                                                          "%d/%m/%Y %H:%M:%S",
-      #                                                                                          "%d/%m/%Y %H:%M",
-      #                                                                                          "%d/%m/%Y",
-      #                                                                                          
-      #                                                                                          "%Y/%m/%d %H:%M:%S",
-      #                                                                                          "%Y/%m/%d %H:%M",
-      #                                                                                          "%Y/%m/%d"
-      #                                                        )),
-      #                                             tryFormats = c("%Y-%m-%d",
-      #                                                            "%d/%m/%Y")))/86400 
-      #   setTxtProgressBar(pb, i)
-      # }  
-      # close(pb)
+      pb <- txtProgressBar(min = 0,               # Minimum value of the progress bar
+                           max = length(t_official), # Maximum value of the progress bar
+                           style = 3,             # Progress bar style (also available style = 1 and style = 2)
+                           width = 50,            # Progress bar width. Defaults to getOption("width")
+                           char = "=")            # Character used to create the bar.
+      for (i in 1:length(t_official)){
+        t_official.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_official[i], origin = date_origin,
+                                                               tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
+                                                                                                 "%Y-%m-%d %H:%M",
+                                                                                                 "%Y-%m-%d",
+
+                                                                                                 "%d-%m-%Y %H:%M:%S",
+                                                                                                 "%d-%m-%Y %H:%M",
+                                                                                                 "%d-%m-%Y",
+
+                                                                                                 "%d/%m/%Y %H:%M:%S",
+                                                                                                 "%d/%m/%Y %H:%M",
+                                                                                                 "%d/%m/%Y",
+
+                                                                                                 "%Y/%m/%d %H:%M:%S",
+                                                                                                 "%Y/%m/%d %H:%M",
+                                                                                                 "%Y/%m/%d"
+                                                               )),
+                                                    tz="Europe/Paris",
+                                                    tryFormats = c("%Y-%m-%d",
+                                                                   "%d/%m/%Y")))
+        t_official.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_official[i], origin = date_origin,
+                                                             tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
+                                                                                               "%Y-%m-%d %H:%M",
+                                                                                               "%Y-%m-%d",
+
+                                                                                               "%d-%m-%Y %H:%M:%S",
+                                                                                               "%d-%m-%Y %H:%M",
+                                                                                               "%d-%m-%Y",
+
+                                                                                               "%d/%m/%Y %H:%M:%S",
+                                                                                               "%d/%m/%Y %H:%M",
+                                                                                               "%d/%m/%Y",
+
+                                                                                               "%Y/%m/%d %H:%M:%S",
+                                                                                               "%Y/%m/%d %H:%M",
+                                                                                               "%Y/%m/%d"
+                                                             )),
+                                                  tryFormats = c("%Y-%m-%d",
+                                                                 "%d/%m/%Y")))/86400
+        setTxtProgressBar(pb, i)
+      }
+      close(pb)
     }
+    t_official.numeric2 = t_official.numeric  - origin.numeric
     
     
-    
-    
-    if (!is.null(Gaugings)) {
-      if (!is.null(t_limni)){
-      if (Gaugings[1,tGaug.col] <= t_limni[1]) {
-        officialShiftsTime <- officialShifts[,1] - Gaugings[1,tGaug.col]
-      } else {
-        officialShiftsTime <- officialShifts[,1] - limni[1,tLimni.col]
-      }
-      } else {
-        officialShiftsTime <- officialShifts[,1] - Gaugings[1,tGaug.col]
-      }
+    # re-initialize the numeric dates: 
+    if (!is.null(t_Gaug)) {
+        if (!is.null(t_limni)){
+           if (t_Gaug[1] <= t_limni[1]) {
+               officialShiftsTime <- t_official.numeric2 - t_gaug.numeric2[1]
+           } else {
+               officialShiftsTime <- t_official.numeric2 - t_limni.numeric2[1]
+           }
+       } else {
+           officialShiftsTime <- t_official.numeric2 - t_gaug.numeric2[1]
+       }
     } else {
-      officialShiftsTime <- officialShifts[,1] - limni[1,tLimni.col]
+       if (!is.null(t_limni)){
+           officialShiftsTime <- t_official.numeric2 - t_limni.numeric2[1]
+       } else {
+           message("******* Something is wrong ! It seems you did not upload neither gaugings nor stage record")
+       }
     }
     
-  } else {
+    
+  #########
+  } else { # numeric date:
+  #########
     officialShifts <- read.csv2(paste0(dir.single.dataset ,"/",  official.shift.times),
                                 fileEncoding="UTF-8", quote="", sep=";", dec=".", header=TRUE)
-    officialShiftsTime <- officialShifts[,1] - Gaugings[1,tGaug.col]
+    officialShiftsTime <- officialShifts[,tOfficial.col] - t_Gaug[1]
   }
   
-  
-  
-  
+
   
   if (!is.null(officialShiftsTime)) {
-    data.annotate.off =  data.frame(xeffect = officialShiftsTime, 
-                                    xpotent = officialShiftsTime)
+       data.annotate.off =  data.frame(xeffect = officialShiftsTime, 
+                                       xpotent = officialShiftsTime)
   } else {
-    data.annotate.off = NULL
+       data.annotate.off = NULL
   }
   
   
@@ -666,14 +673,13 @@ if (!is.null(df.limni)) {
           ,legend.position  = "none"
           ,plot.margin      = unit(c(0.5,0.5,0.2, 1),"cm"))
   
+  
+  
   if (!is.null(data.annotate.off)) {
     limni.plot = limni.plot+ 
       geom_vline(xintercept = data.annotate.off$xeffect, color="red", size=0.5, linetype="dashed")
     
   }
-  # limni.plot = limni.plot+
-  #   geom_vline(xintercept = limni.date[index.start.realtime], 
-  #              color="red", size=1.5, linetype="dashed")
   
   ggsave(limni.plot, filename =paste0(dir.case_study,"/",limni.save,".png"),
          bg = "transparent", width = 14, height =6, dpi = 200)

@@ -8,29 +8,83 @@
   # charge general settings:
   source(file.options.general)
   
-  
-  ### Lucite Dombe:
-  #################
-  ticks_RC.y.log = c(0.1, 1, 10, 100, 1000, 10000)
-  grid_RC.ylim.log = c(0.1, 10000)
-  Hmin = -0.8
-  Hmax = 12
-  Hgrid  = seq(Hmin, Hmax, 0.1)
-
-  #treal                = c(0,      3071.82,   5509,     5997,     6118,    6697,    7274,   10000,   18575,  19572,   21095,   21854,  22136,   22626,   22975)
-  treal                = c(0,                 5509,     5997,    6697,     6878,      7274,   10000,   18575,  19572,   21095,   21854,  22136,   22626,   22975)
 
 
-  c.prior.corrected    = c(1.589,     1.589,   1.648,    1.538,    1.57,     1.3,   1.3,     1.3,     1.3,     1.3,     1.3,     1.3,     1.3)
-  st_c.prior.corrected = c(0.01,      0.01,     0.01,     0.01,     0.01,   0.01,   0.01,    0.01,    0.01,    0.01,   0.01,    0.01,    0.01)
 
-  a.prior.corrected    = c(39,        38.96,    32.84,    39.69,    45.43,    50.04,  50.04,  50.04,   50.04,   50.04,  50.04,   50.04,   50.04)
-  st_a.prior.corrected = c(2,         1,        1,          1  ,    1,        1,       2,     2,       2,       2,       2,      2,        2)
 
-  b.prior.corrected    = c(1,         0.536,     0.485,   0.576,    0.765,    0.658,   1.2,    0.51,    0.3,     0.5,     0.3,     0.5,     0.8)
-  st_b.prior.corrected = c( 0.2,      0.1,       0.1,      0.1,      0.1,      0.1,    0.2,    0.1,     0.1,     0.1,     0.1,     0.1,     0.2)
-  
-  
+
+
+### Rurrenabaqye Bolivia:
+#########################
+ticks_RC.y.log = c(100, 1000, 10000, 100000)
+grid_RC.ylim.log = c(100, 100000)
+Hmin = -2
+Hmax = 7
+Hgrid  = seq(Hmin, Hmax, 0.01)
+Nperiods = 19
+treal                = c(0,  400, 659.731, 1045.41, 1383.09, 2464.74, 2773.1, 3147.35, 3442.81, 3561.86, 3792.02, 3905.77, 4249.33, 5034.28, 5676.13, 6565.11, 6892.89, 7031.92, 7167.04, 8089.958)
+# RC priors
+c.prior.corrected    = rep(list(c(1.697270, 1.650040)), Nperiods)
+st_c.prior.corrected = rep(list(c(0.02, 0.026458)), Nperiods)
+
+a.prior.corrected    = rep(list(c(359.831, 432.682000)), Nperiods)
+st_a.prior.corrected = rep(list(c(40, 61)), Nperiods)
+
+b2.prior.corrected    = 1.153920
+st_b2.prior.corrected = 0.303400
+
+b1.prior.corrected    = c(-0.83, -0.43, -0.83, -0.65, -0.7354, -0.7477, -0.75942, -0.907, -0.916, -0.984, -1.2, -1.21, -1.38, -1.64, -1.34, -2.03, -1.64, -0.87, -1.55)
+st_b1.prior.corrected = c(0.25,   0.1,   0.15, 0.143,  0.112,   0.178,    0.145,   0.1602, 0.2,    0.19,   0.2,   0.19,  0.2,  0.22,  0.1,   0.234, 0.248, 0.276, 0.25)
+b.prior.corrected = st_b.prior.corrected = NULL
+for (i in 1:length(b1.prior.corrected)){
+   b.prior.corrected[[i]]    = c(b1.prior.corrected[i],    b2.prior.corrected) 
+   st_b.prior.corrected[[i]] = c(st_b1.prior.corrected[i], st_b2.prior.corrected)   
+}
+
+
+
+
+
+
+
+
+# c.prior.corrected    = rep(list(c(1.697270)), Nperiods)
+# st_c.prior.corrected = rep(list(c(0.01)), Nperiods)
+# 
+# a.prior.corrected    = rep(list(c(359.831)), Nperiods)
+# st_a.prior.corrected = rep(list(c(5)), Nperiods)
+# b.prior.corrected    = list(-1.008380, -0.646025,	-0.735455,	-0.747683, -0.759419,	-0.906989, -0.916295, -0.983358,	-1.198930, 
+#                             -1.207530, -1.382520,	-1.589190, -2.030680, -1.641240,	-0.869200,	-1.548870, -1.548870, -1.548870)
+# st_b.prior.corrected = list(0.143089,	0.142877,	0.111940, 0.177593,	0.145189, 0.160194,	0.199864,	0.189920,	0.204962, 
+#                             0.191067,	0.200128,	0.211174, 0.233940,	0.247046,	0.275630, 0.230131, 0.230131, 0.230131)
+ 
+
+		
+
+
+  # 
+  # ### Lucite Dombe:
+  # #################
+  # ticks_RC.y.log = c(0.1, 1, 10, 100, 1000, 10000)
+  # grid_RC.ylim.log = c(0.1, 10000)
+  # Hmin = -0.8
+  # Hmax = 12
+  # Hgrid  = seq(Hmin, Hmax, 0.1)
+  # 
+  # #treal                = c(0,      3071.82,   5509,     5997,     6118,    6697,    7274,   10000,   18575,  19572,   21095,   21854,  22136,   22626,   22975)
+  # treal                = c(0,                 5509,     5997,    6697,     6878,      7274,   10000,   18575,  19572,   21095,   21854,  22136,   22626,   22975)
+  # 
+  # 
+  # c.prior.corrected    = c(1.589,     1.589,   1.648,    1.538,    1.57,     1.3,   1.3,     1.3,     1.3,     1.3,     1.3,     1.3,     1.3)
+  # st_c.prior.corrected = c(0.01,      0.01,     0.01,     0.01,     0.01,   0.01,   0.01,    0.01,    0.01,    0.01,   0.01,    0.01,    0.01)
+  # 
+  # a.prior.corrected    = c(39,        38.96,    32.84,    39.69,    45.43,    50.04,  50.04,  50.04,   50.04,   50.04,  50.04,   50.04,   50.04)
+  # st_a.prior.corrected = c(2,         1,        1,          1  ,    1,        1,       2,     2,       2,       2,       2,      2,        2)
+  # 
+  # b.prior.corrected    = c(1,         0.536,     0.485,   0.576,    0.765,    0.658,   1.2,    0.51,    0.3,     0.5,     0.3,     0.5,     0.8)
+  # st_b.prior.corrected = c( 0.2,      0.1,       0.1,      0.1,      0.1,      0.1,    0.2,    0.1,     0.1,     0.1,     0.1,     0.1,     0.2)
+  # 
+  # 
   
   
   
@@ -68,8 +122,14 @@
   #                                               COMPUTATION
   ############################################################################################################
   source(paste0(dir.modules,"/module_BaRatin.R"))
-  g1.prior               = c(0, 0.1, 0.001)
-  g2.prior               = c(0, 0.1, 0.001)
+  # g1.prior               = c(0, 0.0001, 0.00001)
+  # g2.prior               = c(0, 0.0000001, 0.00000001)
+  g1.distr.type          = 'Uniform'
+  g2.distr.type          = 'Uniform'
+  g1.prior               = c(0,   97,   90)
+  g2.prior               = c(0, 0.008, 0.007)
+  
+  
   
   stage.record           = df.limni
   limni.all              = cbind(stage.record, date = format(as.Date(stage.record$t_limni.true,  origin = date_origin), "%Y-%m-%d"))
@@ -83,7 +143,8 @@
   # treal_before         = c(treal[-length(treal)])
   treal_after            = c(t_shifts_date[-1])
   treal_before           = c(t_shifts_date[-length(t_shifts_date)])
-  
+  b1.prior.final         = sapply(b.prior.corrected,"[[",1)
+  st_b1.prior.final      = sapply(st_b.prior.corrected,"[[",1)
   
   # Plot stage record with offset b over time:
   limni.shifts.plot <- ggplot() +
@@ -113,9 +174,9 @@
     geom_vline(xintercept   = data.annotate.off$date, color ="red", size=1, linetype="solid")+
     geom_rect(aes(xmin = treal_before,
                   xmax = treal_after,
-                  ymin = b.prior.corrected - 2*st_b.prior.corrected,
-                  ymax = b.prior.corrected+ 2*st_b.prior.corrected) , fill ="red", alpha=0.2)+
-    geom_segment(aes(x= treal_before, xend= treal_after,  y= b.prior.corrected,  yend = b.prior.corrected) , color ="red", size=1)
+                  ymin = b1.prior.final - 2*st_b1.prior.final,
+                  ymax = b1.prior.final + 2*st_b1.prior.final) , fill ="red", alpha=0.2)+
+    geom_segment(aes(x= treal_before, xend= treal_after,  y= b1.prior.final,  yend = b1.prior.final) , color ="red", size=1)
   
   dirplotsQt = paste0(dir.case_study,"/Results")
   ggsave(limni.shifts.plot, filename =paste0(dirplotsQt,"/all_shift_times.png"), bg = "transparent", width = 14, height =6, dpi = 200)
@@ -128,12 +189,18 @@
   dir.config = paste0(dir_code,"/BaM_exe/BaM_BaRatin_2")
   write.table(Hgrid, file =paste0(dir.config,"/Hgrid.txt"), col.names = FALSE, row.names = FALSE)
   #write.table(limni.NA, file =paste0(dir.config,"/limni.txt"), col.names = FALSE, row.names = FALSE)
- 
   # Initialise arrayys and lists:
   limn = hgrid = Qt.env = Qt.spag = RC.env = RC.spag = RC.summary =RC.mcmc = q2prior = q97prior = q50prior = NULL
   activat.stage.1 = b1.init = NULL
   Qt.2prior = Qt.50prior = Qt.97prior =NULL
   RC = Qt = Qt.cum = NULL
+  
+  
+  
+  
+  
+  
+  
   
   
   ########################################################################################################
@@ -142,7 +209,6 @@
     # for each period run BaRatin app.
     # extract the limni for the current period:
     #limni (stage record) of the current period "P":
-    
     t_limni.P = h_limni.P  = index_limni = c()
     t_limni_date.P = c()
     j =0
@@ -162,6 +228,7 @@
       write(h_limni.P, file =paste0(dir.config,"/limni.txt"), ncolumns = 1, sep = "\n")
       nobs.limni.P  = length(h_limni.P)
       write.table(data4BaRatin[, 1:4], file =paste0(dir.config,"/Gaugings_data.txt"),  sep="\t",row.names=FALSE, col.names = TRUE)
+      nobs_gaug = length(data4BaRatin$h)  # not used
       message("************************************************************************")
       message(paste0("Period ==> ", t-1 , "  from ", t_limni_date.P[1] , " (", t_limni.P[1],
                      ") to ", tail(t_limni_date.P,1) , " (", tail(t_limni.P, 1), ")") )
@@ -173,12 +240,12 @@
                      b.distr           = b.distr,
                      a.distr           = "Gaussian",
                      c.distr           = c.distr,
-                     a.prior           = a.prior.corrected[t-1],
-                     st_a.prior        = st_a.prior.corrected[t-1],
-                     c.prior           = c.prior.corrected[t-1],
-                     st_c.prior        = st_c.prior.corrected[t-1],
-                     b.prior           = b.prior.corrected[t-1],
-                     st_b.prior        = st_b.prior.corrected[t-1],    #priors
+                     a.prior           = a.prior.corrected[[t-1]],
+                     st_a.prior        = st_a.prior.corrected[[t-1]],
+                     c.prior           = c.prior.corrected[[t-1]],
+                     st_c.prior        = st_c.prior.corrected[[t-1]],
+                     b.prior           = b.prior.corrected[[t-1]],
+                     st_b.prior        = st_b.prior.corrected[[t-1]],    #priors
                      Bw.prior          = Bw.prior,
                      Cr.prior          = Cr.prior,
                      g.prior           = g.prior,
@@ -193,14 +260,14 @@
                      st_S0.prior       = st_S0.prior,
                      ncontrol          = ncontrols,
                      M                 = M,
-                     nobs              = 0,
+                     nobs              = nobs_gaug,
                      Ncycles           = 100,
                      ngrid             = ngrid,
                      nlimni            = nobs.limni.P,
                      predictionRC      = FALSE,
-                     predictionQt      = TRUE,
+                     predictionQt      = FALSE,
                      predictionPrior   = TRUE,
-                     simMCMC           = FALSE,
+                     simMCMC           = TRUE,
                      mcmc.prior        = 1000,
                      remnant.err.model = remnant.err.model,
                      g1.prior          = g1.prior,
@@ -281,8 +348,10 @@
       
       
       
-      
-      # Hydrograph:
+    
+      ####################
+      # print HYDROGRAPH :
+      ####################
       Qt.env[[t]]                  = read.table(paste0(dir.config,"/Qt_prior.env"),        sep="",    header=TRUE)
       Qt.spag[[t]]                 = read.table(paste0(dir.config,"/Qt_prior.spag"),       sep="",    header=FALSE)
       Qt.spag[[t]][Qt.spag[[t]]==-666.666] <- NA 
@@ -370,10 +439,7 @@
     
     Qt.cum[[t]]$tdate = as.Date(Qt.cum[[t]]$tdate, format ="%Y-%m-%d")
     
-    
-    ########################
-    # print HYDROGRAPH Q(t):
-    ########################
+    # plot Q(t):
     Qt.plot <- ggplot() +
       scale_x_date(name = "Time [year]",  expand=c(0,0))+
       #scale_x_continuous(name = expression("Time [day]"), expand=c(0,0))+    
@@ -407,6 +473,7 @@
     
     Qt[[t]]$tdate = as.Date(Qt[[t]]$tdate, format ="%Y-%m-%d")
     
+    # Q(t) for the current period only:
     Qt.plot.period <- ggplot() +
       scale_x_date(name = "Time [year]",  expand=c(0,0))+
       #scale_x_continuous(name = expression("Time [day]"), expand=c(0,0))+    
@@ -427,11 +494,7 @@
       geom_ribbon(data = Qt[[t]], aes(x= tdate, ymin = q2total, ymax= q97total), fill="red", alpha =0.4)+
       geom_line(data = Qt[[t]], aes(x= tdate, y = Qt.MAP),   size=0.5, color ="black")
       ggsave(Qt.plot.period, filename = paste0(dirplotsQt,"/Qt_period",t,".png"),  width = 16, height =6, dpi = 200)
-    
-      
-    
   }
-  
   ################
   # end of loop.
   ################
@@ -441,9 +504,25 @@
   
   
   
-  # Save hydrograph to csv file:
+  
+  
+  dateQ = format(as.Date(stage.record$t_limni.true,  origin = date_origin), "%Y-%m-%d %H:%S")
+  
+  Qt.fin = t_limni.date
+  
+  # Save final new hydrograph to csv file:
+  ########################################
   # Qt.cum$tdate = format(as.Date(Qt.cum$tdate, format = "%Y-%m-%d"), "%d/%m/%Y")
   write.table(Qt.cum[[length(Qt.cum)]][,2:6], file = paste0(dirplotsQt,"/hydrograph.csv"), row.names = FALSE, dec = ".", sep = ";", quote = FALSE)
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   
@@ -456,10 +535,14 @@
   # hydrograph      = read.csv2(paste0(dir.case_study,"/", "E188_Rio_Buzi_at_Estaquinha_discharge.csv"), fileEncoding="UTF-8", quote="", sep=",",dec=".", header=TRUE, na.strings=c(";","NA"))
   # hydrograph$Date = as.Date(hydrograph$X, format ="%m/%d/%Y")
 
-  hydrograph      = read.csv2(paste0(dir.case_study,"/", "E246_Rio_Lucite_at_Dombe_discharge.csv"), fileEncoding="UTF-8", quote="", sep=";",dec=".", header=TRUE, na.strings=c(";","NA"))
-  hydrograph$Date = as.Date(hydrograph$Date, format ="%d/%m/%Y")
+  # hydrograph      = read.csv2(paste0(dir.case_study,"/", "E246_Rio_Lucite_at_Dombe_discharge.csv"), fileEncoding="UTF-8", quote="", sep=";",dec=".", header=TRUE, na.strings=c(";","NA"))
+  # hydrograph$Date = as.Date(hydrograph$Date, format ="%d/%m/%Y")
   
-    
+
+  
+
+  
+  #########################################################################################################################################
   Qt.plot.off = ggplot() +
                 scale_x_date(name = "Time [year]",  expand=c(0,0))+
                 #scale_x_continuous(name = expression("Time [day]"), expand=c(0,0))+
