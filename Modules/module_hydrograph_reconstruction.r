@@ -14,6 +14,7 @@
 
 
 
+
 ### Rurrenabaqye Bolivia:
 #########################
 ticks_RC.y.log = c(100, 1000, 10000, 100000)
@@ -21,9 +22,10 @@ grid_RC.ylim.log = c(100, 100000)
 Hmin = -2
 Hmax = 7
 Hgrid  = seq(Hmin, Hmax, 0.01)
+
+############### Using new segmentation :
 Nperiods = 19
 treal                = c(0,  400, 659.731, 1045.41, 1383.09, 2464.74, 2773.1, 3147.35, 3442.81, 3561.86, 3792.02, 3905.77, 4249.33, 5034.28, 5676.13, 6565.11, 6892.89, 7031.92, 7167.04, 8089.958)
-# RC priors
 c.prior.corrected    = rep(list(c(1.697270, 1.650040)), Nperiods)
 st_c.prior.corrected = rep(list(c(0.02, 0.026458)), Nperiods)
 
@@ -40,13 +42,11 @@ for (i in 1:length(b1.prior.corrected)){
    b.prior.corrected[[i]]    = c(b1.prior.corrected[i],    b2.prior.corrected) 
    st_b.prior.corrected[[i]] = c(st_b1.prior.corrected[i], st_b2.prior.corrected)   
 }
-
-
-
-
-
-
-
+g1.distr.type          = 'Uniform'
+g2.distr.type          = 'Uniform'
+g1.prior               = c(0,   97,   90)
+g2.prior               = c(0, 0.008, 0.007)
+dirplotsQt = paste0(dir.case_study,"/Results/Reconstruction")
 
 # c.prior.corrected    = rep(list(c(1.697270)), Nperiods)
 # st_c.prior.corrected = rep(list(c(0.01)), Nperiods)
@@ -57,12 +57,73 @@ for (i in 1:length(b1.prior.corrected)){
 #                             -1.207530, -1.382520,	-1.589190, -2.030680, -1.641240,	-0.869200,	-1.548870, -1.548870, -1.548870)
 # st_b.prior.corrected = list(0.143089,	0.142877,	0.111940, 0.177593,	0.145189, 0.160194,	0.199864,	0.189920,	0.204962, 
 #                             0.191067,	0.200128,	0.211174, 0.233940,	0.247046,	0.275630, 0.230131, 0.230131, 0.230131)
- 
+
+
+
+
+# ########## official 2014
+# Nperiods              = 1
+# treal                 = c(0, 8089.958)
+# c.prior.corrected     = rep(list(c(1.59, 1.23)),  Nperiods)
+# st_c.prior.corrected  = rep(list(c(0.001, 0.001)), Nperiods)
+# 
+# a.prior.corrected     = list(c(587, 1144))
+# st_a.prior.corrected  = rep(list(c(120, 140)),   Nperiods)
+# 
+# b2.prior.corrected    = 2.25
+# st_b2.prior.corrected = 0.4
+# 
+# b1.prior.corrected    = c(-0.66)
+# st_b1.prior.corrected = c(0.3)
+# b.prior.corrected     = st_b.prior.corrected = NULL
+# for (i in 1:length(b1.prior.corrected)){
+#   b.prior.corrected[[i]]    = c(b1.prior.corrected[i],    b2.prior.corrected) 
+#   st_b.prior.corrected[[i]] = c(st_b1.prior.corrected[i], st_b2.prior.corrected)   
+# }
+# g1.distr.type          = 'Uniform'
+# g2.distr.type          = 'Uniform'
+# g1.prior               = c(0,   1,   0.5)
+# g2.prior               = c(0, 0.00001, 0.000005)
+# dir.create(paste0(dir.case_study,  "/Results/segmentation_gaugings/Official_segmentation/SPD_test1/2014"))
+# dirplotsQt = paste0(dir.case_study,"/Results/segmentation_gaugings/Official_segmentation/SPD_test1/2014")
+# 
+# 
+# 
+# 
+# ########## official  2012 
+# Nperiods              = 1
+# treal                 = c(0,  8089.958)
+# c.prior.corrected     = rep(list(c(1.88, 1.88)),  Nperiods)
+# st_c.prior.corrected  = rep(list(c(0.001, 0.001)), Nperiods)
+# 
+# a.prior.corrected     = list(c(423, 464))
+# st_a.prior.corrected  = rep(list(c(10, 10)),   Nperiods)
+# 
+# b2.prior.corrected    = 1.9
+# st_b2.prior.corrected = 0.4
+# 
+# b1.prior.corrected    = c(-1.35)
+# st_b1.prior.corrected = c(0.2)
+# b.prior.corrected     = st_b.prior.corrected = NULL
+# for (i in 1:length(b1.prior.corrected)){
+#   b.prior.corrected[[i]]    = c(b1.prior.corrected[i],    b2.prior.corrected) 
+#   st_b.prior.corrected[[i]] = c(st_b1.prior.corrected[i], st_b2.prior.corrected)   
+# }
+# g1.distr.type          = 'Uniform'
+# g2.distr.type          = 'Uniform'
+# g1.prior               = c(0,   1,   0.5)
+# g2.prior               = c(0, 0.00001, 0.000005)
+# dir.create(paste0(dir.case_study,  "/Results/segmentation_gaugings/Official_segmentation/SPD_test1/2012"))
+# dirplotsQt = paste0(dir.case_study,"/Results/segmentation_gaugings/Official_segmentation/SPD_test1/2012")
+# 
+
 
 		
 
 
-  # 
+
+
+   
   # ### Lucite Dombe:
   # #################
   # ticks_RC.y.log = c(0.1, 1, 10, 100, 1000, 10000)
@@ -84,7 +145,11 @@ for (i in 1:length(b1.prior.corrected)){
   # b.prior.corrected    = c(1,         0.536,     0.485,   0.576,    0.765,    0.658,   1.2,    0.51,    0.3,     0.5,     0.3,     0.5,     0.8)
   # st_b.prior.corrected = c( 0.2,      0.1,       0.1,      0.1,      0.1,      0.1,    0.2,    0.1,     0.1,     0.1,     0.1,     0.1,     0.2)
   # 
-  # 
+  # g1.prior             = c(0, 0.0001, 0.00001)
+  # g2.prior             = c(0, 0.0000001, 0.00000001)
+  # dirplotsQt = paste0(dir.case_study,"/Results")
+
+
   
   
   
@@ -107,38 +172,43 @@ for (i in 1:length(b1.prior.corrected)){
   # 
   # b.prior.corrected    = c( 0.8,   0.023,    0.023,      0.192,     0.124,      0.08,    0.081,    0.0,   -0.5,     -0.8)
   # st_b.prior.corrected = c( 0.2,    0.2,      0.1,       0.1,       0.1,         0.1,     0.1,      0.2,   0.2,      0.2)
-  
-  
-  
-  
+  #
+  # g1.prior             = c(0, 0.0001, 0.00001)
+  # g2.prior             = c(0, 0.0000001, 0.00000001)
+  # dirplotsQt = paste0(dir.case_study,"/Results")
+
   
 
   
   
   
+
+
+
+
+
+
+
+
+
+
   
   
   ############################################################################################################
   #                                               COMPUTATION
   ############################################################################################################
   source(paste0(dir.modules,"/module_BaRatin.R"))
-  # g1.prior               = c(0, 0.0001, 0.00001)
-  # g2.prior               = c(0, 0.0000001, 0.00000001)
-  g1.distr.type          = 'Uniform'
-  g2.distr.type          = 'Uniform'
-  g1.prior               = c(0,   97,   90)
-  g2.prior               = c(0, 0.008, 0.007)
-  
-  
-  
+
+
   stage.record           = df.limni
   limni.all              = cbind(stage.record, date = format(as.Date(stage.record$t_limni.true,  origin = date_origin), "%Y-%m-%d"))
   limni.NA               = na.omit(limni.all)
   nlimni                 = length(limni.NA$t_limni)
   tin.period             = treal
-  t_shifts_date          = as.Date(floor(tin.period + stage.record$t_limni.true[1]), origin = date_origin)
+  t_shifts_date          = as.Date(floor(tin.period + stage.record$t_limni.true[1]), origin = date_origin, format = "%Y-%m-%d")
   data.annotate.off$date = as.Date(floor(data.annotate.off$xeffect + stage.record$t_limni.true[1]), origin = date_origin) 
   stage.record.date      = as.Date(floor(stage.record$t_limni + stage.record$t_limni.true[1]), origin = date_origin) 
+  write.table(t_shifts_date, file = paste0(dirplotsQt,"/RC_shift_dates.csv"), row.names = FALSE, dec = ".", sep = ";", quote = FALSE)
   # treal_after          = c(treal[-1])
   # treal_before         = c(treal[-length(treal)])
   treal_after            = c(t_shifts_date[-1])
@@ -178,7 +248,7 @@ for (i in 1:length(b1.prior.corrected)){
                   ymax = b1.prior.final + 2*st_b1.prior.final) , fill ="red", alpha=0.2)+
     geom_segment(aes(x= treal_before, xend= treal_after,  y= b1.prior.final,  yend = b1.prior.final) , color ="red", size=1)
   
-  dirplotsQt = paste0(dir.case_study,"/Results")
+
   ggsave(limni.shifts.plot, filename =paste0(dirplotsQt,"/all_shift_times.png"), bg = "transparent", width = 14, height =6, dpi = 200)
   plot(limni.shifts.plot)
   
@@ -221,7 +291,6 @@ for (i in 1:length(b1.prior.corrected)){
         index_limni[j]    = i 
       }
     }   
-    
     
     if (!is.null(t_limni.P)) {
     ##########################
@@ -331,15 +400,15 @@ for (i in 1:length(b1.prior.corrected)){
               ,legend.position="none"
               ,plot.margin= unit(c(2, 1, 0, 1),"cm")
               ,axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) +
-        geom_ribbon(data = RC[[t]], aes(x= V1, ymin = q2total, ymax=q97total), fill ="red",  alpha=0.2)+
+        geom_ribbon(data = RC[[t]], aes(x= V1, ymin = q2total, ymax = q97total), fill ="red",  alpha=0.2)+
         geom_line(data   = RC[[t]], aes(x= V1, y    = RC.MAP), size=1, color="black") 
       
       RC.plot.log = RC.plot  +
-        scale_y_log10(name = expression("Discharge Q [m3/s]"),
-                      breaks=ticks_RC.y.log, labels=ticks_RC.y.log, limits=grid_RC.ylim.log, expand = c(0,0)) +
-        annotation_logticks(base = 10, sides = "l", scaled = TRUE,colour = "black",     size = 0.8, linetype = 1)
+          scale_y_log10(name = expression("Discharge Q [m3/s]"),
+                        breaks=ticks_RC.y.log, labels=ticks_RC.y.log, limits=grid_RC.ylim.log, expand = c(0,0)) +
+          annotation_logticks(base = 10, sides = "l", scaled = TRUE,colour = "black",     size = 0.8, linetype = 1)
       
-      ggsave(RC.plot, filename = paste0(dirplotsQt,"/RC_it",t,".png"),  width = 12, height =8, dpi = 200)
+      ggsave(RC.plot,     filename = paste0(dirplotsQt,"/RC_it",t,".png"),  width = 12, height =8, dpi = 200)
       ggsave(RC.plot.log, filename = paste0(dirplotsQt,"/RClog_it",t,".png"),  width = 12, height =8, dpi = 200)
       
       
@@ -467,12 +536,10 @@ for (i in 1:length(b1.prior.corrected)){
                     breaks=ticks_RC.y.log, labels=ticks_RC.y.log, limits=grid_RC.ylim.log, expand = c(0,0)) +
       annotation_logticks(base = 10, sides = "l", scaled = TRUE,colour = "black",     size = 0.8, linetype = 1)
     
-    ggsave(Qt.plot, filename = paste0(dirplotsQt,"/Qt_it",t,".png"),  width = 16, height =6, dpi = 200)
+    ggsave(Qt.plot,     filename = paste0(dirplotsQt,"/Qt_it",t,".png"),  width = 16, height =6, dpi = 200)
     ggsave(Qt.plot.log, filename = paste0(dirplotsQt,"/Qtlog_it",t,".png"), width = 16, height =6, dpi = 200)
     
-    
     Qt[[t]]$tdate = as.Date(Qt[[t]]$tdate, format ="%Y-%m-%d")
-    
     # Q(t) for the current period only:
     Qt.plot.period <- ggplot() +
       scale_x_date(name = "Time [year]",  expand=c(0,0))+
@@ -505,9 +572,7 @@ for (i in 1:length(b1.prior.corrected)){
   
   
   
-  
   dateQ = format(as.Date(stage.record$t_limni.true,  origin = date_origin), "%Y-%m-%d %H:%S")
-  
   Qt.fin = t_limni.date
   
   # Save final new hydrograph to csv file:
@@ -517,6 +582,40 @@ for (i in 1:length(b1.prior.corrected)){
   
   
   
+  
+  
+  # Plot all RCs together:
+  ########################
+  colorr = colo
+  RC.all.plot <- ggplot() +
+    scale_y_continuous(name = expression("Discharge Q [m3/s]"))+
+    scale_x_continuous(name = expression("Stage h [m]"))+ #, limits = c(grid_RC.xlim[1], grid_RC.xlim[2])) +
+    labs(x = "Stage [m]", y = "Discharge [m3/s]") +
+    theme_bw(base_size=20)+
+    theme(axis.text=element_text(size=10)
+          ,axis.title=element_text(size=15, face="bold")
+          #,axis.title.x = element_text(size=15, face="bold")
+          #,panel.grid.major=element_blank()
+          #,panel.grid.minor=element_blank()
+          ,legend.text=element_text(size=20)
+          ,legend.title=element_text(size=30)
+          ,legend.key.size=unit(1.5, "cm")
+          ,legend.position="none"
+          ,plot.margin= unit(c(2, 1, 0, 1),"cm")
+          ,axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)))
+  
+  for( i in 2:length(RC)){
+    RC.all.plot = RC.all.plot+
+      geom_ribbon(data = RC[[i]], aes(x= V1, ymin = q2total, ymax=q97total), fill ="red",  alpha=0.1)+
+      geom_line(data   = RC[[i]], aes(x= V1, y    = RC.MAP), size=1, color= "black") #colorr[i]) 
+    
+  }
+  ggsave(RC.all.plot, filename = paste0(dirplotsQt,"/RC_all.png"),  width = 11, height =8, dpi = 200)
+  RC.all.plot = RC.all.plot  +
+    scale_y_log10(name = expression("Discharge Q [m3/s]"),
+                  breaks=ticks_RC.y.log, labels=ticks_RC.y.log, limits=grid_RC.ylim.log, expand = c(0,0)) +
+    annotation_logticks(base = 10, sides = "l", scaled = TRUE,colour = "black",     size = 0.8, linetype = 1)
+  ggsave(RC.all.plot, filename = paste0(dirplotsQt,"/RClog_all.png"),  width = 11, height =8, dpi = 200)
   
   
   
@@ -537,9 +636,6 @@ for (i in 1:length(b1.prior.corrected)){
 
   # hydrograph      = read.csv2(paste0(dir.case_study,"/", "E246_Rio_Lucite_at_Dombe_discharge.csv"), fileEncoding="UTF-8", quote="", sep=";",dec=".", header=TRUE, na.strings=c(";","NA"))
   # hydrograph$Date = as.Date(hydrograph$Date, format ="%d/%m/%Y")
-  
-
-  
 
   
   #########################################################################################################################################
@@ -567,6 +663,9 @@ for (i in 1:length(b1.prior.corrected)){
   
   
                 
+                
+  # Zoom on some periods:
+  ########################
    Qt.plot.off_1 = ggplot() +
                   scale_x_date(name = "Time [year]",  expand=c(0,0), limits = c(as.Date("1957-01-01"), as.Date("1961-01-01")))+
                   #scale_x_continuous(name = expression("Time [day]"), expand=c(0,0))+
@@ -638,38 +737,53 @@ for (i in 1:length(b1.prior.corrected)){
                 
                 
                 
+               
                 
-                colorr = colo
-                RC.all.plot <- ggplot() +
-                  scale_y_continuous(name = expression("Discharge Q [m3/s]"))+
-                  scale_x_continuous(name = expression("Stage h [m]"))+ #, limits = c(grid_RC.xlim[1], grid_RC.xlim[2])) +
-                  labs(x = "Stage [m]", y = "Discharge [m3/s]") +
-                  theme_bw(base_size=20)+
-                  theme(axis.text=element_text(size=10)
-                        ,axis.title=element_text(size=15, face="bold")
-                        #,axis.title.x = element_text(size=15, face="bold")
-                        #,panel.grid.major=element_blank()
-                        #,panel.grid.minor=element_blank()
-                        ,legend.text=element_text(size=20)
-                        ,legend.title=element_text(size=30)
-                        ,legend.key.size=unit(1.5, "cm")
-                        ,legend.position="none"
-                        ,plot.margin= unit(c(2, 1, 0, 1),"cm")
-                        ,axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)))
                 
-                for( i in 2:length(RC)){
-                  RC.all.plot = RC.all.plot+
-                    geom_ribbon(data = RC[[i]], aes(x= V1, ymin = q2total, ymax=q97total), fill ="red",  alpha=0.1)+
-                    geom_line(data   = RC[[i]], aes(x= V1, y    = RC.MAP), size=1, color= "black") #colorr[i]) 
-                  
-                }
-                ggsave(RC.all.plot, filename = paste0(dirplotsQt,"/RC_all.png"),  width = 11, height =8, dpi = 200)
-                RC.all.plot = RC.all.plot  +
-                  scale_y_log10(name = expression("Discharge Q [m3/s]"),
-                                breaks=ticks_RC.y.log, labels=ticks_RC.y.log, limits=grid_RC.ylim.log, expand = c(0,0)) +
-                  annotation_logticks(base = 10, sides = "l", scaled = TRUE,colour = "black",     size = 0.8, linetype = 1)
-                ggsave(RC.all.plot, filename = paste0(dirplotsQt,"/RClog_all.png"),  width = 11, height =8, dpi = 200)
+          # Comparison with two official series:
+          ######################################
+          hydrograph_new = read.csv2(paste0(dir.case_study,
+                                     "/Results/Reconstruction/hydrograph.csv"), 
+                                     fileEncoding="UTF-8", quote="", sep=";",dec=".", header=TRUE, na.strings=c(";","NA"))
+          hydrograph_new$Date = as.Date(hydrograph_new$tdate,  format ="%Y-%m-%d")
+          hydrograph1  = read.csv2(paste0(dir.case_study,
+                                   "/Results/segmentation_gaugings/Official_segmentation/SPD_test1/2014/hydrograph.csv"), 
+                                   fileEncoding="UTF-8", quote="", sep=";",dec=".", header=TRUE, na.strings=c(";","NA"))
+          hydrograph1$Date = as.Date(hydrograph1$tdate,  format ="%Y-%m-%d")
+          hydrograph2  = read.csv2(paste0(dir.case_study,
+                                   "/Results/segmentation_gaugings/Official_segmentation/SPD_test1/2012/hydrograph.csv"), 
+                                   fileEncoding="UTF-8", quote="", sep=";",dec=".", header=TRUE, na.strings=c(";","NA"))    
+          hydrograph2$Date = as.Date(hydrograph2$tdate,  format ="%Y-%m-%d")
                 
+          Qt.plot.event = ggplot() +
+            scale_x_date(name = "Date",  expand=c(0,0), limits = c(as.Date("2013-12-23"), as.Date("2014-03-01")), labels=date_format("%d/%m/%Y"))+
+            #scale_x_continuous(name = expression("Time [day]"), expand=c(0,0))+
+            scale_y_continuous(name = expression("Discharge Q [m3/s]"), expand=c(0,0))+
+            labs(x = "Time [day]", y = "Discharge [m3/s]") +
+            theme_bw(base_size=15)+
+            theme(axis.text=element_text(size=10)
+                  ,axis.title=element_text(size=15, face="bold")
+                  #,axis.title.x = element_text(size=15, face="bold")
+                  ,panel.grid.major=element_blank()
+                  ,panel.grid.minor=element_blank()
+                  ,legend.text=element_text(size=20)
+                  ,legend.title=element_text(size=30)
+                  ,legend.key.size=unit(1.5, "cm")
+                  ,legend.position="none"
+                  ,plot.margin= unit(c(2, 1, 0, 1),"cm")
+                  ,axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) +
+            geom_ribbon(data = hydrograph_new, aes(x= Date, ymin = q2total, ymax= q97total), fill="red", alpha =0.2)+
+            geom_line(data   = hydrograph_new, aes(x= Date, y = Qt.MAP),   size=1, color ="black")+
+            
+            geom_line(data   = hydrograph1,  aes(x= Date,  y = Qt.MAP),   size=1, color ="black", linetype = "dotted")+
+            geom_line(data   = hydrograph2,  aes(x= Date,  y = Qt.MAP),   size=1, color ="black", linetype = "dashed") 
+            Qt.plot.event
+            ggsave(Qt.plot.event, filename = paste0(dir.case_study, "/Results/Reconstruction/Qt_new_vs_old.png"), width = 16, height =6, dpi = 200)    
+                
+                
+                
+                 
+
   
   
     

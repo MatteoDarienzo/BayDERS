@@ -174,14 +174,15 @@ rec <- function(tmin, hmin, chi, delta.t.max,  delta.t.min, toll) {
 
 ###########################################################
 # Extract all recession curves:
-extract_curve <- function(trec, hrec, chi, delta.t.max) {
+extract_curve <- function(trec, hrec, chi, delta.t.max, toll) {
 ###########################################################
   # max number of recessions:
   tmaxrec = length(trec) 
   
   # initialize:
   RCi = 0 ; hcurve=0 ; tcurve =0 ; 
-  p = 1 ; l = 1 ; n = 1 ; RCi = 1 ;  hfin = 0 ; tfin = 0;
+  p = 1 ; l = 1 ; n = 1 ; RCi = 1 ; 
+  hfin = 0 ; tfin = 0;
   nc = 0 ; ts = 0 ; s = 1 ; 
   hpeak = 0  ; tpeak = 0 ; t.real =0;
   hcurve[1] = hrec[1];
@@ -546,7 +547,8 @@ recession.selection <- function(  dir.exe,
   curves.h    = extract_curve(trec         = recess.h$trec,  
                               hrec         = recess.h$hrec,
                               chi          = chi, 
-                              delta.t.max  = delta.t.max)
+                              delta.t.max  = delta.t.max,
+                              toll         = toll)
   
   
   

@@ -102,7 +102,7 @@ For this application you are:
 -  using 'module_BaRatinSPD.r' and 'module_prior_propagation.r' 
 
 *****************************************************************
-                        Configurating ...
+                        Configuration ...
 *****************************************************************"))
                 
       # save the gaugings dataframes with the periods in the BaM configuration folder:
@@ -508,21 +508,21 @@ BaRatin_SPD_config <- function(dir.BaM,
                                Ncycles) {                                               
 ###########################################################################################
       # creation of Config_BaM.txt:
-                file.BaM <- paste(dir.BaM,"/Config_BaM.txt",sep="")
-                cat('"BaRatin_SPD/"', file = file.BaM, sep="\n", append = FALSE)
-                cat('"Config_RunOptions.txt"', file = file.BaM , sep="\n", append = TRUE)
-                cat('"Config_Model.txt"', file = file.BaM , sep="\n", append = TRUE)
+                file.BaM <- paste0(dir.BaM,"/Config_BaM.txt")
+                cat('"BaRatin_SPD/"',             file = file.BaM , sep="\n", append = FALSE)
+                cat('"Config_RunOptions.txt"',    file = file.BaM , sep="\n", append = TRUE)
+                cat('"Config_Model.txt"',         file = file.BaM , sep="\n", append = TRUE)
                 cat('"Config_ControlMatrix.txt"', file = file.BaM , sep="\n", append = TRUE)
-                cat('"Config_Data.txt"', file = file.BaM , sep="\n", append = TRUE)
-                cat('"Config_RemnantSigma.txt"', file = file.BaM , sep="\n", append = TRUE)
-                cat('"Config_MCMC.txt"', file = file.BaM , sep="\n", append = TRUE)
-                cat('"Config_Cooking.txt"', file = file.BaM , sep="\n", append = TRUE)
-                cat('"Config_Summary.txt"', file = file.BaM , sep="\n", append = TRUE)
-                cat('"Config_Residuals.txt"', file = file.BaM , sep="\n", append = TRUE)
+                cat('"Config_Data.txt"',          file = file.BaM , sep="\n", append = TRUE)
+                cat('"Config_RemnantSigma.txt"',  file = file.BaM , sep="\n", append = TRUE)
+                cat('"Config_MCMC.txt"',          file = file.BaM , sep="\n", append = TRUE)
+                cat('"Config_Cooking.txt"',       file = file.BaM , sep="\n", append = TRUE)
+                cat('"Config_Summary.txt"',       file = file.BaM , sep="\n", append = TRUE)
+                cat('"Config_Residuals.txt"',     file = file.BaM , sep="\n", append = TRUE)
                 if (pred == TRUE) {
                   cat('"Config_Pred_Master.txt"', file = file.BaM , sep="\n", append = TRUE)
                 } else {
-                  cat('""', file = file.BaM , sep="\n", append = TRUE)
+                  cat('""',                       file = file.BaM , sep="\n", append = TRUE)
                 }
       # creation of Config_Data.txt
                 file.name2 = paste0(dir.SPD.config,"/Config_Data.txt")
@@ -541,73 +541,74 @@ BaRatin_SPD_config <- function(dir.BaM,
       # creation of Config_MCMC.txt
                 file.mcmc = paste(dir.SPD.config,"/Config_MCMC.txt",sep="")
                 cat('"Results_MCMC.txt"', file =file.mcmc,sep="\n")
-                cat(100, file = file.mcmc, append = TRUE,sep="\n")   #Nadapt
+                cat(100,     file = file.mcmc, append = TRUE,sep="\n")   #Nadapt
                 cat(Ncycles, file = file.mcmc, append = TRUE,sep="\n")  #Ncycles
-                cat(0.1, file =file.mcmc, append = TRUE,sep="\n")    #minMoveRate
-                cat(0.5, file =file.mcmc, append = TRUE,sep="\n")    #maxMoveRate
-                cat(0.9, file =file.mcmc, append = TRUE,sep="\n")    #DownMult
-                cat(1.1, file =file.mcmc, append = TRUE,sep="\n")    #UpMult
-                cat(0, file =file.mcmc, append = TRUE,sep="\n")      #mode for init jump distr
-                cat("****", file =file.mcmc, append = TRUE,sep="\n") 
-                cat(0.1, file =file.mcmc, append = TRUE,sep="\n")    #MultFact
-                cat(0.1,file =file.mcmc, append = TRUE, sep=",")     #RC MultiFact
-                cat(0.1,file =file.mcmc, append = TRUE, sep=",")     
-                cat(0.1, file =file.mcmc, append = TRUE,sep="\n")
-                cat(0.1,file =file.mcmc, append = TRUE, sep=",")      #Remnant MultiFact
-                cat(0.1, file =file.mcmc, append = TRUE,sep="\n")
+                cat(0.1,     file = file.mcmc, append = TRUE,sep="\n")    #minMoveRate
+                cat(0.5,     file = file.mcmc, append = TRUE,sep="\n")    #maxMoveRate
+                cat(0.9,     file = file.mcmc, append = TRUE,sep="\n")    #DownMult
+                cat(1.1,     file = file.mcmc, append = TRUE,sep="\n")    #UpMult
+                cat(0,       file = file.mcmc, append = TRUE,sep="\n")      #mode for init jump distr
+                cat("****",  file = file.mcmc, append = TRUE,sep="\n") 
+                cat(0.1,     file = file.mcmc, append = TRUE,sep="\n")    #MultFact
+                cat(0.1,     file = file.mcmc, append = TRUE, sep=",")     #RC MultiFact
+                cat(0.1,     file = file.mcmc, append = TRUE, sep=",")     
+                cat(0.1,     file = file.mcmc, append = TRUE,sep="\n")
+                cat(0.1,     file = file.mcmc, append = TRUE, sep=",")      #Remnant MultiFact
+                cat(0.1,     file = file.mcmc, append = TRUE,sep="\n")
       # creation of Config_ControlMatrix.txt
-                file.matrix = paste(dir.SPD.config,"/Config_ControlMatrix.txt",sep="")
-                write.table(M, file =file.matrix, row.names = FALSE, col.names = FALSE)   #M control matrix
-                cat("10.", file = file.matrix,  append = TRUE, sep="\n")  #hmax
-      # creation of Config_RemnantSigma.txt
-                file.remnant = paste(dir.SPD.config,"/Config_RemnantSigma.txt",sep="")
+                file.matrix = paste0(dir.SPD.config,"/Config_ControlMatrix.txt")
+                write.table(M, file = file.matrix, row.names = FALSE, col.names = FALSE)   #M control matrix
+                cat("10.",     file = file.matrix,  append = TRUE, sep="\n")  #hmax
+      # Creation of Config_RemnantSigma.txt
+                file.remnant = paste0(dir.SPD.config,"/Config_RemnantSigma.txt")
                 if (remnant == "Linear") {
-                     cat("'Linear'", file = file.remnant, sep="\n")                    #! Function f used in sdev=f(Qrc) 
-                     cat(2, file = file.remnant, append = TRUE, sep="\n")              #! Number of parameters gamma for f
-                     cat("gamma1", file = file.remnant, append = TRUE, sep="\n")       #! Parameter Name
-                     cat(1, file = file.remnant, append = TRUE, sep="\n")              #! Initial Guess
-                     cat('Uniform', file = file.remnant, append = TRUE, sep="\n")      #! Prior distribution
-                     cat(0,file =file.remnant, append = TRUE, sep=",")
-                     cat(",",file =file.remnant, append = TRUE, sep=",")
-                     cat(1000,file =file.remnant, append = TRUE, sep="\n")
-                     #
-                     cat("gamma2", file = file.remnant, append = TRUE, sep="\n")       #! Parameter Name
-                     cat(0.1, file = file.remnant, append = TRUE, sep="\n")            #! Initial Guess
-                     cat('Uniform', file = file.remnant, append = TRUE, sep="\n")      #! Initial Guess
-                     cat(0,file =file.remnant, append = TRUE, sep=",")
-                     cat(",",file =file.remnant, append = TRUE, sep=",")
-                     cat(100,file =file.remnant, append = TRUE, sep="\n")
-                } else {
-                     cat("'Constant'", file = file.remnant, sep="\n")                     #! Function f used in sdev=f(Qrc) 
-                     cat(1, file = file.remnant, append = TRUE, sep="\n")                 #! Number of parameters gamma for f
-                     cat("gamma1", file = file.remnant, append = TRUE, sep="\n")          #! Parameter Name
-                     cat(1, file = file.remnant, append = TRUE, sep="\n")                 #! Initial Guess
-                     cat('Uniform', file = file.remnant, append = TRUE, sep="\n")         #! Prior distribution
-                     cat(0,file =file.remnant, append = TRUE, sep=",")
-                     cat(",",file =file.remnant, append = TRUE, sep=",")
-                     cat(1000,file =file.remnant, append = TRUE, sep="\n")
+                    cat("'Linear'",    file = file.remnant, sep="\n")                                   #! Function f used in sdev=f(Qrc) 
+                    cat(2,             file = file.remnant, append = TRUE, sep="\n")                    #! Number of parameters gamma for f
+                    cat("gamma1",      file = file.remnant, append = TRUE, sep="\n")                    #! Parameter Name
+                    cat(g1.prior[3],   file = file.remnant, append = TRUE, sep="\n")                    #! Initial Guess
+                    cat(g1.distr.type, file = file.remnant, append = TRUE, sep="\n")                    #! Prior distribution
+                    cat(g1.prior[1],   file = file.remnant, append = TRUE, sep=",")
+                    cat(",",           file = file.remnant, append = TRUE, sep=",")
+                    cat(g1.prior[2],   file = file.remnant, append = TRUE, sep="\n")
+                  
+                    cat("gamma2",      file = file.remnant, append = TRUE, sep="\n")                    #! Parameter Name
+                    cat(g2.prior[3],   file = file.remnant, append = TRUE, sep="\n")                    #! Initial Guess
+                    cat(g2.distr.type, file = file.remnant, append = TRUE, sep="\n")                    #! Initial Guess
+                    cat(g2.prior[1],   file = file.remnant, append = TRUE, sep=",")
+                    cat(",",           file = file.remnant, append = TRUE, sep=",")
+                    cat(g2.prior[2],   file = file.remnant, append = TRUE, sep="\n")
+                  
+                } else if (remnant == "Constant") {
+                    cat("'Constant'",  file = file.remnant, sep="\n")                                   #! Function f used in sdev=f(Qrc) 
+                    cat(1,             file = file.remnant, append = TRUE, sep="\n")                    #! Number of parameters gamma for f
+                    cat("gamma1",      file = file.remnant, append = TRUE, sep="\n")                    #! Parameter Name
+                    cat(g1.prior[3],   file = file.remnant, append = TRUE, sep="\n")                    #! Initial Guess
+                    cat(g1.distr.type, file = file.remnant, append = TRUE, sep="\n")                    #! Prior distribution
+                    cat(g1.prior[1],   file = file.remnant, append = TRUE, sep=",")
+                    cat(",",           file = file.remnant, append = TRUE, sep=",")
+                    cat(g1.prior[2],   file = file.remnant, append = TRUE, sep="\n")
                 }
-      # creation of Config_RunOptions.txt
+      # Creation of Config_RunOptions.txt:
                 file.run = paste(dir.SPD.config,"/Config_RunOptions.txt",sep="")
-                cat(".true.", file =file.run, sep="\n")                             # Do MCMC?
-                cat(".true.", file =file.run, append = TRUE, sep="\n")              # Do MCMC summary?
-                cat(".true.", file =file.run, append = TRUE, sep="\n")              # Do Residual diagnostics?
+                cat(".true.",        file = file.run, sep="\n")                             # Do MCMC?
+                cat(".true.",        file = file.run, append = TRUE, sep="\n")              # Do MCMC summary?
+                cat(".true.",        file = file.run, append = TRUE, sep="\n")              # Do Residual diagnostics?
                 if (pred == TRUE) {
-                     cat(".true.", file =file.run, append = TRUE, sep="\n")         # Do Predictions?
+                     cat(".true.",   file = file.run, append = TRUE, sep="\n")         # Do Predictions?
                 } else {
-                     cat(".false.", file =file.run, append = TRUE, sep="\n")        # Do Predictions?
+                     cat(".false.",  file = file.run, append = TRUE, sep="\n")        # Do Predictions?
                 }
      # creation of Config_Residuals.txt
                 file.residuals = paste(dir.SPD.config,"/Config_Residuals.txt",sep="")
-                cat('"Results_Residuals.txt"' , file =file.residuals ,sep="\n")     # Result file
+                cat('"Results_Residuals.txt"',   file = file.residuals, sep="\n")     # Result file
      # creation of Config_Summary.txt
                 file.summary = paste(dir.SPD.config,"/Config_Summary.txt", sep="")
-                cat('"Results_Summary.txt"' , file =file.summary, sep="\n")         # Result file
+                cat('"Results_Summary.txt"',     file = file.summary, sep="\n")         # Result file
      # creation of Config_Cooking.txt
                 file.cooking = paste(dir.SPD.config,"/Config_Cooking.txt", sep="")
-                cat('"Results_MCMC_Cooked.txt"' , file =file.cooking, sep="\n")     # Result file
-                cat(0.5, file =file.cooking, append = TRUE, sep="\n")               # Burn factor
-                cat(10, file =file.cooking, append = TRUE, sep="\n")                # Nslim
+                cat('"Results_MCMC_Cooked.txt"', file = file.cooking, sep="\n")     # Result file
+                cat(0.5,                         file = file.cooking, append = TRUE, sep="\n")               # Burn factor
+                cat(10,                          file = file.cooking, append = TRUE, sep="\n")                # Nslim
 }
     
   
