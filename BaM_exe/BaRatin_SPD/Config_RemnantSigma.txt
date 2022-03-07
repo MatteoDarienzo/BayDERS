@@ -1,7 +1,7 @@
 'Linear'
 2
 gamma1
-1
+0.1
 Uniform
 0,1000
 gamma2

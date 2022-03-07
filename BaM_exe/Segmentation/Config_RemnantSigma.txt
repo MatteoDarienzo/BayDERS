@@ -1,6 +1,6 @@
 'Constant'
 1
 gamma1
-0.1
-Uniform
-0,50
+0.001
+"LogNormal"
+-6.907755,0.001

@@ -10,25 +10,25 @@ data.period          = "11/2001 - 6/2019"                 # Insert the study per
 # Gaugings:
 #**********
 file_gaugings        = "Meyras_gaugings_1.csv" # name of the csv file with the gaugings (put FALSE if not available!)
-u.m.Hgaug            = "m"              # options: "m", "cm", "mm" or "ft"
-u.m.Qgaug            = "m^3*s^-1"       # options: "m^3.s-1" or "ft^3.s-1"
-QGaug.col            = 7                # column position in the file ...
-uQGaug.col           = 8                # column position in the file ...
-hGaug.col            = 6                # column position in the file ...
-tGaug.col            = 14               # or c(1,2,3,4,5,6) if a date format in multiple columns.
-tGaug.type           = "numeric"        # "numeric or "date".     
-uQ.absolute          = FALSE            # TRUE (if st dev of uncertainty) or FALSE (if % of Q)
-gaugings_filter      = 1                # consider a gauging every "gaugings_filter" gaugings. 
+u.m.Hgaug            = "m"                     # options: "m", "cm", "mm" or "ft"
+u.m.Qgaug            = "m^3*s^-1"              # options: "m^3.s-1" or "ft^3.s-1"
+QGaug.col            = 7                       # column position in the file ...
+uQGaug.col           = 8                       # column position in the file ...
+hGaug.col            = 6                       # column position in the file ...
+tGaug.col            = 13                      # or c(1,2,3,4,5,6) if a date format in multiple columns.
+tGaug.format         = "%d/%m/%Y %H:%M"        # insert "numeric" or the date format like "%d/%m/%Y %H:%M".  
+uQ.absolute          = FALSE                   # TRUE (if st dev of uncertainty) or FALSE (if % of Q)
+gaugings_filter      = 1                       # consider a gauging every "gaugings_filter" gaugings. 
 
 #settings for RC plot:
-grid_RC.xlim         = c(-1,3)          # grid for RC plots
-grid_RC.ylim         = c(0,200)         # grid for RC plots
-grid_RC.xstep        = 1                # grid for RC plots
-grid_RC.ystep        = 20               # grid for RC plots
-grid_RC.ylim.log     = c(0.01, 1000)    # grid for RC-log plots
+grid_RC.xlim         = c(-1,3)                    # grid for RC plots (stage h limits)
+grid_RC.ylim         = c(0,200)                   # grid for RC plots (discharge Q limits)
+grid_RC.xstep        = 1                          # grid for RC plots 
+grid_RC.ystep        = 20                         # grid for RC plots
+grid_RC.ylim.log     = c(0.01, 1000)              # grid for RC plots in y-log scale
 ticks_RC.y.log       = c(0.01, 0.1,1,10,100,1000) # grid for RC-log plots
-RC.y.labels          = "Discharge Q"    # RC:  y label (for plots)
-RC.x.labels          = "Stage h"        # RC:  x label (for plots)
+RC.y.labels          = "Discharge Q"              # RC:  y label (for plots)
+RC.x.labels          = "Stage h"                  # RC:  x label (for plots)
 
 
 
@@ -38,8 +38,8 @@ RC.x.labels          = "Stage h"        # RC:  x label (for plots)
 #**************
 file_limni           = "Meyras_limni_cm.csv"              # name of the data .csv file with the stage record (put FALSE if not available!)
 hLimni.col           = 2                                  # column position in the file ...
-tLimni.col           = 1                                  # column position in the file ...
-tLimni.type          = "numeric"                          # "numeric or "date".  
+tLimni.col           = 3                                  # column position in the file ...
+tLimni.format        = "%d/%m/%Y %H:%M"                   # insert "numeric" or the date format like "%d/%m/%Y %H:%M".  
 limni_filter         = 1                                  # consider a stage value every "limni_filter" values. 
 u.m.limni            = "cm"                               # ["m" / "cm" / "mm" / "ft"] unity of the stage record
 grid_limni.ylim      = c(-1,4,1)                          # grid for Limni plots
@@ -53,8 +53,8 @@ date_origin          = "1899-12-30"                       # origin date to trans
 # Official dates of rating shifts (or RC update):
 #***********************************************
 official.shift.times = "DateShiftsMeyras.csv"  # name of the csv file with official shift dates (put FALSE if not available!)
-tOfficial.col        = 1                       # column position in the file ...
-tOfficial.type       = "numeric"               # "numeric or "date".  
+tOfficial.col        = 2                       # column position in the file ...
+tOfficial.format     = "%d/%m/%Y"              # insert "numeric" or the date format like "%d/%m/%Y %H:%M".  
 
 
 

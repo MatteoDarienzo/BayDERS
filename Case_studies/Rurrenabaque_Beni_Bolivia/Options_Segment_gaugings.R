@@ -1,15 +1,16 @@
 # General options:
 ################################################################
-name.folder.results        = "mu1000_BIC_stb21_MAP"
+name.folder.results        = "mu1000_BIC_stb21_closestflood"
 prior.mu.segm              = c(0, 1000)                   # prior for segments mean "mu" = N(mean, stdev): stdev must be of the Order of gaugings residuals !
 tmin                       = 0                          # mininum distance (in time) between two consecutive change points (it depends on time units!). By default =0
 nSmax                      = 4                          # Maximum number of segments in the series at each iteration
 Nmin                       = 1                          # minimum number of data in a segment ( >=1, by default = 1) 
 criterion                  = "BIC"                      # Criterion for the choice of the model ("AIC","BIC", "DIC", "HQC")
-shift.time.adjustment.type = 1                          # 1 = select always the MAP; 2= select always the largest closest flood peak; 3 = will ask to manually insert a value 
+shift.time.adjustment.type = 2                          # 1 = select always the MAP; 2= select always the largest closest flood peak; 3 = will ask to manually insert a value 
 plot_dates                 = FALSE                       # [TRUE/FALSE] plot or not the date of each detected shift time (if any) on the stage record.
 st_b.prior                 = c(1, 1)                   # Initial stdev of b:
 plot.results.only          = FALSE                      # [FALSE/TRUE] if TRUE no computation is performed. only previous results are plotted.
+deltat_peaks               = 200                       # minimum time lag between major floods (to find all major peaks and adjust shift times), e.g., 100 or 1000 days
 
 
 

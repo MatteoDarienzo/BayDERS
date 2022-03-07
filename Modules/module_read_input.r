@@ -36,6 +36,7 @@ message("
 # Le Coz et al., 2014)              # 
 # Mansanarez et al., 2019)          #
 # Darienzo et al., 2021             #
+# Darienzo, 2021                    #
 #####################################
 # Case study:                        ")
 
@@ -58,9 +59,7 @@ source(paste0(dir.modules,"/module_sediment_transport.R"))
 source(paste0(dir.modules,"/module_sediment_transport_plots.R"))
 source(paste0(dir.modules,"/module_retrospective_analysis.R"))
 source(paste0(dir.modules,"/module_retrospective_analysis_plots.R"))
-# source(paste0(dir.modules,"/Real_time_plots.R"))
-
-
+# source(paste0(dir.modules,"/Real_time_plots.R"))   # for future versions of BayDERS.
 
 
 
@@ -71,22 +70,16 @@ message("
 - Reading input data and general options. 
   Please, wait ..."); flush.console()
 
-
-
-
-
-
-
 if (file_gaugings        != "synthet_gaugings.csv") {
    dir.create(paste0(dir.case_study,"/Results"))   #creation of the folder with Results within the case study folder.
 }
 
-
-
-
-
-
-
+all_formats_dates =  c("%Y-%m-%d %H:%M:%S",  "%Y-%m-%d %H:%M", "%Y-%m-%d",  
+                       "%d-%m-%Y %H:%M:%S",  "%d-%m-%Y %H:%M", "%d-%m-%Y",  
+                       "%d/%m/%Y %H:%M:%S",  "%d/%m/%Y %H:%M", "%d/%m/%Y",  
+                       "%Y/%m/%d %H:%M:%S",  "%Y/%m/%d %H:%M", "%Y/%m/%d",
+                       "%m/%d/%Y %H:%M:%S",  "%m/%d/%Y %H:%M", "%m/%d/%Y",
+                       "%m-%d-%Y %H:%M:%S",  "%m-%d-%Y %H:%M", "%m-%d-%Y")
 
 
 
@@ -94,129 +87,105 @@ if (file_gaugings        != "synthet_gaugings.csv") {
 
 
 ##############################################################################
-#              Limnigraph (stage record, water level): read stage data h(t):
+#           Limnigraph (stage record, water level): 
 ##############################################################################
+# Read stage data time series h(t), if any:
+#*************************
 if (file_limni != FALSE) {
-  
+#*************************
   #limni <- read.csv2(paste(dir.case_study,"/",file_limni,sep=""),  header= TRUE)
-  
-  limni <- read.csv2(paste0(dir.case_study,"/",file_limni),fileEncoding="UTF-8", 
-                     quote="", sep=";", dec=".", header= TRUE, na.strings=c(",", " ", "NA") )
-  
-  
-  limni = na.omit(limni)
-  
-  limni = limni[seq(1, length(limni[,1]), limni_filter), ] 
-
-  if (tLimni.type =="date") {
-  #**************************
-  t_limni          = limni[,tLimni.col]
-  origin.numeric   = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
-  t_limni.numeric  = 0; t_limni.date=0;
-  message("- Converting stage record dates.") 
-  message("  Please wait ...")
-  pb <- txtProgressBar(min = 0,               # Minimum value of the progress bar
-                       max = length(t_limni), # Maximum value of the progress bar
-                       style = 3,             # Progress bar style (also available style = 1 and style = 2)
-                       width = 50,            # Progress bar width. Defaults to getOption("width")
-                       char = "=")            # Character used to create the bar
-  
-  for (i in 1:length(t_limni)){
-    t_limni.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_limni[i], origin = date_origin, 
-                                                            tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
-                                                                                              "%Y-%m-%d %H:%M",
-                                                                                              "%Y-%m-%d",
-                                                                                              
-                                                                                              "%d-%m-%Y %H:%M:%S",
-                                                                                              "%d-%m-%Y %H:%M",
-                                                                                              "%d-%m-%Y",
-                                                                                              
-                                                                                              "%d/%m/%Y %H:%M:%S",
-                                                                                              "%d/%m/%Y %H:%M",
-                                                                                              "%d/%m/%Y",
-                                                                                              
-                                                                                              "%Y/%m/%d %H:%M:%S",
-                                                                                              "%Y/%m/%d %H:%M",
-                                                                                              "%Y/%m/%d"
-                                                                                              )),
-                                                 tryFormats = c("%Y-%m-%d",
-                                                                "%d/%m/%Y %H:%M"))) 
-    t_limni.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_limni[i], origin = date_origin, 
-                                                          tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
-                                                                                            "%Y-%m-%d %H:%M",
-                                                                                            "%Y-%m-%d",
-                                                                                            
-                                                                                            "%d-%m-%Y %H:%M:%S",
-                                                                                            "%d-%m-%Y %H:%M",
-                                                                                            "%d-%m-%Y",
-                                                                                            
-                                                                                            "%d/%m/%Y %H:%M:%S",
-                                                                                            "%d/%m/%Y %H:%M",
-                                                                                            "%d/%m/%Y",
-                                                                                            
-                                                                                            "%Y/%m/%d %H:%M:%S",
-                                                                                            "%Y/%m/%d %H:%M",
-                                                                                            "%Y/%m/%d"
-                                                                                            )),
-                                               tryFormats = c("%Y-%m-%d",
-                                                              "%d/%m/%Y")))/86400 
-    setTxtProgressBar(pb, i)
-  }  
-  close(pb)
-  t_limni.numeric2 = t_limni.numeric  - origin.numeric
-  
-  dt_increase = 0.1     # if limni data have equal timing we can shift the timings. change this if you want to increase the delay [day] 
-  while ((length(which(duplicated(t_limni.numeric2)==T))) > 0) {
-    t_limni.numeric2[which(duplicated(t_limni.numeric2) == T)] =  t_limni.numeric2[which(duplicated(t_limni.numeric2) == T)] + dt_increase 
-  }
-  
-  
-  t_limni          = t_limni.numeric2
-  t_limni.true     = t_limni.numeric2
+  limni = read.csv2(paste0(dir.case_study,"/",file_limni), fileEncoding="UTF-8",quote="", sep=";", dec=".", header= TRUE, na.strings=c(",", " ", "NA") )
+  limni = na.omit(limni) # omit the NaN 
+  limni = limni[seq(1, length(limni[,1]), limni_filter), ] # filter the series with frequency limni_filter
 
   
   
-  } else if (tLimni.type == "numeric"){
-  #************************************ 
-    dt_increase = 0.1     # if limni data have equal timing we can shift the timings. change this if you want to increase the delay [day] 
-    while ((length(which(duplicated(limni[,tLimni.col])==T))) > 0) {
-      limni[,tLimni.col][which(duplicated(limni[,tLimni.col]) == T)] =  limni[,tLimni.col][which(duplicated(limni[,tLimni.col]) == T)] + dt_increase 
-    }
-    
-    t_limni      = limni[,tLimni.col] - limni[1,tLimni.col]
-    t_limni.true = limni[,tLimni.col]
-    
-    
-    # transforming times in dates:
-    t_limni.date = as.Date(floor(t_limni.true), origin = date_origin)
-    t_limni.date = as.POSIXct(as.POSIXlt(t_limni.date))
-    t_limni.date = t_limni.date  + (t_limni.true - floor(t_limni.true))* 86400      # it is in seconds
+  # check if stage timings are in date format or numeric:
+  #*********************************************
+  if (any(all_formats_dates == tLimni.format)) {
+  #********************************************
+      t_limni          = limni[,tLimni.col]
+      origin.numeric   = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
+      t_limni.numeric  = 0; t_limni.date=0;
+      message("- Converting stage record dates.") 
+      message("  Please wait ...")
+      # hereafter we try to read the dates. Different formats are available, however it may be not exhaustive!
+      # fill free to modify this and add your date format.
+      t_limni.date     = as.character(as.POSIXct(as.POSIXlt(t_limni, origin = date_origin, tz="Europe/Paris", format = tLimni.format)), format = tLimni.format)
+      t_limni.numeric  = as.numeric(as.POSIXct(as.POSIXlt(  t_limni, origin = date_origin, tz="Europe/Paris", format = tLimni.format)), format = tLimni.format)/86400 
+      if (any(is.na(t_limni.date))){
+         dates.wrong.format.date = which(is.na(t_limni.date))
+         message(paste0("  It seems that ", length(dates.wrong.format.date), " stage record dates have different formats from the one specified in the general option file:"))
+         message("  Authomatically trying to convert to same format (f not working check dates manually)")
+         message("  Please wait, it may take some time ...")
+         for (na in which(is.na(t_limni.date))) {
+            t_limni.date[na]    = as.character(as.POSIXct(as.POSIXlt(t_limni[na], origin = date_origin, tz="Europe/Paris",  tryFormats = all_formats_dates)), format = tLimni.format)
+            t_limni.numeric[na] = as.numeric(as.POSIXct(as.POSIXlt(t_limni[na],   origin = date_origin, tz="Europe/Paris",  tryFormats = all_formats_dates)), format = tLimni.format)/86400 
+         }
+      }
+      t_limni.numeric2 = t_limni.numeric  - origin.numeric
+      dt_increase      = 0.001      # if limni data have equal timing we can shift the timings of "dt_increase. change this if you want to increase the delay [day] 
+      while ((length(which(duplicated(t_limni.numeric2)==T))) > 0) {
+        message("  It seems that some stage record data have the same timing (which is bad thing for our analysis).")
+        message("  Trying to slightly delay these dates. Please, wait ...")
+        t_limni.numeric2[which(duplicated(t_limni.numeric2) == T)] = t_limni.numeric2[which(duplicated(t_limni.numeric2) == T)] + dt_increase 
+      }
+      t_limni          = t_limni.numeric2 - t_limni.numeric2[1]
+      t_limni.true     = t_limni.numeric2
 
   
+      
+      
+      
+  ######################################
+  } else if (tLimni.format =="numeric"){
+  ######################################
+      # timings of stage data are in numeric values (not date)!!
+      # Add from Mathieu Lucas:
+      # if limni data have equal timing we can shift the timings.
+      # change dt_increase if you need to increase the delay [day]: 
+      dt_increase = 0.1     
+      while ((length(which(duplicated(limni[,tLimni.col])==T))) > 0) {
+        limni[,tLimni.col][which(duplicated(limni[,tLimni.col]) == T)] =  limni[,tLimni.col][which(duplicated(limni[,tLimni.col]) == T)] + dt_increase 
+      }
+      # initialise limni to the first timing.
+      t_limni      = limni[,tLimni.col] - limni[1,tLimni.col]
+      # while the original timings are called t_limni.true:
+      t_limni.true = limni[,tLimni.col]
+      # transforming numeric times in dates:
+      t_limni.date = as.Date(floor(t_limni.true), origin = date_origin)
+      t_limni.date = as.POSIXct(as.POSIXlt(t_limni.date))
+      t_limni.date = t_limni.date  + (t_limni.true - floor(t_limni.true))* 86400   # now it is in seconds !!!
+      
+  ########
   } else {
-    message("***** Error: tLimni.type not available! *****")
+  ########
+      message("***** Error: selected tLimni.format not available! *****")
   }
-  
   
 
-  #conversion of the stage record to stage in "m":
+  # Now, conversion of the stage record to stage in "m":
+  # Please, notice that all computations and final results will be done in meters !!! 
   if (u.m.limni == "cm") {
-    h_limni = limni[,hLimni.col]/100
+      h_limni = limni[,hLimni.col]/100
   } else if (u.m.limni == "mm") {
-    h_limni = limni[,hLimni.col]/1000
+      h_limni = limni[,hLimni.col]/1000
   } else if (u.m.limni == "m") {
-    h_limni = limni[,hLimni.col]
+      h_limni = limni[,hLimni.col]
+  } else if (u.m.limni == "dm") {
+      h_limni = limni[,hLimni.col]/10
   } else if (u.m.limni == "ft") {
-    h_limni = limni[,hLimni.col]*0.3048
+      h_limni = limni[,hLimni.col]*0.3048
   }
-  df.limni   = data.frame(t_limni, h_limni,  t_limni.true =t_limni.true)  #dataframe of limni
+  # create limni dataframe:
+  df.limni   = data.frame(t_limni, h_limni,  t_limni.true = t_limni.true)  #dataframe of limni.
   nobs.limni = length(h_limni)
   print(paste0("1) Stage record correctly loaded (",file_limni,")"))
   ##################################
   
   
 } else {
-  # no stage record availability!
+  # no stage record availability !
   print("1) Stage record not available !") 
   print("   recession analysis cannot be performed !") 
   print("   adjustment of shift times cannot be done !")
@@ -246,23 +215,24 @@ if (file_limni != FALSE) {
 ###################################################################
 #                      Gaugings:
 ###################################################################
-if (file_gaugings != FALSE) {
+# Read gaugings (stage-discharge) data, if any:
+if ((file_gaugings != FALSE)) {
+###########################################################
   if (file_gaugings        != "synthet_gaugings.csv") {
     Gaugings.raw <- read.csv2(paste0(dir.case_study,"/",file_gaugings),
-                              fileEncoding="UTF-8", quote="",
-                              sep=";",dec=".",header=TRUE, na.strings=c(";","NA"))
-    #Gaugings.raw = na.omit(Gaugings.raw)
-    
+                              fileEncoding="UTF-8", quote="", sep=";",dec=".",header=TRUE, na.strings=c(";","NA"))
+    #Gaugings.raw = na.omit(Gaugings.raw)  # omit NaN from the imported gaugings data
   } else {
     Gaugings.raw <- read.csv2(paste0(dir.single.dataset,"/",file_gaugings),
-                              fileEncoding="UTF-8", quote="",
-                              sep=";",dec=".",header=TRUE, na.strings=c(";","NA"))
+                              fileEncoding="UTF-8", quote="", sep=";",dec=".",header=TRUE, na.strings=c(";","NA"))
     #Gaugings.raw = na.omit(Gaugings.raw)
   }
-  Gaugings.raw = Gaugings.raw[seq(1, nrow(Gaugings.raw), gaugings_filter), ]   # uncomment this if you want to select only specific rows
-
-  first.gaug = 1      # to be changed in future versions.
-  last.gaug  = "last" # to be changed in future versions.
+  # filter the imported gauginsg data with frequency gaugings_filter (by default =1):
+  Gaugings.raw = Gaugings.raw[seq(1, nrow(Gaugings.raw), gaugings_filter), ] 
+  
+  # the following few lines allows selecting a part of the gaugings dataset (to be improved in future versions):
+  first.gaug = 1       
+  last.gaug  = "last"  
   if (last.gaug == "last") {
     last = length(Gaugings.raw[,1])
   } else {
@@ -270,157 +240,134 @@ if (file_gaugings != FALSE) {
   }
   Gaugings = Gaugings.raw[first.gaug:last,]
   
-  
-  
-  
-  if (tGaug.type== "date"){
-  #************************  
-    message("- Converting gaugings dates.") 
-    message("  Please wait ...")
-    t_gaug           = Gaugings[, tGaug.col]
-    origin.numeric   = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
-    t_gaug.numeric   = 0; t_gaug.date=c();
-    pb <- txtProgressBar(min = 0,               # Minimum value of the progress bar
-                         max = length(t_gaug), # Maximum value of the progress bar
-                         style = 3,             # Progress bar style (also available style = 1 and style = 2)
-                         width = 50,            # Progress bar width. Defaults to getOption("width")
-                         char = "=")            # Character used to create the bar.
-    for (i in 1:length(t_gaug)){
-      t_gaug.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, 
-                                                             tz="Europe/Paris",
-                                                             tryFormats = c("%Y-%m-%d %H:%M:%S",
-                                                                            "%Y-%m-%d %H:%M",
-                                                                            "%Y-%m-%d",
-                                                                            
-                                                                            "%d-%m-%Y %H:%M:%S",
-                                                                            "%d-%m-%Y %H:%M",
-                                                                            "%d-%m-%Y",
-                                                                            
-                                                                            "%d/%m/%Y %H:%M:%S",
-                                                                            "%d/%m/%Y %H:%M",
-                                                                            "%d/%m/%Y",
-                                                                            
-                                                                            "%Y/%m/%d %H:%M:%S",
-                                                                            "%Y/%m/%d %H:%M",
-                                                                            "%Y/%m/%d"
-                                                                            )), tz="Europe/Paris",
-                                                  tryFormats = c("%Y-%m-%d",
-                                                                 "%d/%m/%Y %H:%M")))
-      t_gaug.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, 
-                                                           tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
-                                                                                             "%Y-%m-%d %H:%M",
-                                                                                             "%Y-%m-%d",
-                                                                                             
-                                                                                             "%d-%m-%Y %H:%M:%S",
-                                                                                             "%d-%m-%Y %H:%M",
-                                                                                             "%d-%m-%Y",
-                                                                                             
-                                                                                             "%d/%m/%Y %H:%M:%S",
-                                                                                             "%d/%m/%Y %H:%M",
-                                                                                             "%d/%m/%Y",
-                                                                                             
-                                                                                             "%Y/%m/%d %H:%M:%S",
-                                                                                             "%Y/%m/%d %H:%M",
-                                                                                             "%Y/%m/%d"
-                                                                                             )),
-                                                tryFormats = c("%Y-%m-%d",
-                                                               "%d/%m/%Y %H:%M")))/86400 
-      setTxtProgressBar(pb, i)
-    }  
-    close(pb)
-    t_gaug.numeric2 = t_gaug.numeric  - origin.numeric
-    
-    
-    dt_increase = 0.1     # cif gaugings data have equal timing we can shift the timings. change this if you want to increase the delay [day] 
-    while ((length(which(duplicated(t_gaug.numeric2)==T))) > 0) {
-      t_gaug.numeric2[which(duplicated(t_gaug.numeric2) == T)] =  t_gaug.numeric2[which(duplicated(t_gaug.numeric2) == T)] + dt_increase 
-    }
 
-    t_gaug          = t_gaug.numeric2
-    t_gaug.true     = t_gaug.numeric2
-    
-    
-    if (file_limni != FALSE) {
-      if (t_gaug.numeric2[1] <= t_limni.numeric2[1]) {
-        t_gaug       = t_gaug.numeric2  - t_gaug.numeric2[1]
-        t_limni      = t_limni.numeric2 - t_gaug.numeric2[1]
-        initial.time = t_gaug.numeric2[1]
+  # check if stage timings are in date format or numeric:
+  #********************************************
+  if (any(all_formats_dates == tGaug.format)) {
+  #********************************************
+        message("- Converting gaugings dates.") 
+        message("  Please wait ...")
+        t_gaug           = Gaugings[, tGaug.col]
+        origin.numeric   = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
+        t_gaug.numeric   = 0; t_gaug.date=c();
+        pb <- txtProgressBar(min = 0,               # Minimum value of the progress bar
+                             max = length(t_gaug),  # Maximum value of the progress bar
+                             style = 3,             # Progress bar style (also available style = 1 and style = 2)
+                             width = 50,            # Progress bar width. Defaults to getOption("width")
+                             char = "=")            # Character used to create the bar.
+        for (i in 1:length(t_gaug)){
+            # hereafter we try to read the dates. Different formats are available, however it may be not exhaustive!
+            # fill free to modify this and add your date specific format.
+            t_gaug.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_gaug[i], origin = date_origin, tz="Europe/Paris",  tryFormats = all_formats_dates)), tryFormats = all_formats_dates)
+            t_gaug.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_gaug[i],  origin = date_origin,  tz="Europe/Paris",  tryFormats = all_formats_dates)), tryFormats = all_formats_dates)/86400 
+            setTxtProgressBar(pb, i)
+        }  
+        close(pb)
+        t_gaug.numeric2 = t_gaug.numeric - origin.numeric
+        # Add from Mathieu Lucas:
+        # if gaugings data have equal timing we can shift the timings.
+        # change dt_increase if you need to increase the delay [day]: 
+        dt_increase = 0.01
+        while ((length(which(duplicated(t_gaug.numeric2)==T))) > 0) {
+          t_gaug.numeric2[which(duplicated(t_gaug.numeric2) == T)] =  t_gaug.numeric2[which(duplicated(t_gaug.numeric2) == T)] + dt_increase 
+        }
+        t_gaug          = t_gaug.numeric2
+        t_gaug.true     = t_gaug.numeric2
         
-      } else {
-        t_Gaug       = t_gaug.numeric2  - t_limni.numeric2[1]
-        t_limni      = t_limni.numeric2 - t_limni.numeric2[1]
-        initial.time = t_limni.numeric2[1]
-      }
-      df.limni   = data.frame(t_limni, h_limni,  t_limni.true = t_limni.true)  #dataframe of limni
-    } else if (file_limni == FALSE) {
-      t_Gaug         = t_gaug.numeric2  - t_gaug.numeric2[1]
-      initial.time   = t_gaug.numeric2[1]
-    }
-    gaug.date = t_gaug.date
+        # Now define which one between stage record and gaugings record defines
+        # the initialization time. For example, if stage record exists and 
+        # start before gaugings then t=0 will be the first stage time.
+        if (file_limni != FALSE) {
+            if (t_gaug.numeric2[1] <= t_limni.numeric2[1]) {
+               t_gaug       = t_gaug.numeric2  - t_gaug.numeric2[1]
+               t_limni      = t_limni.numeric2 - t_gaug.numeric2[1]
+               initial.time = t_gaug.numeric2[1]
+            } else {
+               t_Gaug       = t_gaug.numeric2  - t_limni.numeric2[1]
+               t_limni      = t_limni.numeric2 - t_limni.numeric2[1]
+               initial.time = t_limni.numeric2[1]
+            }
+            # update dataframe of stage record (df.limni):
+            df.limni   = data.frame(t_limni, h_limni,  t_limni.true = t_limni.true)  #dataframe of limni
+  
+        } else if (file_limni == FALSE) {
+            t_Gaug         = t_gaug.numeric2  - t_gaug.numeric2[1]
+            initial.time   = t_gaug.numeric2[1]
+        }
+        gaug.date = t_gaug.date
     
     
-    
-    
-    
-  } else if (tGaug.type =="numeric"){
-  ###################################
-    # t_gaug        = t_limni.numeric2 - t_limni.numeric2[1]
-    t_gaug.true     = Gaugings[,tGaug.col]
-    Gaug.time       = Gaugings[,tGaug.col]
-    if (file_limni != FALSE) {
-      if (Gaug.time[1] <= t_limni.true[1]) {
-        t_Gaug       = Gaug.time - Gaug.time[1]
-        initial.time =  Gaug.time[1]
-      } else {
-        t_Gaug       = Gaug.time - t_limni.true[1]
-        initial.time = t_limni[1]
-      }
-    } else if (file_limni == FALSE) {
-      t_Gaug       = Gaug.time - Gaug.time[1]
-      initial.time = Gaug.time[1]
-    }
-    gaug.date = as.Date(floor(Gaug.time), origin = date_origin)
-    gaug.date = as.POSIXct(as.POSIXlt(gaug.date))
-    gaug.date = gaug.date  + (Gaug.time - floor(Gaug.time)) * 24 * 3600
-
-    
-    
-    
+  #####################################
+  } else if (tGaug.format =="numeric"){
+  #####################################
+        # Gaugings timings are numeric values:
+        # t_gaug        = t_limni.numeric2 - t_limni.numeric2[1]
+        t_gaug.true     = Gaugings[,tGaug.col]
+        Gaug.time       = Gaugings[,tGaug.col]
+        # Now define which one between stage record and gaugings record defines
+        # the initialization time. For example, if stage record exists and 
+        # start before gaugings then t=0 will be the first stage time.
+        if (file_limni != FALSE) {
+          if (Gaug.time[1] <= t_limni.true[1]) {
+            t_Gaug       = Gaug.time - Gaug.time[1]
+            initial.time = Gaug.time[1]
+          } else {
+            t_Gaug       = Gaug.time - t_limni.true[1]
+            initial.time = t_limni[1]
+          }
+        } else if (file_limni == FALSE) {
+          t_Gaug       = Gaug.time - Gaug.time[1]
+          initial.time = Gaug.time[1]
+        }
+        # transform numeric gaugings timings into dates:
+        gaug.date = as.Date(floor(Gaug.time), origin = date_origin)
+        gaug.date = as.POSIXct(as.POSIXlt(gaug.date))
+        gaug.date = gaug.date  + (Gaug.time - floor(Gaug.time)) * 24 * 3600 #seconds
+        
+  ########
   } else {
   ########
-    message("***** Fatal Error: 'tGaug.type' not available! *****")
+        message("***** Fatal Error: the selected 'tGaug.format' is not available! *****")
   }
   
-  #print(paste0("Initial time of simulation = ", initial.time))
-  
-  
+
   Q_Gaug    <- Gaugings[,QGaug.col]
   Q_BaRatin <- matrix(-9999,length(Q_Gaug),1)
   Q_BaRatin[1:length(Q_Gaug)] = Q_Gaug[1:length(Q_Gaug)] 
+  # we need to determine the standard deviation of each gauged discharge,
+  # depending on the type of uncertainty provided by the user:
   if (uQ.absolute == FALSE) {
+    # user has inserted a relative extended uncertainty at 95%, 
+    # pourcentage of discharge and 2*stdev: 
     uQ_Gaug <- (Gaugings[,uQGaug.col]/100*Q_Gaug)/2
   } else {
+    # user has inserted the standard deviation. 
     uQ_Gaug <- Gaugings[,uQGaug.col]
   }
   
+  # convert unity of gauged stage into meters !
   if (u.m.Hgaug == "cm") {
-    h_Gaug <- Gaugings[,hGaug.col]/100
+       h_Gaug <- Gaugings[,hGaug.col]/100
   } else if (u.m.Hgaug == "mm") {
-    h_Gaug <- Gaugings[,hGaug.col]/1000
+       h_Gaug <- Gaugings[,hGaug.col]/1000
   } else if (u.m.Hgaug == "m") {
-    h_Gaug <- Gaugings[,hGaug.col]
+       h_Gaug <- Gaugings[,hGaug.col]
+  } else if (u.m.Hgaug == "dm") {
+       h_Gaug <- Gaugings[,hGaug.col]/10
   } else if (u.m.Hgaug == "ft") {
-    h_Gaug <- Gaugings[,hGaug.col]*0.3048
+       h_Gaug <- Gaugings[,hGaug.col]*0.3048
   }
+
+  # convert unity of gauged discharge into m^3/s !  
+  # for instance, only two formats are implemented:
   if (u.m.Qgaug == "m^3.s-1") {
-    Q_Gaug <- Gaugings[,QGaug.col]
+       Q_Gaug <- Gaugings[,QGaug.col]
   } else if (u.m.Qgaug == "ft^3.s-1") {
-    Q_Gaug <- Gaugings[,QGaug.col]*0.028317
+       Q_Gaug <- Gaugings[,QGaug.col]*0.028317
   }
-  gaug.df <- data.frame(t_Gaug,h_Gaug,Q_Gaug,uQ_Gaug)   # gaugings dataframe
   
-  
-  
+  # create gaugings dataframes:
+  gaug.df <- data.frame(t_Gaug,h_Gaug,Q_Gaug,uQ_Gaug)   
   data4BaRatin <- data.frame("h"      = h_Gaug,
                              "Q"      = Q_BaRatin,
                              "uQ"     = uQ_Gaug,
@@ -431,38 +378,35 @@ if (file_gaugings != FALSE) {
   print(paste0("2) Gaugings correctly loaded (",file_gaugings,")"))
   
   
-  
-  
-  
-  #The stage-discharge plot (discharge in log scale):
-  #**************************************************
+  #Plot stage-discharge gaugings (discharge in log scale only):
+  #***********************************************************
   gaugings.save  =  "gaugings" 
-  print("   Plotting stage-discharge gaugings.")
+  print("   Plotting stage-discharge gaugings (both linear and log scale).")
   gaugings.plot = ggplot(data= data4BaRatin) + 
-    coord_trans(xlim = grid_RC.xlim, 
-                ylim = grid_RC.ylim.log) +
-    scale_y_log10(na.value = -10,  
-                  breaks   = ticks_RC.y.log,   
-                  labels   = ticks_RC.y.log) +
-    annotation_logticks(base = 10, sides = "l", scaled = TRUE, colour = "black", size = 0.5, linetype = 1)+
-    scale_x_continuous(breaks = seq(grid_RC.xlim[1], grid_RC.xlim[2],  grid_RC.xstep)) +  
-    #theme_light(base_size = 15)+
-    ylab(bquote(.(RC.y.labels) ~ .("[") ~ m^3*s^-1 ~ .("]"))) +  
-    xlab(bquote(.(RC.x.labels) ~ .("[") ~ m ~ .("]")))+
-    geom_point(aes(x = h , y= Q), fill ="blue", pch=21, size = 1.5)+
-    geom_errorbar(aes(x = h,  ymin =Q-2*uQ , ymax =Q +2*uQ), color= "blue", width=.05, size = 0.3) +
-    theme_bw(base_size=10)+
-    theme(  axis.text        = element_text(size=15)
-            ,axis.title       = element_text(size=15, face="bold")
-            ,panel.grid.major = element_line(size=1)
-            ,legend.text      = element_text(size=20)
-            ,legend.title     = element_text(size=20)
-            ,legend.key.size  = unit(1.5, "cm")
-            ,legend.position  = "none")
+                  scale_x_continuous(breaks = seq(grid_RC.xlim[1], grid_RC.xlim[2],  grid_RC.xstep)) +  
+                  #theme_light(base_size = 15)+
+                  ylab(bquote(.(RC.y.labels) ~ .("[") ~ m^3*s^-1 ~ .("]"))) +  
+                  xlab(bquote(.(RC.x.labels) ~ .("[") ~ m ~ .("]")))+
+                  geom_point(aes(x = h , y= Q), fill ="blue", pch=21, size = 1.5)+
+                  geom_errorbar(aes(x = h,  ymin =Q-2*uQ , ymax =Q +2*uQ), color= "blue", width=.05, size = 0.3) +
+                  theme_bw(base_size=10)+
+                  theme( axis.text        = element_text(size=15)
+                        ,axis.title       = element_text(size=15, face="bold")
+                        ,panel.grid.major = element_line(size=1)
+                        ,legend.text      = element_text(size=20)
+                        ,legend.title     = element_text(size=20)
+                        ,legend.key.size  = unit(1.5, "cm") 
+                        ,legend.position  = "none")
   #scale_colour_gradientn(colors=rainbow(7))
-  
   ggsave(gaugings.plot, filename =paste0(dir.case_study,"/", gaugings.save, ".png"), bg = "transparent", width = 10, height =6, dpi = 200)
-  plot(gaugings.plot)
+  gaugings.log.plot = gaugings.plot + 
+                      coord_trans(xlim = grid_RC.xlim,  ylim = grid_RC.ylim.log) +
+                      scale_y_log10(na.value = -10,  breaks   = ticks_RC.y.log, labels   = ticks_RC.y.log) +
+                      annotation_logticks(base = 10, sides = "l", scaled = TRUE, colour = "black", size = 0.5, linetype = 1)
+  ggsave(gaugings.log.plot, filename =paste0(dir.case_study,"/", gaugings.save, "_log.png"), bg = "transparent", width = 10, height =6, dpi = 200)
+  plot(gaugings.log.plot)
+  
+  
   
 } else {
   # no gaugings availability!
@@ -500,124 +444,112 @@ if (file_gaugings != FALSE) {
 ###########################################################################################
 #                       Official dates of RC update:
 ###########################################################################################
+# hereafter we will read the timings or dates of the official rating curve updates (if available).
+# Please, notice that 'Official' may indicate any rating curve provided, validated or suggested
+# by local, national hydrometric services. These dates will be only used in BayDERS for comparison.
+#***********************************
 if (official.shift.times != FALSE) {
 #***********************************
+  #**************************************************** 
   if (file_gaugings        != "synthet_gaugings.csv") {
   #****************************************************
     # read data file with official rating shifts (or RC update)
-    officialShifts <- read.csv2(paste0(dir.case_study, "/",  official.shift.times),
-                                fileEncoding="UTF-8-BOM", quote="", sep= ";", dec=".", header=TRUE)
+    officialShifts = read.csv2(paste0(dir.case_study, "/",  official.shift.times), fileEncoding="UTF-8-BOM", quote="", sep= ";", dec=".", header=TRUE)
+    t_official     = officialShifts[,tOfficial.col]
     
-    if (tOfficial.type== "date"){
-    #****************************  
-      t_official         = officialShifts[,tOfficial.col]
-      origin.numeric     = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
-      t_official.numeric = 0
-      t_official.date    = c()
-      message("- Converting official dates.") 
-      message("  Please wait ...")
-      pb <- txtProgressBar(min = 0,               # Minimum value of the progress bar
-                           max = length(t_official), # Maximum value of the progress bar
-                           style = 3,             # Progress bar style (also available style = 1 and style = 2)
-                           width = 50,            # Progress bar width. Defaults to getOption("width")
-                           char = "=")            # Character used to create the bar.
-      for (i in 1:length(t_official)){
-        t_official.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_official[i], origin = date_origin,
-                                                               tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
-                                                                                                 "%Y-%m-%d %H:%M",
-                                                                                                 "%Y-%m-%d",
-
-                                                                                                 "%d-%m-%Y %H:%M:%S",
-                                                                                                 "%d-%m-%Y %H:%M",
-                                                                                                 "%d-%m-%Y",
-
-                                                                                                 "%d/%m/%Y %H:%M:%S",
-                                                                                                 "%d/%m/%Y %H:%M",
-                                                                                                 "%d/%m/%Y",
-
-                                                                                                 "%Y/%m/%d %H:%M:%S",
-                                                                                                 "%Y/%m/%d %H:%M",
-                                                                                                 "%Y/%m/%d"
-                                                               )),
-                                                    tz="Europe/Paris",
-                                                    tryFormats = c("%Y-%m-%d",
-                                                                   "%d/%m/%Y")))
-        t_official.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_official[i], origin = date_origin,
-                                                             tz="Europe/Paris", tryFormats = c("%Y-%m-%d %H:%M:%S",
-                                                                                               "%Y-%m-%d %H:%M",
-                                                                                               "%Y-%m-%d",
-
-                                                                                               "%d-%m-%Y %H:%M:%S",
-                                                                                               "%d-%m-%Y %H:%M",
-                                                                                               "%d-%m-%Y",
-
-                                                                                               "%d/%m/%Y %H:%M:%S",
-                                                                                               "%d/%m/%Y %H:%M",
-                                                                                               "%d/%m/%Y",
-
-                                                                                               "%Y/%m/%d %H:%M:%S",
-                                                                                               "%Y/%m/%d %H:%M",
-                                                                                               "%Y/%m/%d"
-                                                             )),
-                                                  tryFormats = c("%Y-%m-%d",
-                                                                 "%d/%m/%Y")))/86400
-        setTxtProgressBar(pb, i)
-      }
-      close(pb)
+    # check if stage timings are in date format or numeric:
+    #************************************************
+    if (any(all_formats_dates == tOfficial.format)) {
+    #************************************************
+           origin.numeric     = as.numeric(as.POSIXct(as.POSIXlt(0, origin = date_origin)))/86400
+           t_official.numeric = 0
+           t_official.date    = c()
+           message("- Converting official dates.") 
+           message("  Please wait ...")
+           pb <- txtProgressBar(min = 0,               # Minimum value of the progress bar
+                                max = length(t_official), # Maximum value of the progress bar
+                                style = 3,             # Progress bar style (also available style = 1 and style = 2)
+                                width = 50,            # Progress bar width. Defaults to getOption("width")
+                                char = "=")            # Character used to create the bar.
+           
+           # hereafter we try to read the dates. Different formats are available, however it may be not exhaustive!
+           # fill free to modify this and add your date specific format.
+           for (i in 1:length(t_official)){
+             t_official.date[i]    = as.character(as.POSIXct(as.POSIXlt(t_official[i], origin = date_origin,  tz="Europe/Paris",  tryFormats = all_formats_dates)), tryFormats = all_formats_dates)
+             t_official.numeric[i] = as.numeric(as.POSIXct(as.POSIXlt(t_official[i], origin = date_origin,  tz="Europe/Paris",  tryFormats = all_formats_dates)), tryFormats = all_formats_dates)/86400 
+             setTxtProgressBar(pb, i)
+           }
+           close(pb)
+           t_official.numeric2 = t_official.numeric  - origin.numeric
+           
+      
+    #########################################
+    } else if (tOfficial.format =="numeric"){
+    #########################################
+           # Timings of 'official' RC update are numeric values:
+           t_official.numeric2 = t_official
+           # transform numeric gaugings timings into dates:
+           t_official.date = as.Date(floor(t_official.numeric2), origin = date_origin)
+           t_official.date = as.POSIXct(as.POSIXlt(t_official.date))
+           t_official.date = t_official.date  + (t_official.numeric2 - floor(t_official.numeric2)) * 24 * 3600 #seconds
     }
-    t_official.numeric2 = t_official.numeric  - origin.numeric
+  
     
-    
-    # re-initialize the numeric dates: 
+    # Re-initialize the numeric dates of official RC updates:
+    # define which one between stage record and gaugings record defines
+    # the initialization time. For example, if stage record exists and 
+    # start before gaugings then t=0 will be the first stage time.
     if (!is.null(t_Gaug)) {
         if (!is.null(t_limni)){
            if (t_Gaug[1] <= t_limni[1]) {
                officialShiftsTime <- t_official.numeric2 - t_gaug.numeric2[1]
            } else {
-               officialShiftsTime <- t_official.numeric2 - t_limni.numeric2[1]
+               officialShiftsTime <- t_official.numeric2 - t_limni.true[1]
            }
        } else {
            officialShiftsTime <- t_official.numeric2 - t_gaug.numeric2[1]
        }
     } else {
        if (!is.null(t_limni)){
-           officialShiftsTime <- t_official.numeric2 - t_limni.numeric2[1]
+           officialShiftsTime <- t_official.numeric2 - df.limni$t_limni.true[1]
        } else {
            message("******* Something is wrong ! It seems you did not upload neither gaugings nor stage record")
        }
     }
     
-    
-  #########
-  } else { # numeric date:
-  #########
-    officialShifts <- read.csv2(paste0(dir.single.dataset ,"/",  official.shift.times),
-                                fileEncoding="UTF-8", quote="", sep=";", dec=".", header=TRUE)
+
+  
+  ########
+  } else { 
+  ########
+    # dates are for the synthetic case study.
+    officialShifts     <- read.csv2(paste0(dir.single.dataset ,"/",  official.shift.times),
+                                    fileEncoding="UTF-8", quote="", sep=";", dec=".", header=TRUE)
     officialShiftsTime <- officialShifts[,tOfficial.col] - t_Gaug[1]
   }
   
-
   
+  
+  # Create the official dates dataframe:
   if (!is.null(officialShiftsTime)) {
-       data.annotate.off =  data.frame(xeffect = officialShiftsTime, 
-                                       xpotent = officialShiftsTime)
+       data.annotate.off =  data.frame(xeffect = officialShiftsTime, xpotent = officialShiftsTime)
   } else {
        data.annotate.off = NULL
   }
-  
-  
-  
-  
   print(paste0("3) Official shift times correctly loaded (",official.shift.times,")"))
-  ###################  
+  
+  
+  
+  
+###################  
 } else {
-  ###################
+###################
+  # not provided!
   print("3) Official shift times not available!")
   print("   Performance evaluation not possible !!!")
   officialShiftsTime = NULL
   data.annotate.off  = NULL
 }
-
 
 
 
@@ -641,49 +573,119 @@ limni.save              =  "Stage_record" # Name of the study Limni (for plots)
 
 if (!is.null(df.limni)) {
   print("   Plotting stage record with gaugings.")
-  limni.plot <- ggplot() +
-    geom_line(aes(x=t_limni, y=df.limni$h_limni), color = "lightblue",    size =0.2)+
-    #scale_x_continuous(expand=c(0,0))+
-    #scale_x_date(expand=c(0,0))+
-    labs()+
-    xlab(limni.labels[1]) +
-    ylab(limni.labels[2])+
-    geom_point(aes(x = t_Gaug,  y = h_Gaug) , pch=21,    fill= "blue",   size = 2) + 
-    # geom_point(aes(x = gaug.date[1:index.lastgauging.retro], 
-    #                y= h_Gaug[1:index.lastgauging.retro]) ,
-    #            pch=21, fill= "blue", size = 3)+
-    # geom_point(aes(x = gaug.date[index.lastgauging.retro+1:length(t_Gaug)],
-    #                y = h_Gaug[index.lastgauging.retro+1:length(t_Gaug)]) ,
-    #            pch=21, fill= "green", size = 3)+
-    # annotate("text", x= c(limni.date[index.start.realtime/2],
-    #                       limni.date[index.start.realtime+(length(limni.date) - index.start.realtime+1)/2],
-    #                       limni.date[index.start.realtime +1]),
-    #          y= c(grid_limni.ylim[2], grid_limni.ylim[2], grid_limni.ylim[2]), 
-    #          label= c("Retrospective \n Analysis", "Real Time", "Initialisation \n t0"),
-  #          color = c("blue", "green", "red"), size=5) +
-  coord_cartesian(clip = 'off')+
-    theme_bw(base_size=20)+
-    theme(axis.text         = element_text(size=15)
-          ,axis.title       = element_text(size=15)
-          ,panel.grid.major = element_blank()
-          ,panel.grid.minor = element_blank()
-          ,legend.text      = element_text(size=20)
-          ,legend.title     = element_text(size=30)
-          ,legend.key.size  = unit(1.5, "cm")
-          ,legend.position  = "none"
-          ,plot.margin      = unit(c(0.5,0.5,0.2, 1),"cm"))
   
-  
-  
-  if (!is.null(data.annotate.off)) {
-    limni.plot = limni.plot+ 
-      geom_vline(xintercept = data.annotate.off$xeffect, color="red", size=0.5, linetype="dashed")
-    
+  # filter the time series of stage record removing the periods with missing data (by adding NA):
+  tt=2; cc=0; dt_limni = 0; #initialisation
+  df.limni_filtered = cbind(df.limni, date = t_limni.date)
+  limni.NA          = na.omit(df.limni_filtered)
+  dates             = limni.NA$date
+  tnum              = limni.NA$t_limni 
+  stage             = limni.NA$h_limni
+
+  for (tt in 2:length(limni.NA$t_limni)){
+    dt_limni[tt] =  limni.NA$t_limni[tt] - limni.NA$t_limni[tt-1]
   }
   
-  ggsave(limni.plot, filename =paste0(dir.case_study,"/",limni.save,".png"),
-         bg = "transparent", width = 14, height =6, dpi = 200)
-  plot(limni.plot)
+  for (tt in 2:length(limni.NA$t_limni)){
+    if (dt_limni[tt] > 10*max(1, mean(dt_limni))){
+      cc = cc+1
+      ghost = tt
+      if (cc ==1){
+        message("Period with missing data --> adding NA values:")
+      }
+      print(paste0("missing ", dt_limni[tt], " days at ", as.Date(dates[tt],      tryFormats = all_formats_dates)))
+      dates = c(limni.NA$date[1: (ghost-1)],    
+                format(mean(c(as.Date(dates[tt],   tryFormats = all_formats_dates), as.Date(dates[tt-1], tryFormats = all_formats_dates))), format = tLimni.format),
+                dates[ghost:length(dates)])
+      tnum  = c(limni.NA$t_limni[1: (ghost-1)],     
+                (tnum[tt] + tnum[tt-1])/2 , 
+                tnum[ghost:length(tnum)])
+      stage = c(stage[1: (ghost-1)],        
+                NA,                        
+                stage[ghost:length(stage)])
+      # update counter:
+      tt    = tt+1
+    }
+    tt = tt+1
+  }
+  message(" ")
+  df.limni_filtered = data.frame(t_limni = tnum,  h_limni = stage, t_limni.date = dates)
+  
+  # plotting stage record with gaugings (if any):
+  limni.plot <- ggplot() +
+                geom_line(aes(x=df.limni_filtered$t_limni, y=df.limni_filtered$h_limni), color = "lightblue",    size =0.3)+
+                #scale_x_continuous(expand=c(0,0))+
+                #scale_x_date(expand=c(0,0))+
+                labs()+
+                xlab(limni.labels[1]) +
+                ylab(limni.labels[2])+
+                geom_point(aes(x = t_Gaug,  y = h_Gaug) , pch=21,    fill= "black",   size = 2) + 
+                coord_cartesian(clip = 'off')+
+                theme_bw(base_size=20)+
+                theme(axis.text         = element_text(size=15)
+                     ,axis.title       = element_text(size=15)
+                     ,panel.grid.major = element_blank()
+                     ,panel.grid.minor = element_blank()
+                     ,legend.text      = element_text(size=20)
+                     ,legend.title     = element_text(size=30)
+                     ,legend.key.size  = unit(1.5, "cm")
+                     ,legend.position  = "none"
+                     ,plot.margin      = unit(c(0.5,0.5,0.2, 1),"cm"))
+                if (!is.null(data.annotate.off)) {
+                    limni.plot = limni.plot+ 
+                    geom_vline(xintercept = data.annotate.off$xeffect, color="red", size=0.7, linetype="dashed")
+    
+                }
+                ggsave(limni.plot, filename =paste0(dir.case_study,"/",limni.save,".png"),bg = "transparent", width = 14, height =6, dpi = 200)
+                plot(limni.plot)
+  
+                
+  # plot limni with dates:
+  n_years = (tail(as.Date(t_limni.date, format = tLimni.format), 1) - as.Date(t_limni.date, format = tLimni.format)[1])/365
+  if( n_years > 100){
+       ticks.date = 20
+  } else  if (( n_years > 50) & ( n_years <= 100)){
+       ticks.date = 10
+  } else  if (( n_years > 20) & ( n_years <= 50)){
+    ticks.date = 5
+  } else  if (( n_years > 10) & ( n_years <= 20)){
+    ticks.date = 2
+  } else  if (n_years <= 10){
+    ticks.date = 1
+  }
+  
+  
+  limni.dates.plot <- ggplot() +
+                      geom_line(aes(x= as.Date(df.limni_filtered$t_limni.date, format = tLimni.format), y=df.limni_filtered$h_limni), color = "lightblue",  size =0.3)+
+                      #scale_x_date(expand=c(0,0)) +
+                      scale_x_date(breaks= function(x) seq.Date(from = min(x), to = max(x), by = paste0("", ticks.date, " years"))) +
+                      labs()+
+                      xlab(limni.labels[1]) +
+                      ylab(limni.labels[2])
+                      if (!is.null(gaug.date)){
+                         limni.dates.plot = limni.dates.plot +
+                         geom_point(aes(x = as.Date(t_gaug.date,  tryFormats = all_formats_dates),  y = h_Gaug) , pch=21,    fill= "black",   size = 2)
+                      }
+                      limni.dates.plot = limni.dates.plot +                        
+                      coord_cartesian(clip = 'off')+
+                      theme_bw(base_size=20)+
+                      theme(axis.text         = element_text(size=15)
+                           ,axis.text.x       = element_text(size=10)
+                           ,axis.title        = element_text(size=15)
+                           ,panel.grid.major  = element_blank()
+                           ,panel.grid.minor  = element_blank()
+                           ,legend.text       = element_text(size=20)
+                           ,legend.title      = element_text(size=30)
+                           ,legend.key.size   = unit(1.5, "cm")
+                           ,legend.position   = "none"
+                           ,plot.margin       = unit(c(0.5,0.5,0.2, 1),"cm"))
+                      if (!is.null(data.annotate.off)) {
+                          limni.dates.plot = limni.dates.plot+ 
+                          geom_vline(xintercept = as.Date(t_official.date,  tryFormats = all_formats_dates), color="red", size=0.7, linetype="dashed")
+                      }
+                      ggsave(limni.dates.plot, filename =paste0(dir.case_study,"/",limni.save,"_dates.png"),
+                             bg = "transparent", width = 14, height =6, dpi = 200)
+                      plot(limni.dates.plot)
 }     
 
 
@@ -844,6 +846,19 @@ colo               = color.generation(n = max.number.periods)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 ############
 # RC PRIORS:
 ############
@@ -853,7 +868,7 @@ message("- Hydraulic configuration:")
 print(c(paste0("  ", ncontrols, " controls defined: "), control.type))
 print("  Matrix of controls:") 
 print(M)
-Sys.sleep(1.5)
+Sys.sleep(0.3)
 
 
 #Parameter a:
@@ -917,7 +932,7 @@ if (propagat == TRUE){
   }
 } 
 
-Sys.sleep(1.5)
+Sys.sleep(0.5)
 
 
 
@@ -944,7 +959,7 @@ for (c in 1:ncontrols){
   }
   cat(paste0(bdistr, "(",  b.prior[c], ", ", st_b.prior[c], ")\n"))
 }
-Sys.sleep(1.5)
+Sys.sleep(0.5)
 
 
 
@@ -972,7 +987,7 @@ for (c in 1:ncontrols){
   cat(paste0(cdistr, "(",  c.prior[c], ", ", st_c.prior[c], ")\n"))
 }
 
-Sys.sleep(1)
+Sys.sleep(0.5)
 
 
 

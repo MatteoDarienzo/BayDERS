@@ -7,9 +7,12 @@ nSmax                      = 5                          # Maximum number of segm
 Nmin                       = 1                          # minimum number of data in a segment ( >=1, by default = 1) 
 criterion                  = "DIC"                      # Criterion for the choice of the model ("AIC","BIC", "DIC", "HQC")
 shift.time.adjustment.type = 2                          # 1 = select always the MAP; 2= select always the largest closest flood peak; 3 = will ask to manually insert a value 
-plot_dates                 = TRUE                       # [TRUE/FALSE] plot or not the date of each detected shift time (if any) on the stage record.
+plot_dates                 = FALSE                      # [TRUE/FALSE] plot or not the date of each detected shift time (if any) on the stage record.
 st_b.prior                 = c(1.5, 1.5, 0.2)           # Initial stdev of b:
 plot.results.only          = FALSE                      # [FALSE/TRUE] if TRUE no computation is performed. only previous results are plotted.
+deltat_peaks               = 500                        # minimum time lag between major floods (to find all major peaks in the series and adjust the shift times), e.g., 100-500 
+
+
 
 
 

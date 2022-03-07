@@ -16,8 +16,8 @@ u.m.time             <- "days"           # options: "days" or date format "c(Y,M
 QGaug.col            <- 3                # column position in the file ...
 hGaug.col            <- 2                # column position in the file ...
 uQGaug.col           <- 4                # column position in the file ...
-tGaug.col            <- 5                # or c(1,2,3,4,5,6) if a date format in multiple columns
-tGaug.type           = "numeric"        # "numeric or "date".     
+tGaug.col            <- 1                # or c(1,2,3,4,5,6) if a date format in multiple columns
+tGaug.format         = "%d/%m/%Y"        # insert "numeric" or the date format like "%d/%m/%Y %H:%M".  
 uQ.absolute          <- FALSE            # TRUE (if st dev of uncertainty) or FALSE (if % of Q)
 gaugings_filter      <- 5                # consider a gauging every "gaugings_filter" gaugings. 
 
@@ -39,8 +39,8 @@ RC.x.labels          = "Stage h"        # RC:  y labels (for plots)
 file_limni           <- "Rio_Buzi_Estaquinha_limni.csv"     # name of the csv file with the stage record (put FALSE if not available!)
 u.m.limni            <- "m"             # options: "m", "cm", "mm" or "ft"
 hLimni.col           <- 2                # column position in the file ...
-tLimni.col           <- 3                # column position in the file ...
-tLimni.type          = "numeric"                          # "numeric or "date".  
+tLimni.col           <- 1                # column position in the file ...
+tLimni.format        = "%d/%m/%Y"                   # insert "numeric" or the date format like "%d/%m/%Y %H:%M".  
 limni_filter         <- 1                # consider a stage every "stage_filter" values
 grid_limni.ylim      = c(0,12,2)         # grid for Limni plots
 limni.labels         = c("Time [days]", "Stage h [m]")  #limni: x and y labels (for plots)
@@ -54,8 +54,8 @@ date_origin          = "1899-12-30"      # to transform dates from numeric (by d
 # Official dates of rating shifts (or RC update):
 #***********************************************
 official.shift.times <- "Rio_Buzi_Estaquinha_official_shift_times2.csv" # name of the csv file with official shift dates (put FALSE if not available!)
-tOfficial.col        = 1                       # column position in the file .
-tOfficial.type       = "numeric"               # "numeric or "date". format of time.   
+tOfficial.col        = 3                       # column position in the file .
+tOfficial.format     = "%d/%m/%Y"              # insert "numeric" or the date format like "%d/%m/%Y %H:%M".  
 
 
 

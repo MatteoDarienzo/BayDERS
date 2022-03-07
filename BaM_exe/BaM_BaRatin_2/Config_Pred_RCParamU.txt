@@ -1,5 +1,5 @@
 'BaM_BaRatin_2\Hgrid.txt'
-851
+370
 1
 .true.
 .false.

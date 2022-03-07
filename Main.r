@@ -7,13 +7,13 @@
 # Author:        Matteo Darienzo                                                              #
 # Institute:     INRAE Lyon-Grenoble, UR RiverLy, France                                      #
 # Year:          2019                                                                         #
-# version:       v.1  - last update: 28/03/2021                                               #
+# version:       v.1.0.0  - last update: 09/02/2022                                           #
 #                                                                                             #
 #                                                                                             #
 #---------------------------------------------------------------------------------------------#
 #                             Main objective of the program                                   #
 #---------------------------------------------------------------------------------------------#
-# This program performs the detection of rating shifts in retrospective based on the          #
+# This program performs the automatic detection of rating shifts in retrospective based on the#
 # segmentation of gaugings and on a stage-recession analysis accounting for both uncertainties#
 #---------------------------------------------------------------------------------------------#
 #                                   Acknowledgements                                          #
@@ -23,17 +23,17 @@
 #                            Jerome Le Coz (INRAE)                                            #
 #                            Michel Lang (INRAE)                                              # 
 #                                                                                             #
-# The code makes use of:                                                                      #
-#                            the "DMSL" package of prof. Dmitri Kavetski                      #
-#                            the software "BaM.exe" developped by Benjamin Renard, Inrae      #
-#                            the BaRatin method (Le Coz et al., 2014)                         #
-#                            the BaRatin method (Mansanarez et al., 2019)                     #
+# The code BayDERS makes use of:                                                              #
+#                            "DMSL" package of prof. Dmitri Kavetski                          #
+#                            "BaM.exe" software developped by Benjamin Renard, Inrae          #
+#                            BaRatin method (Le Coz et al., 2014)                             #
+#                            BaRatin-SPD method (Mansanarez et al., 2019)                     #
 #                                                                                             #
 # Project funded by:                                                                          #
 #                            Electricite de France (EDF)                                      #
 #                            Compagnie Nationale du Rhone (CNR)                               #
 #                            SCHAPI (France)                                                  #
-#                            INRAE                                                            #
+#                            INRAE (France)                                                   #
 #                                                                                             #
 #                                                                                             #
 #---------------------------------------------------------------------------------------------#
@@ -41,16 +41,17 @@
 #---------------------------------------------------------------------------------------------#
 # Read the "readme.txt" for user info.                                                        #
 # Main references:                                                                            #
-# - Mansanarez et al., 2019                                                                   #
-# - Mansanarez et al., 2016                                                                   #
-# - Le Coz et al., 2014                                                                       #
-# - Darienzo et al., 2021                                                                     #
-# - Darienzo et al., in preparation                                                           #
+# - Mansanarez et al., 2019 (multi-period RC estimation)                                      #
+# - Mansanarez et al., 2016 (PhD thesis, non-unique stage-discharge relations)                #
+# - Le Coz et al., 2014 (RC estimation, BaRatin method)                                       #
+# - Darienzo et al., 2021 (Method for gaugings segmentation)                                  #
+# - Darienzo, 2021 (PhD thesis)                                                               #
+# - Renard et al. 2006 (Bayesian Modelling, multi-block Metropolis MCMC approach)             # 
 #                                                                                             #
 # --------------------------------------------------------------------------------------------#
 # - Recursive Segmentation of gaugings                                                        #
 #---------------------------------------------------------------------------------------------#
-# Make sure to include all following modules files in the apposite "Modules" folder:          # 
+# Make sure to have all following modules files in the apposite "Modules" folder:             # 
 # - module_BaRatin.R                                                                          #
 # - module_gaugings_segmentation.R                                                            #
 # - module_gaugings_segmentation_plots.R                                                      #
@@ -60,15 +61,32 @@
 # - module_BaM_Results.R                                                                      #
 # - module_shift_generator.R                                                                  #
 # - module_prior_propagation.R                                                                #
-# - module_BaRatinSPD                                                                         #
+# - module_BaRatinSPD.R                                                                       #
+# - module_retrospective_analysis.R                                                           #
+# - module_retrospective_analysis_plots.R                                                     #
 #                                                                                             #
-# and all following files for BaM app within the apposite "BaM_exe" folder:                   #
-# - BaM.exe (fortran compiled exe for Bayesian modelling):                                    #
-#   (BaM_2exp_pool2.exe; BaM_BaRatin_2.exe;  BaM_BaRatin_SPD.exe;                             #
-#    BaM_recession_multi_model_final.exe;  BaM_Segmentation2.exe)                             #
-# - Config_BaM.txt                                                                            #
+# and all following exe files for running BaM (fortran compiled exe for Bayesian modelling,   #
+# developped by Benjamin Renard) within the apposite "BaM_exe" folder:                        #
+# - BaM_2exp_pool2.exe                                                                        #
+# - BaM_BaRatin_2.exe                                                                         #
+# - BaM_BaRatin_SPD.exe                                                                       #
+# - BaM_recession_multi_model_final.exe                                                       #
+# - BaM_Segmentation2.exe)                                                                    #
+# ant the mainconfiguration files "Config_BaM.txt" and the subfolders containing the          # 
+# configuration files (mcmc options, input data, ...) and results of the Bayesian inference   #
+# specific to each application.                                                               #                   
 #                                                                                             #
-# and all files with input data and options in the apposite "Case_studies/..." folder         #
+# --------------------------------------------------------------------------------------------#
+# IMPORTANT !!!!                                                                              #
+# Please, notice that a few .dll libraries sometimes are needed to successfully run the exe.  #
+# In particular, be sure to have the following .dll libraries in the folder "BaM_exe":        #
+# - libgcc_s_dw2-1.dll                                                                        #
+# - libgcc_s_sjlj-1.dll                                                                       #
+# - libgfortran-3.dll                                                                         #
+# - libquadmath-0.dll                                                                         #
+# - libwinpthread-1.dll                                                                       #
+#                                                                                             #
+# All files with input data and options in the apposite "Case_studies/..." folder             #
 # - "gaugings.csv" (input file with gaugings data)                                            #
 # - "limni.csv" (input file with stage record (in cm))                                        #
 # - "Options_General_input.R" (input R  file with the options for the RC estimation and info) #
@@ -77,6 +95,21 @@
 # - "Options_BaRatinSPD.R" (input R file with the options for the BaRatin-SPD)                #
 #                                                                                             #
 # !!! for input data files please use the same format as in the example of Meyras !!!         #
+# --------------------------------------------------------------------------------------------#
+#                                       Disclaimer                                            #
+# --------------------------------------------------------------------------------------------#
+# Please, notice that BayDERS is an experimental software. Further analysis is required for   #
+# validating the proposed tools. We are not responsible for any loss (of data, profits,       #
+# business, customers, orders, other costs or disturbances) derived by their use in the       #
+# operational practice.                                                                       #
+# The authorized user accepts the risks associated with using the software given its nature   #
+# of free software. It is reserved to expert Users (developers or professionals) having prior # 
+# knowledge in computer science, hydraulics and statistics.                                   #
+#                                                                                             #
+# For any question or feedback please contact us at one of the following adresses:            #
+# - matteo.darienzo@cimafoundation.org                                                        #
+# - jerome.lecoz@inrae.fr                                                                     #
+# - benjamin.renard@inrae.fr                                                                  #
 ###############################################################################################
 
 
@@ -94,9 +127,8 @@
 
 
 
-
 ##############################################################################################
-#                               INITIALIZATION    (just run)                                 #
+#                               INITIALIZATION    (just run the following lines)             #
 ##############################################################################################
 # Get the main directory folder automatically:         
                    if(!is.null(dev.list())) dev.off() # Clear plots
@@ -138,12 +170,13 @@
                    install_pack( pack ) 
                    
                    
-
                    
                    
                    
                    ###########################################################################
                    # Define the case study name (the same name of the case study folder !!!): 
+                   # select the index of the case study folder that will appear in the popup 
+                   # R window:
                    all_case_studies = list.files(paste0(dir_code, "/Case_studies"))
                    case_study_name <- all_case_studies[ as.numeric(
                                        dlgInput(c("Insert the name of case study folder: \n",
@@ -160,12 +193,17 @@
                    
                    
                    
+                   
+                   
+                   
+                   
 ##############################################################################################
 #                            READ GENERAL INPUTS FOR THE CASE STUDY                          #
 ##############################################################################################           
 # Read all input data and options:
-# Please, make sure that the general input file "Options_General.r" (located in the 
-# case-study folder) is correctly configured.                   
+# IMPORTANT:
+# Please, make sure that the configuration file with the general settings "Options_General.r" 
+# is correctly configured and located in the case-study folder.                   
                    source(paste0(dir.modules,"/module_read_input.r"))
 
                    
@@ -203,26 +241,23 @@
 # - 4) Adjustment of detected shift times and determination of sub-periods
 # - 5) Iterative re-estimation of RC0 and re-segmentation of residuals (steps 1-4) 
 #      for each sub-period
-#
 # For a detailed description of each step see Darienzo et al., 2021.
 # Please, be sure to have completely filled the input files in the case study folder:
 # - "Options_Segment_gauging.R"
 # - "Options_General.R"
 # - "Options_BaRatinSPD.R" (for estimating multiperiod RC with the results of segmentation)
 ###############################################################################################
-                   
                     dir.segment.g        =  paste0(dir.case_study,"/Results/segmentation_gaugings")
                     file.options.general =  paste0(dir.case_study,"/Options_General.R")
                     file.options.segment =  paste0(dir.case_study, "/Options_Segment_gaugings.R")
                     file.options.SPD     =  paste0(dir.case_study,"/Options_BaRatinSPD.R")
                     dir.create(dir.segment.g)
                     
-                    
+                    #------------------------------------------------------------------------------------------------------------------------------
                     # - The function below "gaugings.segmentation" is located in "module_gaugings_segmentation.r" and 
                     #   uses other functions located in "module_BaRatin.r" and "module_gaugings_segmentation_plots.r" 
                     #   It performs the segmentation of gaugings, based on a Bayesian approach and identifies the periods with stable RC. 
                     # - It uses the software "BaM.exe" (Renard et al., 2006) for the bayesian estimation of the segmentation model.
-                    #
                     # - inputs and options:
                     #   > dir_code             =  directory of the main program file, set by default.
                     #   > dir.exe              =  directory of the BaM executable, set by default.
@@ -238,10 +273,11 @@
                     #   > gaugings             =  dataframe with the gaugings data-set (columns: time, stage, u_stage, discharge, u_discharge)
                     #   > official.dates       =  vector of dates of RC update given by the hydrometric service. by default equal to official.dates.
                     #                             which is defined in module_read_input.r and equal to FALSE if no official dates are available.
-                    #   > colors.period        =  this designs the vector with the colors (highly contrasted) to use to illustrate the detected periods.
+                    #   > colors.period        =  it designs the vector with the colors (highly contrasted) to illustrate the detected periods.
                     #   > save.all.results     =  if TRUE, all intermediate results will be saved, also the mcmc convergency tests.
                     #   > plot.results.only    =  if you have already performed the segmentation and you only want to plot results then type TRUE,
                     #                             otherwise type FALSE. 
+                    #------------------------------------------------------------------------------------------------------------------------------
                     gaug.segment  = gaugings.segmentation(dir_code              =  dir_code, 
                                                           dir.exe               =  dir.exe,  
                                                           dir.case_study        =  dir.case_study,
@@ -358,7 +394,7 @@
                     
                     
                     # Performance evaluation (to do yet!!!):
-                    #####################################
+                    #######################################
                     # Plot DIC and other performance criteria to compare all used models and "Chi":
                     # plot.performance.model.comparison(model.names         = rec.model, # stage-recssion models
                     #                                   model.titles        = c(paste0("M", seq(1,length(rec.model)))),
@@ -388,6 +424,11 @@
 ################################################################################################################
 #   RESULTS OF STEP 1 OF THE RETROSPECTIVE ANALYSIS:  Gaugings + recessions
 ################################################################################################################
+                    # This section performs the combining of results of segmentation of gaugings and of 
+                    # stage-recession analysis. You will be asked to select the folder containing the 
+                    # corresponding results and then, eventually, to remove some shift times, because in common
+                    # between the two methods or because suspicous or not reliable according to your expertise.
+                    
                     # charge all main directories (by deafault): 
                     dir.segment.g            =  paste0(dir.case_study,"/Results/segmentation_gaugings")
                     dir.segment.rec          =  paste0(dir.case_study,"/Results/segmentation_recessions")
@@ -398,17 +439,17 @@
                     file.options.recessions  =  paste0(dir.case_study,"/Options_Recession_analysis.R")
                     
                     # read shift detection results from all available tools (gauings + recessions:
-                    res_gaug_recess = read_all_results_shift_detection(dir.segment.g, 
-                                                                       dir.segment.rec,
-                                                                       dir.segment.gaug.rec,
-                                                                       stage.record              =  df.limni,         
-                                                                       gaugings                  =  data4BaRatin,       
-                                                                       official.dates            =  officialShiftsTime, 
-                                                                       colors.period             =  colo,
-                                                                       file.options.general,
-                                                                       file.options.segment,
-                                                                       file.options.SPD,
-                                                                       file.options.recessions)
+                    res_gaug_recess = read_all_results_shift_detection(dir.segment.g             = dir.segment.g, 
+                                                                       dir.segment.rec           = dir.segment.rec,
+                                                                       dir.segment.gaug.rec      = dir.segment.gaug.rec,
+                                                                       stage.record              = df.limni,         
+                                                                       gaugings                  = data4BaRatin,       
+                                                                       official.dates            = officialShiftsTime, 
+                                                                       colors.period             = colo,
+                                                                       file.options.general      = file.options.general,
+                                                                       file.options.segment      = file.options.segment,
+                                                                       file.options.SPD          = file.options.SPD,
+                                                                       file.options.recessions   = file.options.recessions)
 
 
                     
@@ -417,6 +458,9 @@
                     
                     
             
+                    
+                    
+                    
                     
                     
                     

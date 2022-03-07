@@ -11,14 +11,14 @@ isVar                    = c(T,F,F, F,F,F)               # [T/F] Define which RC
 dg.prior                 = c(0, 0.25)                    # mean and stdev for incremental global change priors
 dl.prior                 = c(0, 0.25)                    # mean and stdev for incremental local change priors
 dB.prior                 = c(1, 0.2)                     # mean and stdev for channel width change priors
-b.prior                  = c(-1.5, 4)                       # mean for parameters "b" for the oldest period 
-st_b.prior               = c(0.2, 0.5)              # stdev for parameters "b" for the oldest period
+b.prior                  = c(-0.5, 4)                       # mean for parameters "b" for the oldest period 
+st_b.prior               = c(0.5, 0.2)              # stdev for parameters "b" for the oldest period
 param.var                = c("b1")                   # names of parameters that vary (e.g. = c("b1", "b2) )
 plot.results.only        = FALSE                         # [TRUE/FALSE] if TRUE it plot the results only without computation.
 do.final.hydrograph      = FALSE                         # [TRUE/FALSE] option not supported yet!
 show.activation.stages   = FALSE                         # [TRUE/FALSE] If you want to plot the activation stages of the lowest controls (max two controls). 
-Ncycles                  = 100                           # Number of MCMC cycles for Metropolis-Hastings for BaM.
-ylim.log.wind            = c( grid_RC.ylim.log[1], 50000)  # define Q limits for plots in log scale (e.g. grid_RC.ylim.log).
+Ncycles                  = 500                           # Number of MCMC cycles for Metropolis-Hastings for BaM.
+ylim.log.wind            = c( grid_RC.ylim.log[1], 30000)  # define Q limits for plots in log scale (e.g. grid_RC.ylim.log).
 
 
 

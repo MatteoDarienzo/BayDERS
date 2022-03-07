@@ -1,9 +1,9 @@
 'BaM_BaRatin_2\limni.txt'
-1
+7956
 1
 .true.
 .true.
-500
+1000
 'Qt_prior.spag'
 .true.
 .true.

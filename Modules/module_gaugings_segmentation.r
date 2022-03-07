@@ -16,6 +16,11 @@ gaugings.segmentation <- function(dir_code,
    dir.segmentation      = paste0(dir_code,"/BaM_exe/Segmentation")
    # read inputs and options for computation:
    source(file.options.general)
+   if (is.null(gaugings)){
+         message("***** Gaugings missing!! The segmentation cannot be performed!")
+         return()
+   }
+   
    source(file.options.segment)
    dir.create(paste0(dir.segment.g,"/", name.folder.results))
    dir.segment.gaug      = paste0(dir.segment.g,"/", name.folder.results) # dir. with the results of gaugings segmentation
@@ -27,7 +32,13 @@ gaugings.segmentation <- function(dir_code,
    message("****************************************************************")
    
 
-   #RC Parameter a:
+   
+   #----------------------------------------------------------------------------------------------------------   
+   # In the next lines we will use function "Transf_Gauss_lognorm()" in order to transform from LogNormal to 
+   # Normal priors specified by users on RC parameters "a" (or if propagat = TRUE on its components, e.g., 
+   # Bc, channel width, KS, Strickler coefficient), "b" and "c", for each hydraulic control:
+   #----------------------------------------------------------------------------------------------------------
+   # RC Parameter a:
    if (propagat == TRUE){
       message("- Prior a: propagating the priors of geometric/physical properties.")
       for (c in 1:ncontrols){
@@ -87,26 +98,30 @@ gaugings.segmentation <- function(dir_code,
    
    
    
-   # start:
+   # The following "if" is to decide if you want to perform the entire computation for segmentation of gaugings
+   # or instead if you already performed previously and now you want just to read and plot results.
+   # Thus, if plot.results.only = TRUE it goes directly at the end of the segmentation procedure, to read 
+   # results files and plot the final figures.  
    #########################################################################################################
-   if (plot.results.only == FALSE) {    # if TRUE it goes directly at the end, to read and plot the results   
+   if (plot.results.only == FALSE) {     
    #########################################################################################################
    ################
    #Initialisation:
    ################
    # iteration indexes: "depth search tree approach"
-            i = 1;  seg.period = 1;  seg.iter  = 1; level = 0;  iteration.list = list()
-            end.end    = FALSE;  i_init  = 0; i_final = 0;   i_init[1] = 1; 
-            i_final[1] = length(Q_Gaug); tss_tot_ns = c(1);  final.period = NULL;
-            acf_resid  = NULL; Pacf_resid =NULL;  autocorr_lag_resid =NULL; 
+            i_init = i_final = level = 0;  
+            i = seg.period =  seg.iter = i_init[1] = 1; 
+            iteration.list = list()
+            end.end = FALSE; 
+            i_final[1] = length(Q_Gaug); tss_tot_ns = c(1); 
+            final.period = acf_resid = Pacf_resid = autocorr_lag_resid = NULL; 
    # segments means:
-            mean.of.segments = NULL;  mu.results.df = NULL;
+            mean.of.segments = mu.results.df = NULL;
    #shift times:
-            times.of.shift.MAP <- NULL;  t.q10 <- NULL;  t.q90 <- NULL; t.q2 <- NULL;  
-            t.q97  <- NULL;  ts.all.real <- NULL; ts.all.real.2 <- NULL; ts.all.MAP <- NULL; 
-            ts.all.q2 = NULL; ts.all.q10 = NULL; ts.all.q90 = NULL;  ts.all.q97 = NULL;
-            ts.morpho.real = NULL; ts.morpho.MAP = NULL; ts.morpho.q2 = NULL; ts.morpho.q97 = NULL;
-            tau.results.df = NULL; pdf.ts = cbind();           
+            times.of.shift.MAP = t.q10 = t.q90 = t.q2 = t.q97 = ts.all.real = ts.all.real.2 = NULL; 
+            ts.all.MAP = ts.all.q2 = ts.all.q10 = ts.all.q90 =  ts.all.q97 = ts.morpho.real = NULL; 
+            ts.morpho.MAP = ts.morpho.q2 = ts.morpho.q97 = tau.results.df = NULL; 
+            pdf.ts = cbind();           
             shift.results.df =  data.frame(tMAP  = double(), 
                                            treal = double(), 
                                            t2    = double(),
@@ -114,14 +129,13 @@ gaugings.segmentation <- function(dir_code,
                                            t90   = double(),
                                            t97   = double())
    # structural error model:
-            gamma1.P      = NULL; 
-            gamma2.P      = NULL; 
+            gamma1.P      = gamma2.P = NULL; 
             g1.distr      = g1.distr.type; 
             g2.distr      = g2.distr.type;
             gamma1.P[[1]] = g1.prior;  
             gamma2.P[[1]] = g2.prior;
    # plots:
-            criteria.plot = NULL; ts.ggplot = NULL; gaug.plot = NULL; seg.plot = NULL; 
+            criteria.plot = ts.ggplot = gaug.plot = seg.plot = NULL; 
    # all gaugings:
             t_Gaug         = gaugings$t
             Q_Gaug         = gaugings$Q
@@ -179,6 +193,13 @@ A few information:
 *****************************************************************
 ")
    
+
+
+
+
+
+
+   # start iterations:
    while(end.end == FALSE) {
       #folder creation for the current iteration:
       dir.create(paste0(dir.segment.gaug,"/it",seg.iter))
@@ -245,7 +266,7 @@ A few information:
       setwd(dir.exe)
       Hmin.P = round(min(hP), digits = 2)
       
-      # RC estimation (BaRatin method):
+      # RC estimation (apply BaRatin method, BaM.exe from Benjamin Renard):
       BaRatin_app(dir               = dir.BaRatin.config, #directory of config files for BaM
                   t_Gaug            = tP, 
                   Q_Gaug            = QP, 
@@ -292,8 +313,8 @@ A few information:
                   Hmax              = grid_RC.xlim[2],   # grid limits for plots
                   iter              = seg.iter)          # copy the results files from BaM to the new folder:
 
-      
       Dir.BaRatin.exe <- paste0(dir_code,"/BaM_exe/BaM_BaRatin_2")
+      # save results:
       list.of.files   <- c(
          #paste(Dir.BaRatin.exe,"/Qt_maxpost.spag", sep=""), 
          #paste(Dir.BaRatin.exe,"/Qt_TotalU.spag", sep=""), paste(Dir.BaRatin.exe,"/Qt_TotalU.env", sep=""),
@@ -338,25 +359,33 @@ A few information:
                                        h_Gaug          =  h_Gaug, # all gaugings
                                        Q_Gaug          =  Q_Gaug, 
                                        uQ_Gaug         =  uQ_Gaug)
+      # create dataframe with gaugings:
+      df.gaug.P              = data.frame(hP, QP, uQP, tP)
+      df.gaug.tot            = data.frame(h_Gaug, Q_Gaug, uQ_Gaug, t_Gaug)
+      data_baratin_with_time =  cbind(data_BaRatin.P, tP)
+      write.table(data_baratin_with_time, paste0(dir.seg.BaRatin,"/data_with_time.txt"))
       
-      df.gaug.P            = data.frame(hP, QP, uQP, tP)
-      df.gaug.tot          = data.frame(h_Gaug, Q_Gaug, uQ_Gaug, t_Gaug)
+      # summary statistics of RC estimation using BaRatin:
       summary.BaRatin      = read.table(file = paste0(dir.seg.BaRatin, "/Results_summary.txt"), header=TRUE)
+      # maxQt      <-  read.table(file = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Qt_maxpost.spag",sep=""))
+      # maxQt.data <- data.frame(t_limni, maxQt)
+      # Qt         <- Qtimeseries(t_limni,maxQt[,1],m)
+      # Qt.df      <- data.frame(t_limni, Qt)
+      # ht.df      <- stage.record
+      
+      
+      
       
       # Update structural error model parameters gamma1 and gamma2 for the next subperiods:
+      #************************************************************************************
       g1.distr             = "Uniform"
       g2.distr             = "Uniform"
-      
       if ( type.stdev.gamma.baratin == 1) {
-         gamma1.P[[seg.iter]] = c(0, summary.BaRatin[5, ncontrols*3+1], 
-                                  summary.BaRatin[5, ncontrols*3+1]/2)
-         gamma2.P[[seg.iter]] = c(0, summary.BaRatin[5, ncontrols*3+2], 
-                                  summary.BaRatin[5, ncontrols*3+2]/2)
+         gamma1.P[[seg.iter]] = c(0, summary.BaRatin[5, ncontrols*3+1],  summary.BaRatin[5, ncontrols*3+1]/2)
+         gamma2.P[[seg.iter]] = c(0, summary.BaRatin[5, ncontrols*3+2],  summary.BaRatin[5, ncontrols*3+2]/2)
       } else if ( type.stdev.gamma.baratin == 2){
-         gamma1.P[[seg.iter]] = c(0, summary.BaRatin[5, ncontrols*3+1] + 2*summary.BaRatin[11, ncontrols*3+1], 
-                                  summary.BaRatin[5, ncontrols*3+1]/2)
-         gamma2.P[[seg.iter]] = c(0, summary.BaRatin[5, ncontrols*3+2] + 2*summary.BaRatin[11, ncontrols*3+2], 
-                                  summary.BaRatin[5, ncontrols*3+2]/2)
+         gamma1.P[[seg.iter]] = c(0, summary.BaRatin[5, ncontrols*3+1] + 2*summary.BaRatin[11, ncontrols*3+1], summary.BaRatin[5, ncontrols*3+1]/2)
+         gamma2.P[[seg.iter]] = c(0, summary.BaRatin[5, ncontrols*3+2] + 2*summary.BaRatin[11, ncontrols*3+2], summary.BaRatin[5, ncontrols*3+2]/2)
 
       } else if (type.stdev.gamma.baratin == 3) {
          g1.distr = g1.distr.type
@@ -364,10 +393,7 @@ A few information:
          gamma1.P[[seg.iter]] = g1.prior
          gamma2.P[[seg.iter]] = g2.prior
       }
-      
-      
       # other priors for structural error model parameters:
-      #***************************************************
       # gamma1.P[[seg.iter]] = c(0, 2*summary.BaRatin[5, ncontrols*3+1], summary.BaRatin[5, ncontrols*3+1]/2)
       # gamma2.P[[seg.iter]] = c(0, 2*summary.BaRatin[5, ncontrols*3+2], summary.BaRatin[5, ncontrols*3+2]/2)
       #
@@ -379,23 +405,20 @@ A few information:
       #                         (log(1+ summary.BaRatin[11, ncontrols*3+2]/
       #                                 (summary.BaRatin[5, ncontrols*3+2]^2)))^0.5, #0.5, #(summary.BaRatin[11, ncontrols*3+2]),
       #                          summary.BaRatin[5, ncontrols*3+2])
-      
-      
-      data_baratin_with_time =  cbind(data_BaRatin.P, tP)
-      write.table(data_baratin_with_time, paste0(dir.seg.BaRatin,"/data_with_time.txt"))
-      # maxQt <-  read.table(file = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Qt_maxpost.spag",sep=""))
-      # maxQt.data <- data.frame(t_limni, maxQt)
-      # Qt <- Qtimeseries(t_limni,maxQt[,1],m)
-      # Qt.df <- data.frame(t_limni, Qt)
-      # ht.df <- stage.record
+
 
       
       
       
       
-      #***********************************************
-      #compute residuals and associated uncertainties:
-      #***********************************************
+      
+   
+      
+      
+      
+      #****************************************************************
+      # Compute residuals (gaugings - RC) and associated uncertainties:
+      #****************************************************************
       residuals   <- read.table(file=paste0(dir.seg.BaRatin,"/Results_Residuals.txt"), header = TRUE)
       resid       <- residuals[,6]
       stand.resid <- residuals[,7]
@@ -403,6 +426,10 @@ A few information:
       Shift.Q     <- alpha_segm.Q(tP, QP, resid, sigma.tot)
       
       
+      
+      
+      
+   
       
       
       
@@ -451,106 +478,120 @@ A few information:
       #                   mBIC = modified Bayesianb Information Criterion
       #                   HQC = Hannan-Quinn information Criterion
       #                   DIC = Deviance Informatiojn Criterion
+      # criteria for model selection:
       AIC =0; AICc=0; BIC=0; mBIC = 0; HQC = 0; DIC=0;
-      npar =0 ; maxpost = 0; varLogpost=0; loglikelihood = 0;  maxLikelihood = 0; varLogLikelihood=0;
-      N = length(Shift.Q$alpha) #Number of observations
+      npar =0; maxpost = 0; varLogpost=0; loglikelihood = 0;  maxLikelihood = 0; varLogLikelihood=0;
+      #Number of observations:
+      N = length(Shift.Q$alpha) 
       
       if (resid.uncertaint==TRUE) {
          Data.segm <- data.frame("t"=Shift.Q$alpha_t, "Y"=Shift.Q$alpha, "uY"=sigma.tot)
       } else {
          Data.segm <- data.frame("t"=Shift.Q$alpha_t, "Y"=Shift.Q$alpha, "uY"=0)
       }
+      # save residuals data with uncertainty to .txt file within the BaM configuration folder: 
       write.table(Data.segm, paste0(dir_code,"/BaM_exe/Segmentation/Segm_data.txt"),sep="\t",row.names=FALSE)
       
       
+      # Perform the segmentation only if there are at least 3 data,
+      # otherwise skip: 
       ##########
       if (N>2) {
       ##########
+         # initialise flag for ending segmentiation:
          end.seg = FALSE
-         i = 1
+         i = 1 # i = number of segments
+         message("Applying Segmentation of residuals:")
+         message("Trying increasing number of segments. Wait ...")
          while ((i <= nSmax) & ((N-i) >=1)) {
             start_time = Sys.time()
             nS         = i
             npar[nS]   = 2*nS
             Ncycles    = Ncycle.segment
             converg    = FALSE
-            print(c("n.segm = ",nS))
+            print(c("n. segments = ",nS))
             
             while ((converg == FALSE) & (Ncycles < Ncycles.max)){
-            setwd(dir.exe)
-            dir.create(paste0(dir.seg.gaug,"/nS",nS))
-            dir.nS <- paste0(dir.seg.gaug,"/nS",nS)
-            if (resid.uncertaint == TRUE){
-                prior.gamma.segm = prior.gamma.segm.with.U
-            } else {
-                prior.gamma.segm = prior.gamma.segm.without.U
-            }
-            # launch BaM.exe with segmentation model: 
-            Segmentation_app(dir_code         = dir_code,
-                             nobs             = length(Shift.Q$alpha), 
-                             nS               = nS, 
-                             tmin             = tmin,
-                             Nmin             = Nmin,
-                             tfirst           = Shift.Q$alpha_t[1],
-                             tfin             = tail(Shift.Q$alpha_t,1),
-                             ncycles          = Ncycles,
-                             nmcmc            = Nmcmc.segment,
-                             Nslim            = Nslim.segment,
-                             tP               = Shift.Q$alpha_t,
-                             resid.uncertaint = resid.uncertaint,
-                             prior.mu         = prior.mu.segm,
-                             prior.gamma      = prior.gamma.segm)
-            end_time    = Sys.time()
-            comput_time = end_time-start_time
-            write.table(comput_time, file=paste0(dir.nS,"/comput_time_nS",nS,".csv"), sep=";")
-            list.of.files.segment = c(
-                                      paste0(dir.segmentation,"/Config_model.txt"),
-                                      paste0(dir.segmentation,"/Segm_data.txt"),
-                                      paste0(dir.segmentation,"/Results_MCMC_cooked.txt")
-                                      )
-                                     for (ll in 1:length(list.of.files.segment)) {
-                                           file.copy(list.of.files.segment[ll], dir.nS, overwrite = TRUE)
-                                     }
-            mcmc.segm    <- read.table(file=paste0(dir.segmentation,"/Results_MCMC_cooked.txt"),header=TRUE)
-            resid.segm   <- read.table(file=paste0(dir.segmentation,"/Results_Residuals.txt"),header=TRUE)
-            summary.segm <- read.table(file=paste0(dir.segmentation,"/Results_Summary.txt"),header=TRUE)
-            write.table(mcmc.segm,    file=paste0(dir.nS,"/Results_MCMC_cooked_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
-            write.table(resid.segm,   file=paste0(dir.nS,"/Results_Residuals_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
-            write.table(summary.segm, file=paste0(dir.nS,"/Results_Summary_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
-            
-            if (save.all.results == TRUE) {
-               plot.mcmc.segment(workspace = dir.nS, 
-                                 seg.iter  = seg.iter, 
-                                 nS        = nS)
-               converg = Convergence.test.segment(dir.seg  = dir.segmentation, 
-                                                  npar     = npar[nS], 
-                                                  dir.plot = dir.nS)
-               if (converg==FALSE) {
-                   Ncycles = Ncycles + 1000
-                   print(paste0("Segmentation ",nS," does not converged well !!!"))
-                   print(paste0("increasing mcmc cycles ",Ncycles))
+               # initialise path for results of the iteration:
+               setwd(dir.exe)
+               dir.create(paste0(dir.seg.gaug,"/nS",nS))
+               dir.nS <- paste0(dir.seg.gaug,"/nS",nS)
+               # specify priors for Remnant uncertainty parameter (check options file):
+               if (resid.uncertaint == TRUE){
+                  prior.gamma.segm = prior.gamma.segm.with.U
+               } else {
+                  prior.gamma.segm = prior.gamma.segm.without.U
                }
-            } else {
-               converg=TRUE
+               # launch BaM.exe (Benjamin Renard) with segmentation model: 
+               Segmentation_app(dir_code         = dir_code,
+                                nobs             = length(Shift.Q$alpha), 
+                                nS               = nS, 
+                                tmin             = tmin,
+                                Nmin             = Nmin,
+                                tfirst           = Shift.Q$alpha_t[1],
+                                tfin             = tail(Shift.Q$alpha_t,1),
+                                ncycles          = Ncycles,
+                                nmcmc            = Nmcmc.segment,
+                                Nslim            = Nslim.segment,
+                                tP               = Shift.Q$alpha_t,
+                                resid.uncertaint = resid.uncertaint,
+                                prior.mu         = prior.mu.segm,
+                                prior.gamma      = prior.gamma.segm)
+               end_time    = Sys.time()
+               comput_time = end_time-start_time
+               write.table(comput_time, file=paste0(dir.nS,"/comput_time_nS",nS,".csv"), sep=";")
+
+               # Save results of segmentation:
+               list.of.files.segment = c(
+                  paste0(dir.segmentation,"/Config_model.txt"),
+                  paste0(dir.segmentation,"/Segm_data.txt"),
+                  paste0(dir.segmentation,"/Results_MCMC_cooked.txt")
+               )
+               for (ll in 1:length(list.of.files.segment)) {
+                  file.copy(list.of.files.segment[ll], dir.nS, overwrite = TRUE)
+               }
+               mcmc.segm    <- read.table(file=paste0(dir.segmentation,"/Results_MCMC_cooked.txt"),header=TRUE)
+               resid.segm   <- read.table(file=paste0(dir.segmentation,"/Results_Residuals.txt"),header=TRUE)
+               summary.segm <- read.table(file=paste0(dir.segmentation,"/Results_Summary.txt"),header=TRUE)
+               write.table(mcmc.segm,    file=paste0(dir.nS,"/Results_MCMC_cooked_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
+               write.table(resid.segm,   file=paste0(dir.nS,"/Results_Residuals_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
+               write.table(summary.segm, file=paste0(dir.nS,"/Results_Summary_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
+               
+               # check convergence:
+               if (save.all.results == TRUE) {
+                  plot.mcmc.segment(workspace = dir.nS, seg.iter  = seg.iter,  nS = nS)
+                  converg = Convergence.test.segment(dir.seg  = dir.segmentation,  npar = npar[nS],   dir.plot = dir.nS)
+                  if (converg==FALSE) {
+                     # increase number of mcmc cycles and redo the segmentation with same configuration:
+                     Ncycles = Ncycles + 1000
+                     print(paste0("redo increasing mcmc cycles to ",Ncycles, " to improve convergence!"))
+                  }
+               } else {
+                  converg=TRUE
+               }
             }
-            }
+            
+            # COMPUTATION OF CRITERIA FOR OPTIMAL MODEL SELECTION:
+            #*****************************************************
+            # LogPosterior simulations:
             logpost           = mcmc.segm[,(2*nS+1)]
-            loglikelihood     = 0;
-            singlelikelihoods = 0; 
-            single.prior.mu   = 0; 
-            single.prior.tau  = 0;
+            # Number of mcmc simulations:
             len.mcmc          = length(mcmc.segm[,1])
+            
+            # LogPriors of segments means parameters "mu" (Gaussian distribution)
             priors.mu         = matrix(NA, nrow = length(mcmc.segm[,1]), ncol = nS)
             for (j in 1:nS) {
                priors.mu[,j]  = dnorm(mcmc.segm[,j], mean = prior.mu.segm[1], sd = prior.mu.segm[2], log = TRUE)
             }
-            #
+            
+            # LogPriors of change point times "tau" (= 0 since it's a flat distribution)
             if (nS > 1) {
                priors.tau = matrix(0, nrow =len.mcmc, ncol = nS-1)
             } else {
                priors.tau = matrix(0, nrow = len.mcmc, ncol = 1)
             }
-            #
+            # Specify LogPriors for the Remnant Uncertainty:
+            # User can choose if accounting or not for uncertainty (check Options file):
             priors.gamma = 0
             if (resid.uncertaint == FALSE) { 
                priors.gamma = dunif(mcmc.segm[,2*nS],
@@ -561,18 +602,18 @@ A few information:
                                      meanlog = prior.gamma.segm.with.U[1], 
                                      sdlog   = prior.gamma.segm.with.U[2], log = TRUE)
             }
-            #
+            # Compute LogPrior as sum of LogPriors of tau parameters (change point times) and mu parameters (segments means):  
             logprior = 0
             for (ll in 1:len.mcmc){
                logprior[ll] = sum(priors.mu[ll,]) + sum(priors.tau[ll,])  + priors.gamma[ll]   
             }
+            # Compute LogLikelihood as difference between LogPosterior and LogPrior (Bayes' theorem):
             loglikelihood = logpost - logprior
-            #
-            df.mcmc.LL = data.frame(loglikelihood = loglikelihood,
-                                    logprior      = logprior,
-                                    logposterior  = logpost)
+            # Save LogLikelihoo, LogPrior and LogPosterior into a dataframe a save it to a .csv file in the iteration folder:
+            df.mcmc.LL = data.frame(loglikelihood = loglikelihood, logprio = logprior, logposterior  = logpost)
             write.table(df.mcmc.LL, file=paste0(dir.nS,"/likelihood_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
-            #
+            
+            # Compute the Maximum LogLikelihood and the maximum LogPosterior, and their variances:
             maxpost[nS]          = max(logpost)
             maxLikelihood[nS]    = max(loglikelihood)
             Likelihood.maxpost   = loglikelihood[which.max(logpost)]
@@ -609,13 +650,14 @@ A few information:
          #AICcmin = which.min(AICc, na.rm=TRUE);
          
          # dataframe with all criteria (for the plot):
-         criteria.df = data.frame(BIC = BIC, AIC = AIC, HQC = HQC, DIC = DIC, # AICc
-                                  x   = seq(1, nS, 1),  #grid: increasing Number of segments
-                                  BICmin = BICmin, AICmin = AICmin, HQCmin = HQCmin, DICmin = DICmin)  #AICcmin
+         criteria.df = data.frame(BIC = BIC, AIC = AIC, HQC = HQC, DIC = DIC,                         # there is also AICcmin in case 
+                                  x   = seq(1, nS, 1),                                                # x is the grid, increasing Number of segments
+                                  BICmin = BICmin, AICmin = AICmin, HQCmin = HQCmin, DICmin = DICmin) # there is also AICcmin in case 
+         # plotting criteria for different number of segments:
          criteria.plot[[seg.iter]] = model.selection.plot(criteria.df, 
                                                           dir.seg.gaug, 
                                                           seg.iter)
-         
+         # Optimal number of segments according to criterion:
          if (criterion == "AIC") {
             nS = AICmin
          } else if (criterion == "AICc") {
@@ -629,9 +671,9 @@ A few information:
          }
          
          print(paste0("=========> Optimal number of segments (considering the minimum ", criterion,") = ", nS))
-         dir.nS.ok <- paste(dir.seg.gaug,"/nS",nS, sep="")
+         dir.nS.ok <- paste0(dir.seg.gaug,"/nS",nS)
          
-         #gamma error structural update for next subperiods:
+         # gamma RC structural error update for next subperiods:
          if (nS >1) {
             if (seg.iter >1) {
                gamma1.P = append (gamma1.P, rep(list(gamma1.P[[seg.iter]]), nS), after=seg.iter)
@@ -641,10 +683,13 @@ A few information:
                gamma2.P = rep(list(gamma2.P[[seg.iter]]), nS+1)
             }
          }
-         Residuals    <- read.table(file=paste0(dir.nS.ok,"/Results_Residuals_","it",seg.iter,"_","nS",nS,".csv"),sep=";",header=TRUE)
-         mu.s         <- as.numeric(Residuals[,5])
-         Results.seg  <- read.table(file=paste0(dir.nS.ok,"/Results_Summary_","it",seg.iter,"_","nS",nS,".csv"),sep=";",header=TRUE)
-         mcmc.segment <- read.table(file=paste0(dir.nS.ok,"/Results_MCMC_cooked_","it",seg.iter,"_","nS",nS,".csv"),sep=";",header=TRUE)
+         
+         # Selecting only results of the optimal segmentation in dir.nS.ok:
+         message("Processing results")
+         Residuals       <- read.table(file=paste0(dir.nS.ok,"/Results_Residuals_","it",seg.iter,"_","nS",nS,".csv"),sep=";",header=TRUE)
+         mu.s            <- as.numeric(Residuals[,5])
+         Results.seg     <- read.table(file=paste0(dir.nS.ok,"/Results_Summary_","it",seg.iter,"_","nS",nS,".csv"),sep=";",header=TRUE)
+         mcmc.segment    <- read.table(file=paste0(dir.nS.ok,"/Results_MCMC_cooked_","it",seg.iter,"_","nS",nS,".csv"),sep=";",header=TRUE)
          #initialisation of results:
          Q2.ts = NULL; Q97.ts = NULL; Q2.mu = NULL; Q97.mu = NULL;
          
@@ -687,10 +732,9 @@ A few information:
          ######################################################   
          } else { # if no change points ==> only one segment !!
          ######################################################
-            ts.res      <- NULL; stdev.ts <- NULL; ts.res.before <- NULL; 
-            ts.res.plus <- NULL; ts.mean <- NULL;
-            ts.median   <- NULL; stdev.ts <- NULL; Q2.ts <- NULL; 
-            Q97.ts      <- NULL; Q10.ts <- NULL; Q90.ts <-NULL;
+            ts.res = ts.res.before = ts.res.plus = ts.mean = ts.median = NULL;
+            stdev.ts = NULL;
+            Q2.ts = Q97.ts = Q10.ts = Q90.ts = NULL;
             #-------------------------------------------------------
             mu.res       <- as.numeric(Results.seg[16,1])
             mu.mean      <- as.numeric(Results.seg[5,1])  #the maxpost of all mcmc         
@@ -707,27 +751,27 @@ A few information:
             final.period = c(final.period,0)
          }
          
-         #saving to a data.frame:
+         #saving shift times and segments statistics to two data.frames:
          tau.results.df[[seg.iter]] =  data.frame(# change point times "tau":
-                                       tau.MAP    = ts.res, 
-                                       tau.q2     = Q2.ts, 
-                                       tau.q10    = Q10.ts, 
-                                       tau.q90    = Q90.ts, 
-                                       tau.q97    = Q97.ts, 
-                                       tau.stdev  = stdev.ts, 
-                                       tau.mean   = ts.mean, 
-                                       tau.median = ts.median)
+                                                  tau.MAP    = ts.res, 
+                                                  tau.q2     = Q2.ts, 
+                                                  tau.q10    = Q10.ts, 
+                                                  tau.q90    = Q90.ts, 
+                                                  tau.q97    = Q97.ts, 
+                                                  tau.stdev  = stdev.ts, 
+                                                  tau.mean   = ts.mean, 
+                                                  tau.median = ts.median)
          mu.results.df[[seg.iter]]  =  data.frame(# Segment mean "mu":
-                                       mu.MAP     = mu.res, 
-                                       mu.q2      = Q2.mu, 
-                                       mu.q10     = Q10.mu.res,
-                                       mu.q90     = Q90.mu.res, 
-                                       mu.q97     = Q97.mu,
-                                       mu.stdev   = stdev.mu, 
-                                       mu.mean    = mu.mean,  
-                                       mu.median  = mu.median)
+                                                  mu.MAP     = mu.res, 
+                                                  mu.q2      = Q2.mu, 
+                                                  mu.q10     = Q10.mu.res,
+                                                  mu.q90     = Q90.mu.res, 
+                                                  mu.q97     = Q97.mu,
+                                                  mu.stdev   = stdev.mu, 
+                                                  mu.mean    = mu.mean,  
+                                                  mu.median  = mu.median)
 
-         # saving to vectors:
+         # Saving to vectors (updating the existing ones):     # THIS PART NEEDS IMPROVEMENT !!!
          times.of.shift.MAP <- c(times.of.shift.MAP, ts.res)
          mean.of.segments   <- c(mean.of.segments,mu.res)
          t.q2   <- c(t.q2, Q2.ts)
@@ -749,9 +793,8 @@ A few information:
          
          
          
-         
          #******************************************************************************************
-         #SHIFT TIME ADJUSTMENT: Plot stage record with segmentation results:
+         # SHIFT TIME ADJUSTMENT (if any): Plot stage record with segmentation results:
          #******************************************************************************************
          #Interval of the shift time:     
          interval = list(); 
@@ -760,31 +803,81 @@ A few information:
          tflood   = NULL;
          hflood2  = NULL; 
          tflood2  = NULL;
+     
          
-         if (nS >1) {  # Next analysis and plots only if at least a change point has been found !!!
-         #################
-            #Analysis of the stage record only if the stage record is uploaded!!!
-            if (is.null(stage.record)==FALSE) {
-               
+         # Define a function that allows finding all significant 
+         # peaks in the considered time interval:
+         
+         find_peaks <- function (x, m){
+         #****************************************************
+            shape <- diff(sign(diff(x, na.pad = FALSE)))
+            pks <- sapply(which(shape < 0), FUN = function(i){
+               z <- i - m + 1
+               z <- ifelse(z > 0, z, 1)
+               w <- i + m + 1
+               w <- ifelse(w < length(x), w, length(x))
+               if(all(x[c(z : i, (i + 2) : w)] <= x[i + 1])){
+                  return(i + 1) 
+               } else {
+                  return(numeric(0))
+               }
+            })
+            pks <- unlist(pks)
+            pks
+         }
+         h_peaks = NULL
+         
+         
+         
+         # Next analysis and plots are only if at least 
+         # 1 change point has been found !!!
+         #############
+         if (nS >1) {  
+         #############
+            # Analysis of the stage record only 
+            # if the stage record is uploaded!!!
+            if (!is.null(stage.record)) {
+
+               # for each detected shift time search for all major flood peaks within the intereval CI):
                for (i in 1:length(tau.results.df[[seg.iter]]$tau.MAP)) {
                   interval[[i]] = which((t_limni >= min(tau.results.df[[seg.iter]]$tau.q2[i], 
                                                         tau.results.df[[seg.iter]]$tau.MAP[i])) &
                                         (t_limni <= max(tau.results.df[[seg.iter]]$tau.MAP[i], 
                                                         tau.results.df[[seg.iter]]$tau.q97[i])))
-                  #maximum stage value (if known):
+                  # maximum stage value (if known):
                   if (length(interval[[i]]) != 0){
-                     hflood[i]     = max(h_limni[interval[[i]]])
-                     tflood[i]     = t_limni[which.max(h_limni[interval[[i]]])+interval[[i]][1]]
+                     # find all major peaks in the series (call of "find_peaks()" function):
+                     h_peaks[[i]] = data.frame(hmax   = round(h_limni[interval[[i]]][find_peaks(x = h_limni[interval[[i]]], m=deltat_peaks)], digits =2),
+                                               t_hmax = round(t_limni[interval[[i]]][find_peaks(x = h_limni[interval[[i]]], m=deltat_peaks)], digits =2))
+
+                     # select the flood peak closest to t MAP (maximum a posteriori shift time):
+                     if (nrow(h_peaks[[i]]) ==0){
+                        hflood[i]     = max(h_limni[interval[[i]]])   
+                        tflood[i]     = t_limni[which.max(h_limni[interval[[i]]]) + interval[[i]][1]]
+                        h_peaks[[i]]  = data.frame(hmax   = round(hflood[i] , digits =2),
+                                                   t_hmax = round( tflood[i], digits =2))
+                     } else {
+                        INDEX.nearest.t = which.min(abs(tau.results.df[[seg.iter]]$tau.MAP[i] - h_peaks[[i]]$t_hmax))
+                        hflood[i]     = h_peaks[[i]]$hmax[INDEX.nearest.t]  
+                        tflood[i]     = h_peaks[[i]]$t_hmax[INDEX.nearest.t]
+                        # Depreated with the new version of code:
+                        # hflood[i]     = max(h_limni[interval[[i]]])   
+                        # tflood[i]     = t_limni[which.max(h_limni[interval[[i]]])+interval[[i]][1]]
+                     }
                   } else {
+                     # otherwise the shift time is taken equal to the tauMAP:
                      interval[[i]] = 0
                      tflood[i]     = tau.results.df[[seg.iter]]$tau.MAP[i]
                   }
                }
-               tau.results.df[[seg.iter]] = cbind(tau.results.df[[seg.iter]],
-                                                  tflood = tflood)
+               # add tflood (flood peak time closest to tMAP):
+               tau.results.df[[seg.iter]] = cbind(tau.results.df[[seg.iter]],  tflood = tflood)
             }
+            # gaugings:
             CdT.P <- data.frame(tP, QP, hP)
-            # plot segmentation results before times adjustment:
+            
+            message("Plotting shift times and flood peaks ...")
+            # Plot segmentation results before times adjustment:
             initial.tsplot =  initial.ts.plot(CdT.P             = CdT.P, 
                                               stage.record      = stage.record, 
                                               tshift            = tau.results.df[[seg.iter]],
@@ -795,19 +888,20 @@ A few information:
                                               t_Gaug            = t_Gaug,
                                               h_Gaug            = h_Gaug, 
                                               mcmc.segment      = mcmc.segment, 
-                                              nS                = nS)
-            X11()  # pupup plot of stage record with proposed segmentation
-            print(initial.tsplot)
-            
+                                              nS                = nS,
+                                              df_peaks          = h_peaks,
+                                              colors.period     = colors.period)
+            X11(); print(initial.tsplot)  # pupup plot of stage record with proposed segmentation.
+
  
             
             
             
             
             
-            #***********************************************************************
-            # Identification of the TRUE shift times:
-            #***********************************************************************
+            #*********************************************************************
+            # Shift times adjustment ==> Identification of the "true" shift times:
+            #*********************************************************************
             # Looking inside the u95% interval of the shift times.
             #
             # Options:  1) if there is a flood, assign the shift time to the max peak !
@@ -818,137 +912,141 @@ A few information:
             i =0
             while (i < length(tau.results.df[[seg.iter]]$tau.MAP)) {
                 i = i +1
+                # three choices for time adjustment (CHECK OPTION FILE !!!):
                 ###################################### CHOICE 1
                  if (shift.time.adjustment.type == 1) {    # option 1: always chose the MAP of the shift time !!!
+                     message(paste0("shift time ", i, " = Tau MAP = ", tau.results.df[[seg.iter]]$tau.MAP[i]))
                      ts.real[i] = tau.results.df[[seg.iter]]$tau.MAP[i] 
+                     
                      
                      
                  ##################################### CHOICE 2      
                  }  else if (shift.time.adjustment.type == 2) {
+                    message(paste0("Adjusting shift time ", i, ". Some flood peaks in the CI:")) 
+                    cat(paste0(seq(1, length(h_peaks[[i]]$t_hmax),1) , ")  ", 
+                               round(h_peaks[[i]]$t_hmax,digits=2), " days   (h =", round(h_peaks[[i]]$hmax, digits =3), " m)\n"))
+                    message("")
+                    
+                    #check if the shift time has already been assigned before:
                      if (any(ts.real==tflood[i]) | any(ts.all.real==tflood[i])){
-                         print("searching for a second flood in the interval")
+                         print("Searching for a second flood in the interval")
                          hflood2[i] = hflood[i]
-                         tflood2[i] = tflood[i] + 0.01   #to improve this in future !!!
-                         # hflood2[i] = sort(h_limni[interval[[i]]], TRUE)[2]
-                         # tflood2[i] = t_limni[which_nth_highest_vaalue(x=h_limni[interval[[i]]], n=2)[1]
-                         #             + interval[[i]][1]]
+                         tflood2[i] = tflood[i] + 0.01   # this must be improve in the future !!!!!!!!
                          ts.real[i] = tau.results.df[[seg.iter]]$tau.MAP[i]
                      } else {
                          hflood2[i] = hflood[i]
                          tflood2[i] = tflood[i]
                          ts.real[i] = tflood2[i]
                      }
-                     # if (!is.null(stage.record)){
-                     # if (i >1) {
-                     #    if(((ts.real[i] -ts.real[i-1]) <5) & (ts.real[i] > ts.real[i-1])){
-                     #       ts.real[i] = tflood2[i] + 10  # if in days !!
-                     #       print(paste0("shift time too close from the previous one ==> delayed of 10 days!"))
-                     #    }
-                     # }
-                     # }
+                     message(paste0("shift time ", i, " = nearest flood peak = ", ts.real[i]))
                      ts.morpho.real = c(ts.morpho.real, ts.real[i])
                      ts.morpho.MAP  = c(ts.morpho.MAP, ts.res[i])
                      ts.morpho.q2   = c(ts.morpho.q2, Q2.ts[i])
                      ts.morpho.q97  = c(ts.morpho.q97, Q97.ts[i])
                      
+                     
+                     
                ###################################### CHOICE 3      
                }  else {
-                  # Manual selection:
+                  message(paste0("Adjusting shift time ", i, ". Some flood peaks in the CI:")) 
+                  cat(paste0(seq(1, length(h_peaks[[i]]$t_hmax),1) , ")  ", 
+                             round(h_peaks[[i]]$t_hmax,digits=2), " days   (h =", round(h_peaks[[i]]$hmax, digits =3), " m)\n"))
+                  message("")
+                  
+                  # User manual selection for each detected time:
                   # pop-up window for user choice of the TRUE shift time option:
                   user.choice.ts[i] <- dlgInput(paste0("Which Adjusted shift time do you chose for ts",i," ? \n",
                                                        "1 = MAP shift time =  ", ts.res[i], " days     interval=[ ", Q2.ts[i], " ; ", Q97.ts[i], " ]  \n",
-                                                       "2 = stage max (morphogenic flood at t_flood =", tflood[i], "   ;   with stage h_flood = ", hflood[i], " ) \n",
-                                                       "3 = other time, e.g. earthquake, cyclon, ..."), Sys.info()[" "])$res
-                  #choices for the adjustment:
+                                                       "2 = nearest stage peak (morphogenic flood at t_flood =", tflood[i], "   ;   with stage h_flood = ", hflood[i], " ) \n",
+                                                       "3 = other time, e.g. other floods, earthquakes, cyclon, river works, ..."), Sys.info()[" "])$res
+                  # choices for the adjustment:
                   if (user.choice.ts[i] == 1) {  # MAP
                      ts.real[i]      = ts.res[i]
+                     
                   } else if (user.choice.ts[i] == 2) {  # flood event
                      ts.real[i]      = tflood[i]
                      ts.morpho.real  = c(ts.morpho.real, ts.real[i])
                      ts.morpho.MAP   = c(ts.morpho.MAP, ts.res[i])
                      ts.morpho.q2    = c(ts.morpho.q2, Q2.ts[i])
                      ts.morpho.q97   = c(ts.morpho.q97, Q97.ts[i])
+                     
                   } else if (user.choice.ts[i] == 3) {  # other events
-                     ts.real[i]      <- dlgInput("insert the date (in days) ", Sys.info()[" "])$res
-                     ts.real[i]      = as.numeric(ts.real[i])
-                     morpho.ask      <- dlgInput("is it related to sediment transport dynamics ? [Y/N]", Sys.info()[" "])$res
+                     ts.real[i]      =   dlgInput(c("User-defined shift time (days):", 
+                                                    "   --> other known events [insert the numeric date]",
+                                                    "   --> or insert the index of one flood among the list below:",
+                                                      " ",
+                                                      paste0(seq(1, length(h_peaks[[i]]$t_hmax), 1), "  = ", 
+                                                             h_peaks[[i]]$t_hmax, " days (", 
+                                                             h_peaks[[i]]$hmax, " m)")), 
+                                                      Sys.info()[" "])$res
+                     
+                     if (ts.real[i] > 50){ 
+                         message(paste0(i, ". Shift time ", i, " = user-defined event date = ", ts.real[i]))
+                     } else {
+                         ts.real[i] = h_peaks[[i]]$t_hmax[ as.numeric(ts.real[i])]
+                         message(paste0(i, " .Shift time ", i, " = user-defined other flood peaks = ",  ts.real[i] ))
+                     }
+                     morpho.ask      <- dlgInput("Is it related to sediment transport dynamics ? [Y/N]", Sys.info()[" "])$res
                      if (morpho.ask == "Y") {
                         ts.morpho.real = c(ts.morpho.real, ts.real[i])
-                        ts.morpho.MAP  = c(ts.morpho.MAP, ts.res[i])
-                        ts.morpho.q2   = c(ts.morpho.q2, Q2.ts[i])
-                        ts.morpho.q97  = c(ts.morpho.q97, Q97.ts[i])
+                        ts.morpho.MAP  = c(ts.morpho.MAP,  ts.res[i])
+                        ts.morpho.q2   = c(ts.morpho.q2,   Q2.ts[i])
+                        ts.morpho.q97  = c(ts.morpho.q97,  Q97.ts[i])
                      }
                   }    
-                  # if (flood[i] < flood.threshold) {         #  ===> Posssibly yo improve with a sediment transport analysis !!!!!!!
-                  #    ts.real[i] = ts.res[i] 
-                  # } else {
-                  #   ts.real[i] = t_limni[which(h_limni==flood[i],1)]
-                  #   ts.morpho.real= c(ts.morpho.real, ts.real[i])
-                  #   ts.morpho.MAP = c(ts.morpho.MAP, ts.res[i])
-                  #   ts.morpho.q2 = c(ts.morpho.q2, Q2.ts[i])
-                  #   ts.morpho.q97 = c(ts.morpho.q97, Q97.ts[i])
-                  # }
                }
-               
             }
             dev.off()  
-            #########
             
-
+            
+            # Saving shift times dataframes:
             df.shift.times = data.frame(Q2.ts, Q97.ts, ts.res, ts.real)
-            
-            df.shift.times.plus = data.frame(ts.res.before, ts.res.plus,  
-                                             Q2.mu, Q10.mu.res, Q90.mu.res, Q97.mu,  mu.res)
-            write.table(mcmc.segment, paste0(dir.seg.gaug,"/mcmc_segmentation.txt"),
-                        sep ="\t", row.names=FALSE)
-            write.table(tau.results.df[[seg.iter]], paste0(dir.seg.gaug,"/df_tau_it", seg.iter,".txt"),
-                        sep ="\t", row.names=FALSE)
-            write.table(mu.results.df[[seg.iter]], paste0(dir.seg.gaug,"/df_mu_it", seg.iter,".txt"),
-                        sep ="\t", row.names=FALSE)
-            write.table(df.shift.times, paste0(dir.seg.gaug,"/df.shift.times_it", seg.iter,".txt"),
-                        sep ="\t", row.names=FALSE)
-            write.table(df.shift.times.plus, paste0(dir.seg.gaug,"/df.shift.times.plus_it", seg.iter,".txt"),
-                        sep ="\t", row.names=FALSE)
-
+            df.shift.times.plus = data.frame(ts.res.before, ts.res.plus, Q2.mu, Q10.mu.res, Q90.mu.res, Q97.mu,  mu.res)
+            # save results into txt files:
+            write.table(mcmc.segment, paste0(dir.seg.gaug,"/mcmc_segmentation.txt"), sep ="\t", row.names=FALSE)
+            write.table(tau.results.df[[seg.iter]],paste0(dir.seg.gaug,"/df_tau_it", seg.iter,".txt"),sep ="\t", row.names=FALSE)
+            write.table(mu.results.df[[seg.iter]], paste0(dir.seg.gaug,"/df_mu_it", seg.iter,".txt"), sep ="\t", row.names=FALSE)
+            write.table(df.shift.times, paste0(dir.seg.gaug,"/df.shift.times_it", seg.iter,".txt"), sep ="\t", row.names=FALSE)
+            write.table(df.shift.times.plus, paste0(dir.seg.gaug,"/df.shift.times.plus_it", seg.iter,".txt"), sep ="\t", row.names=FALSE)
+         ########
          } else {
-            write.table(mcmc.segment, paste0(dir.seg.gaug,"/mcmc_segmentation.txt"),
-                        sep ="\t", row.names=FALSE)
-            write.table(mu.results.df[[seg.iter]], paste0(dir.seg.gaug,"/df_mu_it", seg.iter,".txt"),
-                        sep ="\t", row.names=FALSE)
+         ########
+            # Only one segment (no shift detected!)
+            # Save results into txt files:
+            write.table(mcmc.segment, paste0(dir.seg.gaug,"/mcmc_segmentation.txt"), sep ="\t", row.names=FALSE)
+            write.table(mu.results.df[[seg.iter]], paste0(dir.seg.gaug,"/df_mu_it", seg.iter,".txt"), sep ="\t", row.names=FALSE)
          }
          
          
          
+         
+         
+         
          #------------------------------------------------------------------------------------------
-         # arrange detected shift times:
+         # Arrange the detected shift times (this part needs to be cleaned!):
          if (!is.null(ts.real[1])) {
-             ts.real        = as.numeric(ts.real)
-             ts.all.real    = c(ts.all.real, ts.real)
-             ts.all.real    = sort(ts.all.real)
-             ts.all.real    = ts.all.real[c(TRUE, !ts.all.real[-length(ts.all.real)] == ts.all.real[-1])]
-             ts.all.real.2  = c(ts.all.real.2, ts.real)
-             ts.all.real.2  = sort(ts.all.real.2)
-             tau.results.df[[seg.iter]] = cbind(tau.results.df[[seg.iter]], 
-                                                treal = ts.real)         
-             shift.results.df = rbind(shift.results.df ,
-                                      tau.results.df[[seg.iter]])
+             ts.real                    = as.numeric(ts.real)
+             ts.all.real                = c(ts.all.real, ts.real)
+             ts.all.real                = sort(ts.all.real)
+             ts.all.real                = ts.all.real[c(TRUE, !ts.all.real[-length(ts.all.real)] == ts.all.real[-1])]
+             ts.all.real.2              = c(ts.all.real.2, ts.real)
+             ts.all.real.2              = sort(ts.all.real.2)
+             tau.results.df[[seg.iter]] = cbind(tau.results.df[[seg.iter]],  treal = ts.real)         
+             shift.results.df           = rbind(shift.results.df , tau.results.df[[seg.iter]])
          } else {
              tau.results.df[[seg.iter]] = FALSE;
          }
 
 
-
          
          
          
+   
          
          
-         
-         
-         
-         #**************************************
-         # Separation of gaugings per period
-         #**************************************
+         #****************************************************
+         # Classification of gaugings for each defined period
+         #****************************************************
          if (!is.null(ts.real[1])) {
             tss = 0
             for (j in 1:(nS-1)) {
@@ -965,7 +1063,6 @@ A few information:
             t.shift.plus <- NULL
             t.shift.before <- NULL
          }
-         
          
          
          
@@ -996,7 +1093,7 @@ A few information:
          
          
          #**********************************************************************
-         #Plot residuals time series with segmentation:
+         # Plot residuals time series with segmentation results :
          #**********************************************************************
          seg.plot[[seg.iter]] <- segm_P_plot(dir.seg.gaug     = dir.seg.gaug, 
                                              Shift.Q          = Shift.Q, 
@@ -1062,7 +1159,7 @@ A few information:
   
          
          #*******************************************************************************
-         # stage time series  with first set of shift times:
+         # Stage time series  with first set of shift times:
          #*******************************************************************************
          #dev.set(dev.prev())
          ts.ggplot[[seg.iter]] <- ts.plot(dir.segment.res   = dir.seg.gaug,
@@ -1102,9 +1199,9 @@ A few information:
          
          
          
-         
-         # Check autocorrelation of residuals:
+         # Check autocorrelation of residuals: 
          #####################################
+         # (maybe this section can be commented, not really useful)
          acf_resid[[seg.iter]]            = acf(x= Shift.Q$alpha,  plot = FALSE)
          pdf(paste0(dir.seg.gaug,"/Acf_it", seg.iter,".pdf"),  width = 10, height = 5, useDingbats=F)
          plot( acf_resid[[seg.iter]], main= paste0("Iteration ", seg.iter))
@@ -1116,8 +1213,7 @@ A few information:
          dev.off()
          # with another R function:
          par(mar=c(1,1,1,1))
-         autocorr_lag_resid[[seg.iter]] = autocorr.plot(x           = Shift.Q$alpha,  
-                                                        auto.layout = FALSE)[[1]]
+         autocorr_lag_resid[[seg.iter]] = autocorr.plot(x = Shift.Q$alpha,  auto.layout = FALSE)[[1]]
          dev.off()
          pdf(paste0(dir.seg.gaug,"/Autocorrelation_it", seg.iter,".pdf"),  width = 10, height = 5, useDingbats=F)
              autocorr.plot(x = Shift.Q$alpha,  auto.layout = FALSE)
@@ -1125,52 +1221,55 @@ A few information:
          dev.off()
 
          
+         
 
          
-         # Save main results in the iteration folder:
-         #############################################
+         
+         
+         # Save main results in the corresponding iteration folder:
+         ##########################################################
          if (save.all.results ==TRUE) {
             write.table(df.gaug.P, paste0(dir.segment.gaug,"/it",seg.iter,"/BaRatin/df_gaug_it", seg.iter,".txt"),
                         sep ="\t", row.names=FALSE)
             write.table(df.gaug.tot, paste0(dir.segment.gaug,"/it",seg.iter,"/BaRatin/df_gaug_tot", seg.iter,".txt"),
                         sep ="\t", row.names=FALSE)
             
-            write.table(criteria.df, paste0(dir.seg.gaug,"/BIC.df_it", seg.iter,".txt"),
-                        sep ="\t", row.names=FALSE)
+            write.table(criteria.df, paste0(dir.seg.gaug,"/BIC.df_it", seg.iter,".txt"), sep ="\t", row.names=FALSE)
 
-            write.table(Shift.Q, paste0(dir.seg.gaug,"/df_residuals_it", seg.iter,".txt"),
-                     sep ="\t", row.names=FALSE)
+            write.table(Shift.Q, paste0(dir.seg.gaug,"/df_residuals_it", seg.iter,".txt"), sep ="\t", row.names=FALSE)
 
-            write.table(stage.record, paste0(dir.seg.gaug,"/df.limni.txt"),
-                     sep ="\t", row.names=FALSE)
-            write.table(CdT.P, paste0(dir.seg.gaug,"/df.gaug.periods.txt"),
-                     sep ="\t", row.names=FALSE)
-            write.table(gaugings, paste0(dir.seg.gaug,"/df.gaug.all.txt"),
-                     sep ="\t", row.names=FALSE)
+            write.table(stage.record, paste0(dir.seg.gaug,"/df.limni.txt"), sep ="\t", row.names=FALSE)
+            write.table(CdT.P, paste0(dir.seg.gaug,"/df.gaug.periods.txt"),  sep ="\t", row.names=FALSE)
+            write.table(gaugings, paste0(dir.seg.gaug,"/df.gaug.all.txt"), sep ="\t", row.names=FALSE)
 
          }
          
          #***********************
          # end of segmentation:
          #**********************
+         # update iteration and period index:
          if ((nS ==1) & (i_final[seg.period] != (length(Q_Gaug))) & (recursive ==TRUE)){
             seg.period = seg.period +1
             seg.iter = seg.iter + 1
             # segmentation is finished for this current period!!! only one segment has been found in this period!
             # we pass to another period
+            
          } else if ((nS != 1) & (recursive ==TRUE)) {
             seg.period = seg.period
             seg.iter = seg.iter + 1
+            
          } else if ((nS ==1) & (i_final[seg.period] == (length(Q_Gaug)))) { #all periods have been completely segmentated ) {
             end.end = TRUE
             #final.period = 1
             #segmentation is finished. stop !!!!!
             print("segmentation finished!")
-         } else if (recursive ==FALSE) {   #"single pass, only one iteration is done !!!
             
+         } else if (recursive ==FALSE) {   #"single pass, only one iteration is done !!!
             end.end = TRUE
             print("segmentation finished!")
          }
+         
+         
       } else { # only one or two points in this period:
          print(paste0("No segmentation: there are only one or two points to segment for this period !!"))
          final.period = c(final.period,0)
@@ -1180,16 +1279,20 @@ A few information:
             print("segmentation finished!")
          } else {
             seg.period = seg.period +1
-            seg.iter = seg.iter + 1         
+            seg.iter   = seg.iter + 1         
          }
       }
       
    }
+            
             print("Segmentation ended correctly.")
+   #########
    } else {
-            print("You have selected the option for plotting results only!")
-            print("No new segmentation is computed")
-            print(paste0("reading folder ", dir.segment.gaug))
+   #########
+            print("You have selected the option for plotting results only (setting 'plot.results.only =TRUE')!")
+            print("==> No new segmentation is performed.")
+            print(" ") 
+            print(paste0("Reading results folder ", dir.segment.gaug))
    }
 
    
@@ -1284,10 +1387,9 @@ A few information:
       }
       
       
-   #************************************************************************************
+   #####################################################################################
    } else {
-   #************************************************************************************   
-      
+   #####################################################################################   
       if (recursive ==FALSE) {
          if (plot.results.only == FALSE) {
          # Saving shift times in a file:
@@ -1318,9 +1420,9 @@ A few information:
          
       } else {
          if (plot.results.only == FALSE) {
-         print(c(paste0("Number of detected stable periods =",  seg.period), 
-                 paste0("Number of iterations =",        seg.iter), 
-                 paste0("Tot number of used gaugings =", i_final[seg.period])))
+         message(paste0("- Number of detected periods =",  seg.period))
+         message(paste0("- Number of iterations =",        seg.iter))
+         message(paste0("- Tot. number of used gaugings =", i_final[seg.period]))
          # n <- 60
          #qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
          #colo <- unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
@@ -1438,8 +1540,7 @@ A few information:
          #                          Shift.Q, BIC.df, stage.record, CdT.P,
          #                          Q10.mu.res, Q90.mu.res, mu.res,
          #                          plot.Baratin[[6]] )
-         
-         
+   
          
          #return the dates of shift found and segmentated gaugings
          nperiods.by.gaugings <- period.index
@@ -1485,11 +1586,10 @@ A few information:
             
             
             
-            
+            # transform times data from numeric to dates:
             ######################################
-            if (limni.labels[1] != "Time [year]"){   # transform times data from numeric to dates:
+            if (limni.labels[1] != "Time [year]"){   
             ######################################
-               
                if (file_limni != FALSE) {
                      init.date = stage.record$t_limni.true[1] 
                      # transform stage record times:
@@ -1527,11 +1627,15 @@ A few information:
                 #   pdf.shift.times.date[,dat] = strptime(as.character(dates.pdf[,dat]), "%Y-%m-%d" )
                 #   pdf.shift.times.date[,dat] = format( dates.pdf[,dat], "%d/%m/%Y")
                 # }
-                
             } else {
               shift.times.date = NULL
               #pdf.shift.times.date = NULL
             }
+            
+            
+
+            
+            
             
             
             
@@ -2598,12 +2702,26 @@ read.results.segmentation = function(dir.with.gaugings,
   # read results and input data:
   #*****************************
   source(file.options.general)
+  
+  if (is.null(gaugings)){
+     message("***** Gaugings missing!! The segmentation cannot be performed and evaluated!")
+     return()
+  }
   source(file.options.segment)
   dir.create(paste0(dir.segment.g,"/", name.folder.results))
   dir.with.segmentation.results  = paste0(dir.segment.g,"/", name.folder.results) # dir. with the results of gaugings segmentation
-  Ngaug                          =  length(gaugings$Q)
-  gaugings.segment               =  read.table(paste0(dir.with.segmentation.results, "/data_with_periods.txt"), sep="", header=TRUE)
-  nperiods                       =  tail(gaugings.segment[,4], 1)
+  Ngaug =  length(gaugings$Q)
+  
+  if (file.exists(paste0(dir.with.segmentation.results,"/data_with_periods.txt"))){
+       data.MCMC.cooked = as.matrix(read.table(paste0(dir.with.segmentation.results,"/data_with_periods.txt"), header=TRUE,dec=".", sep="")) # cooked mcmc
+  } else {
+       errr = print(paste0("********* ERROR: file '", paste0(dir.with.segmentation.results,"/data_with_periods.txt"), 
+                     "' does not exist (or segmentation has not been performed yet)!! Please check path"))
+       return(list(err = errr))
+  }
+  
+  gaugings.segment =  read.table(paste0(dir.with.segmentation.results, "/data_with_periods.txt"), sep="", header=TRUE)
+  nperiods         =  tail(gaugings.segment[,4], 1)
      
   if (tail(names(gaugings),1)  ==  "t"){
       gaugings$time = gaugings$t 

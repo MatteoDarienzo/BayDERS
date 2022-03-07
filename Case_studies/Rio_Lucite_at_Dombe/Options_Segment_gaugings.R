@@ -10,6 +10,7 @@ shift.time.adjustment.type = 1                  # 1 = select always the MAP; 2= 
 st_b.prior                 = stdev.var.param.initial
 plot.results.only          = FALSE               # [TRUE/FALSE] if TRUE the code will only read the results previously achieved (no new segmentation).
 plot_dates                 = TRUE              # [TRUE/FALSE] plot or not the date of each detected shift time (if any) on the stage record.
+deltat_peaks               = 1000               # minimum time lag between major floods (to find all major peaks and adjust shift times), e.g., 100 or 1000 days
 
 
 

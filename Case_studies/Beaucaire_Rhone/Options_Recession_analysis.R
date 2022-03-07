@@ -4,15 +4,15 @@
 #####################################
 # 1) Recession extraction:
 #####################################
-name.folder.results.recession = "Test_new3"                 # string with the name of the folder with results.
+name.folder.results.recession = "Test_5"                 # string with the name of the folder with results.
 uh.rec                 = 0                             # assign a stdev to the stage obs error [in cm], by default is 0.
 tburn.rec              = 0                             # discard the first n days of recession, by default is 0.
 Nmin.rec               = 10                               # min number of data in a recession curve
-tgood                  = 50                              # min length of the recession in days
+tgood                  = 30                              # min length of the recession in days
 delta.t.min            = 0                               # min days between two recess data
-delta.t.max            = 30                              # max days between two recess data
-chi                    = 100                              # max stage rise between two recess data
-gradient.max           = -6                              # max gradient dh/dt for the recession 
+delta.t.max            = 50                              # max days between two recess data
+chi                    = 200                              # max stage rise between two recess data
+gradient.max           = -5                              # max gradient dh/dt for the recession 
 
 
 
@@ -20,8 +20,10 @@ gradient.max           = -6                              # max gradient dh/dt fo
 # 2) Recession estimation:
 #####################################
 estim.plot.results.only  = FALSE                         # [TRUE/FALSE] put TRUE if you only to plot results previously obtained.
-#rec.model                = c("3expWithAsympt")           # Select stage-recession models (also more than one) (see the list at the bottom):
 prior.param.rec          = NULL                          # [NULL] initialise Priors for the recession model: e.g., h = a1*e^(-b1) + a2*e^(-b2) + a3*e^(-b3) + a4
+
+
+#rec.model                = c("3expWithAsympt")           # Select stage-recession models (also more than one) (see the list at the bottom):
 # prior.param.rec[[1]]  =c( 0,                            1000,       "'Uniform'",     100,                      "var",  # prior: [in cm for param a and days-1 for param b]
 #                           -log((0.5))+log(log(2)) ,     1,      "'LogNormal'",   exp(-log(0.5)+log(log(2))), "static", # min or mean, max or stdev, distribution, starting value, "static"/"var";
 #                           0,                            500,       "'Uniform'",     50,                         "static",
@@ -30,13 +32,15 @@ prior.param.rec          = NULL                          # [NULL] initialise Pri
 #                           -log(80)+log(log(2)) ,        0.2,       "'LogNormal'",  exp(-log(80)+log(log(2))),  "static",
 #                           -200                 ,        200 ,      "'Uniform'",     0 ,                         "var")  #  this last line (asymptote prior) is specific to your case study !!!!
 
+
 ### "2expWithAsympt" ==> h(t) = a1(k)*exp(-b1*t) + a2*exp(-b2*t) + a3(k)
 rec.model                = c("2expWithAsympt")           # Select stage-recession models (also more than one) (see the list at the bottom):
 prior.param.rec[[1]]  = c(  0,                            1000,       "'Uniform'",     100,                      "var",
                             -log((5))+log(log(2)) ,       0.5,      "'LogNormal'",   exp(-log(5)+log(log(2))), "static",
-                            0,                            300,       "'Uniform'",     50,                         "static",
-                            -log(80)+log(log(2)) ,        0.1,      "'LogNormal'",   exp(-log(50)+log(log(2))),  "static",
+                            0,                            200,       "'Uniform'",     50,                         "static",
+                            -log(80)+log(log(2)) ,        0.1,      "'LogNormal'",   exp(-log(80)+log(log(2))),  "static",
                             -200                        , 150 ,      "'Uniform'",    0 ,                         "var")
+
 
 # rec.model                = c("2expWithAsympt_bis")           # Select stage-recession models (also more than one) (see the list at the bottom):
 # prior.param.rec[[1]]  = c(  0,                            500,       "'Uniform'",     200,                      "var",
@@ -44,6 +48,7 @@ prior.param.rec[[1]]  = c(  0,                            1000,       "'Uniform'
 #                             0,                            300,       "'Uniform'",     50,                         "var",
 #                             -log(80)+log(log(2)) ,        0.1,      "'LogNormal'",   exp(-log(80)+log(log(2))),  "static",
 #                             -200                       , 150 ,      "'Uniform'",  0 ,                         "var")
+
 
 prior.gamma.rec          = c(0, 10,    "'Uniform'",  1,      # Structural error prior gamma1:  min or mean, max or stdev, distribution, starting value
                              0, 1000,  "'Uniform'", 1)    # Structural error prior gamma2:  min or mean, max or stdev, distribution, starting value

@@ -71,7 +71,8 @@ BaRatin_SPD.bac_app <- function(dir_code,
                       pdf.ts.results.1.sort     = pdf.ts.results.1[,  with( data.annotate.gaug.1, order(t.adj)) ]
                       
                     } else {
-                      print("No file 'data_with_periods.txt' in this folder. Please check!")
+                      err1 = paste0("******** ERROR: No file 'data_with_periods.txt' in selected folder ", dir.segment.SPD, " Please check!")
+                      return(err1)
                     }
                 }
                 
@@ -428,7 +429,7 @@ For this application you are:
                 
                    
      } else {
-        message("No computation. Reading and plotting the results from previous simulations! ") 
+        message("No computation --> Reading and plotting the results from existing past simulations! ") 
      }     
       
       
@@ -447,16 +448,18 @@ For this application you are:
                      data.annotate.gaug.1 = data.annotate.gaug.1.sort,
                      activation.stages    = show.activation.stages) 
 
+      if (!is.null(SPD$err)){
+         return(list(SPD$err))
+        
+      } else {
                 
-                
-      print("****************")
-      print("   All done!    ")
-      print("****************")
-      
-      
-      return(list(dir.reference = dir.segm.results,
-                  dir.SPD       = dir.SPD.results,
-                  res.SPD       = SPD))
+         message("****************")
+         message("   All done!    ")
+         message("****************")
+         return(list(dir.reference = dir.segm.results,
+                     dir.SPD       = dir.SPD.results,
+                     res.SPD       = SPD))
+      }
 }  
  
 
@@ -678,19 +681,37 @@ plot.SPD <- function(dir.BaM,
                 source(file.options.SPD)
                 message("- Reading results of BaRatin-SPD. Wait ... "); flush.console()
      # Data loading:
-                if (op_cooked){
-                       data.MCMC.cooked = as.matrix(read.table(paste0(dir.SPD.results,"/Results_MCMC_Cooked.txt"),
-                                                               header=TRUE,dec=".", sep="")) # cooked mcmc
+                if (op_cooked){ # if cooked mcmc results:
+                   if (file.exists(paste0(dir.SPD.results,"/Results_MCMC_Cooked.txt"))){
+                       data.MCMC.cooked = as.matrix(read.table(paste0(dir.SPD.results,"/Results_MCMC_Cooked.txt"), header=TRUE,dec=".", sep="")) # cooked mcmc
+                   } else {
+                       errr = paste0("********* ERROR: file '", paste0(dir.SPD.results,"/Results_MCMC_Cooked.txt"), "' does not exist !! Please check path")
+                       return(list(err = errr))
+                   }
+                ########
                 } else {
-                       data.MCMC.raw     = as.matrix(read.table(paste0(dir.SPD.results,"/Results_MCMC.txt"),
-                                                                header=TRUE,dec=".", sep="")) # Raw MCMC
+                   if (file.exists(paste0(dir.SPD.results,"/Results_MCMC.txt"))){
+                       data.MCMC.raw     = as.matrix(read.table(paste0(dir.SPD.results,"/Results_MCMC.txt"), header=TRUE,dec=".", sep="")) # Raw MCMC
                        nsim.tmp          = length(data.MCMC.raw[,1])
                        data.MCMC.cooked  = data.MCMC.raw[seq(nburn*nsim.tmp, nsim.tmp, nslim),]
                        rm("data.MCMC.raw")
+                  } else {
+                       errr = paste0("********* ERROR: file '", paste0(dir.SPD.results,"/Results_MCMC.txt"), "' does not exist !! Please check path")
+                       break
+                       return(list(err = errr))
+                  }
                 }
+
                 logPost.ncol      = which(colnames(data.MCMC.cooked) == "LogPost")
-                data.MCMC.MaxPost = as.numeric(read.table(paste0(dir.SPD.results, "/Results_Summary.txt"),
-                                                          row.names=1, dec=".",sep="", skip = 16))
+                
+                if (file.exists(paste0(dir.SPD.results,"/Results_Summary.txt"))){
+                   data.MCMC.MaxPost = as.numeric(read.table(paste0(dir.SPD.results, "/Results_Summary.txt"),row.names=1, dec=".",sep="", skip = 16))
+                } else {
+                   errr2 = paste0("********* ERROR: file '", dir.SPD.results,"/Results_Summary.txt", "' does not exist !! Please check path")
+                   break
+                   return(list(err = errr2))
+                }
+                
                 nsample           = length(data.MCMC.cooked[,1])
                 min.grid          = min(data.MCMC.cooked[,1]) 
                 hgrid             = seq(xlim.wind[1] - 1, xlim.wind[2] + 1,  0.01) 
@@ -1325,7 +1346,7 @@ plot.SPD <- function(dir.BaM,
 #              All done !                  #  
 ############################################")
                 
-                return()       
+                return(list(err= NULL))       
 } 
 
 

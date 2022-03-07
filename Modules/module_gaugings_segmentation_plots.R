@@ -489,19 +489,39 @@ initial.ts.plot <- function(CdT.P,
                             t_Gaug, 
                             h_Gaug, 
                             mcmc.segment, 
-                            nS) {
+                            nS,
+                            df_peaks,
+                            colors.period){
 ############################################################################################
+
   Utot.times     = "90% total uncertainty of change point times"
   MAPtimes       = "Change point times (MAP)"
   col.tflood     = "Time of flood"
   color.segm     = c("90% total uncertainty of change point times"="blue")
   col.segm       = c("Change point times (MAP)"="blue", 
                      "Time of flood"="red")
+  
+  #
+  leg.gaugings           = "Gaugings"
+  leg.stage.record       = "Stage record"
+  leg.col.gaugings       = c( "Gaugings" = "black")
+  leg.col.stage.gauging  = c("Stage record" = "gray70", 
+                             "Gaugings" = "black")
+  #
+  leg.nearest.flood         = "Closest flood to tau MAP"
+  leg.change.pointsMAP      = "Change points, tau MAP"
+  leg.floods                = "Major flood peaks in the CI"
+  leg.col.shifts            = c("Change points, tau MAP"      = "solid", 
+                                "Closest flood to tau MAP"    = "dashed",
+                                "Major flood peaks in the CI" = "dotted")
+  
+  
+  #
   ts.res         = tshift$tau.MAP;
   tflood         = tshift$tflood;
   Q2.ts          = tshift$tau.q2;
   Q97.ts         = tshift$tau.q97;
-  col.ts.distrib = rainbow((nS-1)) 
+  col.ts.distrib = colors.period[1:length(ts.res)] #rainbow((nS-1)) 
   X1             = mcmc.segment
   X2             = X1[,(nS+1):(2*nS-1)]
   
@@ -518,14 +538,16 @@ initial.ts.plot <- function(CdT.P,
                               colorrr = rep(col.ts.distrib[orderr], length(X2[,1]))) )
     }
   }
-
+  Xfake = X
+  Xfake$time = -9999
+  Xfake$colorrr = "gray60"
   #--------------------------------------------------------------------------------- plot 1
   # stage record with periods
   initial.ts.plot <- ggplot() 
         if (is.null(df.limni)==FALSE) {
           initial.ts.plot = initial.ts.plot + 
-          geom_line(data = df.limni, aes(x = t_limni, y = h_limni), color = "darkgray",size = 0.2)+
-          scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(t_limni,1))) +
+          geom_line(data = df.limni, aes(x = t_limni, y = h_limni, color = leg.stage.record), size = 0.2)+
+          scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(t_limni,1)))+
           scale_y_continuous(name=limni.labels[2], limits = grid_limni.ylim[1:2], expand = c(0,0))+
           coord_cartesian(clip = 'off')
         } else {
@@ -534,20 +556,43 @@ initial.ts.plot <- function(CdT.P,
           scale_y_continuous(name=limni.labels[2], limits = c(min(h_Gaug), max(h_Gaug)), expand = c(0,0))+
           coord_cartesian(clip = 'off')
         }
+  
         initial.ts.plot = initial.ts.plot +
-        geom_point(aes(x = t_Gaug, y =h_Gaug), fill = "gray60", size = 1.5, pch =21) +
-        geom_point(data = CdT.P, aes(x = tP, y = hP), fill = "black", size = 1.5, pch=21) +
+        geom_point(aes(x = t_Gaug, y =h_Gaug, color = leg.gaugings), fill = "gray90", size = 2, pch =21) +
+        geom_point(data = CdT.P, aes(x = tP, y = hP), fill = "black", size = 2, pch=21) +
         theme_classic(base_size = 15) +
         ylab(limni.labels[2]) +
-        geom_rect(mapping= aes(xmin= Q2.ts, xmax=Q97.ts ,ymin=-Inf, ymax=Inf, fill=col.ts.distrib), alpha=0.2 ) +
-        geom_vline(aes(xintercept = ts.res, col=col.ts.distrib), lwd =0.5, linetype = "solid") +
-        # scale_fill_manual(name   = element_blank(), 
-        #                   values = color.segm) +
-        # scale_colour_manual(name = element_blank(), 
-        #                     values = col.segm,
-        #                     breaks = c(MAPtimes),
-        #                     labels = c(MAPtimes),
-        #                     guide  = guide_legend(override.aes = list(linetype = c("solid","longdash"), shape = c(NA, NA)))) +
+        geom_rect(mapping= aes(xmin= Q2.ts, xmax=Q97.ts ,ymin=-Inf, ymax=Inf), fill=col.ts.distrib, alpha=0.2 ) +
+        geom_vline(aes(xintercept = -9999, linetype = leg.change.pointsMAP ),  lwd =0.5, color = "gray60") +
+        geom_vline(aes(xintercept = -9999, linetype = leg.nearest.flood), lwd =0.5, color = "gray60") +   
+        geom_vline(aes(xintercept = -9999, linetype = leg.floods), lwd =0.5, color = "gray60") +
+        geom_vline(xintercept  = ts.res, color = col.ts.distrib, lwd =1.5,  linetype = "solid") 
+        
+        if (!is.null(tflood)) {
+          for (ss in 1:length(df_peaks)) {
+            initial.ts.plot = initial.ts.plot +
+              geom_vline(xintercept  = df_peaks[[ss]]$t_hmax,  color = col.ts.distrib[ss], lwd = 0.5, linetype = "dashed") +
+              geom_vline(xintercept  = tflood[ss],             color = col.ts.distrib[ss], lwd =2,    linetype = "dotted")+
+              annotate("text", label = df_peaks[[ss]]$t_hmax,  x = df_peaks[[ss]]$t_hmax, y =grid_limni.ylim[2], size = 4, 
+                               colour = col.ts.distrib[ss], parse = TRUE, vjust = 0, angle = 90)
+
+          }
+        }
+        
+        initial.ts.plot = initial.ts.plot +
+        scale_colour_manual(  name     = element_blank(), 
+                              values   = leg.col.stage.gauging,
+                              breaks   = c(leg.stage.record, leg.gaugings),
+                              labels   = c(leg.stage.record, leg.gaugings),
+                              guide    = guide_legend(override.aes = list(
+                                         linetype = c("solid", "blank"), shape = c(NA, 21),  fill = c(NA,"gray90")))) +
+        scale_linetype_manual(name   = element_blank(),
+                              values = leg.col.shifts,
+                              breaks = c(leg.change.pointsMAP, leg.nearest.flood, leg.floods),
+                              labels = c(leg.change.pointsMAP, leg.nearest.flood, leg.floods),
+                              guide  = guide_legend(override.aes = list(
+                              col =c("gray60", "gray60", "gray60")))) +
+        #   
         theme(text               = element_text(size=10),
               plot.title         = element_text(hjust = 0.5),
               plot.background    = element_rect(fill = "transparent", color = NA),
@@ -555,21 +600,19 @@ initial.ts.plot <- function(CdT.P,
               plot.margin        = unit(c(0.5,0.5,0, 0.5),"cm"),
               axis.title.y       = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0.3)),
               axis.text.x        = element_blank(),
-              axis.line          = element_line(colour = "black", 
-                                                size = 0.4, linetype = "solid"),
-              axis.ticks.x       = element_line(colour = "black", 
-                                                size = 0.4, linetype = "solid"),
-              axis.ticks.y       = element_line(colour = "black", 
-                                                size = 0.4, linetype = "solid"),
+              axis.line          = element_line(colour = "black", size = 0.4, linetype = "solid"),
+              axis.ticks.x       = element_line(colour = "black", size = 0.4, linetype = "solid"),
+              axis.ticks.y       = element_line(colour = "black", size = 0.4, linetype = "solid"),
               panel.grid.major   = element_blank(), 
               panel.grid.minor   = element_blank(),
               legend.position    = "none",
               legend.key         = element_rect(colour = "transparent", fill = "transparent"),
               legend.background  = element_rect(colour = "transparent", fill = "transparent"))
-        if (is.null(tflood)==FALSE) {
-          initial.ts.plot= initial.ts.plot +
-          geom_vline(aes(xintercept = tflood), color ="red", linetype="longdash", lwd =0.5)
-        }
+        
+
+
+        
+        
         
       #---------------------------------------------------------------------------- plot 2
       # Plotting the pdf of the shift times:
@@ -581,21 +624,18 @@ initial.ts.plot <- function(CdT.P,
           init.ts.dens= init.ts.dens + 
             scale_x_continuous(name=limni.labels[1], expand = c(0,0), limits = c(0, tail(t_Gaug,1)))
         }
+        
         init.ts.dens= init.ts.dens +  
           ylab("Scaled pdf")+
           theme_classic(base_size = 15)+ theme(text             = element_text(size=10),
                                                plot.title       = element_text(hjust = 0.5),
-                                               #panel.grid.major= element_line(size=0.4, linetype = "dashed"), panel.grid.minor=element_blank(),
                                                plot.background  = element_rect(fill = "transparent", color = NA),
                                                panel.background = element_rect(fill = "transparent"),
                                                plot.margin      = unit(c(0, 0.5, 0.2, 0.85),"cm"),
                                                axis.title.y     = element_text(margin = margin(t = 0, r = 0, b = 0, l = 0.5)),
-                                               axis.line        = element_line(colour = "black", 
-                                                                        size = 0.4, linetype = "solid"),
-                                               axis.ticks.x     = element_line(colour = "black", 
-                                                                           size = 0.4, linetype = "solid"),
-                                               axis.ticks.y     = element_line(colour = "black", 
-                                                                           size = 0.4, linetype = "solid"),
+                                               axis.line        = element_line(colour = "black",  size = 0.4, linetype = "solid"),
+                                               axis.ticks.x     = element_line(colour = "black", size = 0.4, linetype = "solid"),
+                                               axis.ticks.y     = element_line(colour = "black", size = 0.4, linetype = "solid"),
                                                panel.grid.major = element_blank(), 
                                                panel.grid.minor = element_blank(),
                                                legend.position  = "none",
@@ -604,15 +644,25 @@ initial.ts.plot <- function(CdT.P,
         if (nS == 2) {
           init.ts.dens= init.ts.dens + geom_density(aes(x= X, ..scaled..),
                                                     fill  = col.ts.distrib[1], 
-                                                    colour = NA, alpha = 0.3)
+                                                    colour = NA, alpha = 0.3)+
+           scale_fill_manual(    name     = element_blank(),
+                                  values =col.ts.distrib[1] )
         } else {
-          
-          init.ts.dens= init.ts.dens + geom_density(aes(x= X$time, ..scaled.., group =X$ord,  
-                                                    fill = X$colorrr, colour=X$colorrr), alpha=0.3)
+          init.ts.dens= init.ts.dens + geom_density(aes(x= X$time, ..scaled.., group =X$ord,
+                                                    fill = X$colorrr), alpha=0.3)+
+            scale_fill_manual(    name     = element_blank(),
+                                  values = col.ts.distrib,
+                                  breaks = col.ts.distrib)
         }
+
+        # merge two plots:
         initial.ts.plot2 = plot_grid(initial.ts.plot, 
                                      init.ts.dens, 
                                      ncol = 1, nrow = 2, rel_heights = c(1, 0.5))
+        
+        pdf(paste0(dir.seg.gaug,"/Stage_record_segment_it",seg.iter,"_before_adjustment.pdf"), 16, 8 , useDingbats=F)
+        print(initial.ts.plot2)
+        dev.off()
   return(initial.ts.plot2)
 }
 
@@ -689,6 +739,8 @@ ts.plot <- function(dir.segment.res,    # directory
     } else {
         X1 = NULL
     }
+    
+
     #************************************************************************************************
     t.plot = t.plot + 
              geom_point(data=all.gaugings, aes(x = t , y= h), size = 4, pch =21, color ="gray90", fill= "gray90")+
@@ -1290,15 +1342,13 @@ plot.time.shifts.gaugings <- function(dir,
        }
        for (tt in 2:length(df.limni$t_limni)){
           if (dt_limni[tt] > 10*mean(dt_limni)){
-             t_limni_filtered[(tt+ new_NA_limni): (length(t_limni_filtered)+1)] <- c(t_limni_filtered[tt+ new_NA_limni] -10, 
-                                                                                     t_limni_filtered[(tt+ new_NA_limni) : length(t_limni_filtered)])
-              h_limni_filtered[(tt+ new_NA_limni): (length(h_limni_filtered)+1)] <- c(NA, 
-                                                                                      h_limni_filtered[(tt+ new_NA_limni) : length(h_limni_filtered)])
+              t_limni_filtered[(tt+ new_NA_limni): (length(t_limni_filtered)+1)] <- c(t_limni_filtered[tt+ new_NA_limni] -1, 
+                                                                                      t_limni_filtered[(tt+ new_NA_limni) : length(t_limni_filtered)])
+              h_limni_filtered[(tt+ new_NA_limni): (length(h_limni_filtered)+1)] <- c(NA,  h_limni_filtered[(tt+ new_NA_limni) : length(h_limni_filtered)])
               new_NA_limni = new_NA_limni +1 
           }
        } 
-       df.limni_filtered = data.frame(t_limni = t_limni_filtered, 
-                                      h_limni = h_limni_filtered)
+       df.limni_filtered = data.frame(t_limni = t_limni_filtered,  h_limni = h_limni_filtered)
     }
     
     
@@ -1325,10 +1375,6 @@ plot.time.shifts.gaugings <- function(dir,
                          breaks = seq(grid_limni.ylim[1], grid_limni.ylim[2], grid_limni.ylim[3]))+
       ylab(limni.labels[2])+
       coord_cartesian(clip = 'off')+
-      # geom_hline(yintercept = c(start.y.legend, 
-      #                           start.y.legend-1, 
-      #                           start.y.legend-1.5 , 
-      #                           start.y.legend - 2), color="darkgray", linetype="dashed", size = 0.5)+
       theme_bw(base_size=10)+
       theme( axis.text        = element_text(size=20)
             ,axis.title       = element_text(size=30) #, face="bold")
@@ -1343,8 +1389,8 @@ plot.time.shifts.gaugings <- function(dir,
             ,axis.text.x      = element_blank()
             ,axis.line.x      = element_blank())
     
+    
     if (!is.null(data.annotate.gaug$t.adj)){
-
       if (!is.null(dates)){
         t.plot <- t.plot+
           geom_segment(aes(x     = data.annotate.gaug$t.adj, 
@@ -1360,18 +1406,11 @@ plot.time.shifts.gaugings <- function(dir,
                          label = substring(dates,7,10), color = "red", size=4)
       }
     }
-    # ,axis.ticks = element_blank())
-    # t.plot <- t.plot + geom_point( aes(x = t_Gaug , y= h_Gaug), color =color.gaug, size = 2.5)
-    # if (exists("data.annotate.gaug.adjust")==TRUE)  {
-    #   if (is.null(data.annotate.gaug.adjust)==FALSE) {
-    #     t.plot <- t.plot +
-    #       geom_segment(data = data.annotate.gaug.adjust, aes(x = t.adj, xend = t.adj, y = start, yend = finish),
-    #                    size = 0.4, color ="blue")
-    #   }
-    # }
+
+    
     ############################################
-    # pdf:
-    #*******************************************
+    # shift times pdf:
+    ############################################
     if (!is.null(data.annotate.gaug$MAP)) {
       X1=pdf.ts
       if (length(data.annotate.gaug$MAP) ==1) {
@@ -1383,7 +1422,6 @@ plot.time.shifts.gaugings <- function(dir,
         }
       }
     }
-    #*******************************************
     # plot 2:
     t.plot2 <- ggplot() 
     if (!is.null(data.annotate.gaug$MAP)) {
@@ -1450,7 +1488,6 @@ plot.time.shifts.gaugings <- function(dir,
             ,axis.title.y     = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0), color= "white")
             ,axis.text.y      = element_text(color="white"))
  
-    
     if (is.null(df.limni)==FALSE) {
       t.plot2= t.plot2 + 
         scale_x_continuous(name=limni.labels[1], expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
@@ -1477,7 +1514,6 @@ plot.time.shifts.gaugings <- function(dir,
                      x    = tail(g.s$X.tP.,1)/2,  
                      y    = -0.85, 
                      label= "Official shift dates not available", color = "gray", size=6)
-
         }
       }
    }

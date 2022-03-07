@@ -1,10 +1,10 @@
 'Linear'
 2
 gamma1
-0.1
+0.00203039
 Uniform
-0,1000
+0,0.00406078
 gamma2
-0.1
-LogNormal
-0,1
+0.04926185
+Uniform
+0,0.0985237

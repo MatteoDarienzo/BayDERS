@@ -10,59 +10,6 @@
 
 
 
-#######################################
-averageh <- function(h,m) {
-#######################################
-  k = 1
-  i = m
-  hmean = 0
-  while (i <= length(h)) {
-    sommeh = 0
-    for (kk in 1:m) {
-      sommeh = sommeh + h[i-kk+1]
-    }
-    hmean[k] = sommeh/m
-    k = k +1
-    i = i+m
-  }
-  return(hmean)
-}
-
-
-
-
-
-
-
-
-
-
-
-#######################################
-averaget <- function(t,m) {
-  #######################################
-  k = 1
-  i = m
-  tmean = 0
-  while (i <= length(t)) {
-    sommet = 0
-    for (kk in 1:m) {
-      sommet = sommet + t[i-kk+1]
-    }
-    tmean[k] = sommet/m
-    k = k +1
-    i = i+m
-  }
-  return(tmean)
-}
-#######################################
-
-
-
-
-
-
-
 
 #######################################################
 # FINDING THE ALL THE LoCAL MINIMUM (when h(i)<h(i-1)):
@@ -91,42 +38,38 @@ localmin <- function(t, h, toll) {
 
 
 
-
-
 #############################################################################
 # FINDING THE ALL THE MINIMUM of THE MINIMUM (when hmin(i)< hmin(i-1)):  hrec
 rec <- function(tmin, hmin, chi, delta.t.max,  delta.t.min, toll) {
 #############################################################################
   # initialize:
-  t_max = length(tmin) 
-  hrec = trec =  trecmax = hrecmax = 0 
+  hrec       = trec =  trecmax = hrecmax = 0 
   hrec[1]    = hmin[1] 
   trec[1]    = tmin[1]
   hrecmax[1] = hmin[1]
   trecmax[1] = tmin[1]
-  j = 2 
-  m = 1 
-  k = 1
-  min_loc3 = data.frame(tmin,  hmin)
-  eliminate.index =c()
+  j          = 2 
+  m          = 1 
+  k          = 1
+  min_loc3   = data.frame(tmin,  hmin)
+  elim.index = c()
   
   
   for (ccc in 2:length( min_loc3$tmin)) {
     if (( min_loc3$tmin[ccc] -  min_loc3$tmin[ccc-1]) < delta.t.min) {
-      eliminate.index = c(eliminate.index, ccc)
+      elim.index = c(elim.index, ccc)
     }
   }
-  if (length(eliminate.index) > 1) {
-    min_loc4                = min_loc3[-eliminate.index,]
+  if (length(elim.index) > 1) {
+    min_loc4                = min_loc3[-elim.index,]
   } else {
     min_loc4                = min_loc3
   }
   
-  
-  
+  j_max = length(min_loc4$tmin) 
   
   # loop in time series of "tmin":
-  while (j <= t_max) {
+  while (j <= j_max) {
     # print(paste0('timestep = ', tmin[j] - trec[m]))
     # print(paste0('jump =     ', hmin[j] - hrec[m]))
     
@@ -148,13 +91,9 @@ rec <- function(tmin, hmin, chi, delta.t.max,  delta.t.min, toll) {
         trecmax[k] = trec[m]   #not used yet
       }
     }
-    j = j+1      # faire attention ici !!!!!!!!!!!!!!
+    j = j+1
   }
   min_loc5 = data.frame(trec,  hrec)
-  
-  
-
-  
 
   return(min_loc5)
 }
@@ -166,16 +105,10 @@ rec <- function(tmin, hmin, chi, delta.t.max,  delta.t.min, toll) {
 
 
 
-
-
-
-
-
-
-###########################################################
+###############################################################
 # Extract all recession curves:
 extract_curve <- function(trec, hrec, chi, delta.t.max, toll) {
-###########################################################
+###############################################################
   # max number of recessions:
   tmaxrec = length(trec) 
   
@@ -263,143 +196,6 @@ extract_curve <- function(trec, hrec, chi, delta.t.max, toll) {
 
 
 
-####################################################
-# Extract time series peaks
-extract_peaks <- function(trec, Qrec) {
-####################################################
-  tmaxrec = length(trec) ;
-  p = 1 ; l = 1 ; Qpeak= 0  ; tpeak = 0 ; 
-  while (l < tmaxrec) {
-    l = l+1
-    if (Qrec[l] <= Qrec[l-1]) {
-    } else {
-      p = p+1
-      Qpeak[p] = Qrec[l]
-      tpeak[p] = trec[l]
-    }
-  }
-  peaks = data.frame(tpeak,Qpeak)
-  return(peaks)
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###########################################################################################################
-# recession.identification <- function(t_limni, 
-#                                      h_limni, 
-#                                      dir.case_study, 
-#                                      dir_code, 
-#                                      dir_exe,
-#                                      station.name, 
-#                                      data.period, 
-#                                      chi, 
-#                                      delta.t.max) {
-# ##########################################################################################################
-#   #EXTRACT CURVES in stage h:
-#   #--------------------------
-#   dir.create(paste(dir.case_study,"/Results/segmentation_recessions/curves_extraction", sep=""))
-#   dir.extraction <- paste(dir.case_study,"/Results/segmentation_recessions/curves_extraction", sep="")
-#   # FINDING THE ALL THE LoCAL MINIMUM (when h(i)<h(i-1)):
-#   min_loc.h <- localmin(t_limni, h_limni*100)  #stage in centimeters !!!
-#   #plot(min_loc.h$tmin, min_loc.h$Qmin, pch = 19, col = "black",xlim=c(0,300), cex = 0.5,ylim=c(100,300))
-#   #lines(t_limni,h_limni*100+100, col ="red")
-#   # FINDING THE ALL THE MINIMUM of THE MINIMUM (when hmin(i)< hmin(i-1)):  hrec !!
-#   recess.h <- rec(min_loc.h$tmin, min_loc.h$Qmin, chi)
-#   #lines(recess.h$trec,recess.h$Qrec, col="red")
-#   #extract all the recession curves:
-#   curves.h <- extract_curve(recess.h$trec, recess.h$Qrec, delta.t.max)
-#   #peaks <- extract_peaks(recess$trec,recess$Qrec)
-#   #plot(curves.h$tpeak, curves.h$Qpeak, pch = 19, col = "blue",xlim=c(0,600), 
-#   #     cex = 1.4,ylim=c(100,350), xlab = "time [day]", ylab = "Stage [cm]")
-#   #lines(t_limni,h_limni*100+100, col= "red", lwd = 1.8)
-#   #points(recess.h$trec,recess.h$Qrec, col="black",pch = 19, cex = 0.6)
-#   hmin = min(curves.h$Qcurve); hmax = max(curves.h$Qcurve); hmin_grid = 0; hmax_grid = 0
-#   hgrid = seq(-10000,100000,100); tgridd = seq(0,10000,10);
-#   tmax = max(curves.h$tcurve); tmax_grid = 0
-#   for (i in 1:length(hgrid)) {
-#     if((hmin >= hgrid[i]) & (hmin <= hgrid[i+1])) {
-#       hmin_grid = hgrid[i]
-#     }
-#   }
-#   for (i in 1:length(hgrid)) {
-#     if((hmax >= hgrid[i]) & (hmax <= hgrid[i+1])) {
-#       hmax_grid = hgrid[i+1]
-#     }
-#   }
-#   for (i in 1:length(tgridd)) {
-#     if((tmax >= tgridd[i]) & (tmax <= tgridd[i+1])) {
-#       tmax_grid = tgridd[i+1]
-#     }
-#   }
-#   Data_h = data.frame(RCi=curves.h$RCi, hcurve=curves.h$Qcurve, tcurve=curves.h$tcurve, treal=curves.h$t.real, tpeak=curves.h$tpeak,
-#                       hpeak=curves.h$Qpeak, tfinal=curves.h$tfinal, hfinal=curves.h$Qfinal)
-#   #detect all time final of the recession curves:
-#   tf.h = 0 ; Qf.h = 0 ; index.h = 0 ; icurve.h = 0; Qpeak.h = 0; tpeak.h =0;
-#   for (ii in 1:length(curves.h$Qcurve)) {
-#     if (curves.h$Qfinal[ii] != 0) {
-#       icurve.h = icurve.h + 1 
-#       tf.h[icurve.h] = curves.h$tfinal[ii]      # Final time of a recession
-#       Qf.h[icurve.h] = curves.h$Qfinal[ii]      # Final Q of a recession
-#       Qpeak.h[icurve.h] = curves.h$Qpeak[ii]    # Qpeak of a recession
-#       tpeak.h[icurve.h] = curves.h$tpeak[ii]    # tpeak of a recession
-#       index.h[icurve.h] = ii                    # curve index
-#     } else {
-#       icurve.h = icurve.h
-#     }
-#   }
-#   # Saving results of recession curves extraction (in stage h) :
-#   write.table(Data_h, file=paste(dir.extraction,"/Extract_rec_curves.csv",sep=""), sep=";")
-#   #plot:
-#   plot.extracted.recessions(curves.h, Data_h, hmin_grid, hmax_grid, dir.extraction, station.name, data.period, chi)
-#   print("****************")
-#   print("   All done!    ")
-#   print("****************")
-#   #******
-#   return(list(curve.h     = curves.h, 
-#               data.curve  = Data_h, 
-#               index.curve = icurve.h, 
-#               hpeak       = Qpeak.h, 
-#               tpeak       = tpeak.h, 
-#               index       = index.h, 
-#               tfinal      = tf.h, 
-#               hfinal      = Qf.h,
-#               hmin        = hmin_grid, 
-#               hmax        = hmax_grid,
-#               tmax        = tmax_grid))
-# }   
-# 
-# 
-# 
-# 
-# 
-# 
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -426,11 +222,11 @@ recession.selection <- function(  dir.exe,
     message("***************************************************************************")
   }
   
-  
-  # read inputs and options for computation:
+  # Read inputs and options for computation:
   source(file.options.general)
   source(file.options.recess)
-  # other settings:
+  ############################
+  # other hardcoded settings:
   index.period           = c(1:length(stage.record$t_limni))   # indexes of stage record to analyse
   stage.limni.u.m.       = "m"                                 # "m" or "cm"  unity of the stage record (df.limni$h_limni)
   tmax.rec               = 150                                 # max recession time (for plot) NOT USED !
@@ -439,8 +235,9 @@ recession.selection <- function(  dir.exe,
   stage.scale.shift      = 10000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
   BayesianOption         = 2
   toll                   = 0.1   # [cm] tolerance for the recession extraction. 
+  #############################
   
-  
+  # directories:
   dir.segment.rec.test1  = paste0(dir.segment.rec,"/",name.folder.results.recession)
   dir.extraction         = paste0(dir.segment.rec.test1,"/1_curves_extraction")
   dir.BaM.rec            = paste0(dir.exe,"/Recession_h") 
@@ -470,10 +267,16 @@ recession.selection <- function(  dir.exe,
   # cat(paste0("prior.gamma.rec =",   paste(prior.gamma.rec, sep=";")),  file = file.options, append = TRUE, sep="\n") 
   # cat(paste0("prior.param.rec=",    prior.param.rec),  file = file.options, append = TRUE, sep="\n") 
 
-  #---------------------------------------------------------------------------------------------
-  # ! stage.scale.shift is in cm !
-  # transform to cm:
   
+  
+  
+  #*********************************************************************************************************
+  # ! stage.scale.shift is in cm !
+  # we need to be sure that stage record is always positive, because the remnant error model associated 
+  # to the recession model (in BaM) is linearly dependent on stage: err = g1 + g2*h
+  # for this reason we shift upward the stage record of a quantity "stage.scale.shift" = 10000 cm.
+  
+  # now shift and convert to cm:
   if (stage.limni.u.m. == "cm"){
       stage.rec.df.raw = data.frame(t = stage.record$t_limni[index.period],
                                     h = stage.record$h_limni[index.period] +  stage.scale.shift)
@@ -487,7 +290,7 @@ recession.selection <- function(  dir.exe,
       print("You have inserted a wrong  u.m. for the stage record, put 'm' or 'cm' or 'mm'.")
   }
   
-  
+  # check for na:
   if (any(is.na(stage.rec.df.raw$h))){
     stage.rec.df = stage.rec.df.raw[-which(is.na(stage.rec.df.raw$h)),]
   } else {
@@ -495,21 +298,18 @@ recession.selection <- function(  dir.exe,
   }
   
   
-  
   # # test to study recession events:
   # #plot(stage.rec.df$t, stage.rec.df$h)
   period2study = c(0 , 25500)
   indexess = seq(which.min(abs(stage.rec.df$t - period2study[1])), which.min(abs(stage.rec.df$t - period2study[2])), 1)
   test.rec = stage.rec.df[indexess,]
-  gtest=ggplot() + geom_point(aes(x=test.rec$t, y=test.rec$h)) + geom_line(aes(x=test.rec$t, y=test.rec$h))
+  #gtest=ggplot() + geom_point(aes(x=test.rec$t, y=test.rec$h)) + geom_line(aes(x=test.rec$t, y=test.rec$h))
 
   
   
   
-  
-  
   # ALL CURVES EXTRACTION START:
-  #*********************************************************************************************
+  #********************************************************************************************************************
   message('- Total number of stage data:')
   print(length(stage.rec.df$t))
   
@@ -520,13 +320,8 @@ recession.selection <- function(  dir.exe,
                           toll =toll)
   indexessx   = seq(which.min(abs(min_loc.h$t - period2study[1])), 
                     which.min(abs(min_loc.h$t - period2study[2])), 1)
-  gtest       = gtest + geom_point(aes(x=min_loc.h$t[indexessx], y=min_loc.h$h[indexessx]), color ="red", size= 2)  
+  #gtest       = gtest + geom_point(aes(x=min_loc.h$t[indexessx], y=min_loc.h$h[indexessx]), color ="red", size= 2)  
 
-  
-  
-  
-  
-  
   
   # find all those points in recession phase:
   message('- Among all decreasing stage data find all recession data.')
@@ -535,11 +330,10 @@ recession.selection <- function(  dir.exe,
                     chi         = chi,
                     delta.t.max = delta.t.max, 
                     delta.t.min = delta.t.min, 
-                    toll        = toll
-                    )
+                    toll        = toll)
   indexessxx  = seq(which.min(abs(recess.h$trec - period2study[1])), 
                     which.min(abs(recess.h$trec - period2study[2])), 1)
-  gtest       = gtest + geom_point(aes(x=recess.h$trec[indexessxx], y=recess.h$hrec[indexessxx]), color ="green", size= 2)  
+  #gtest       = gtest + geom_point(aes(x=recess.h$trec[indexessxx], y=recess.h$hrec[indexessxx]), color ="green", size= 2)  
 
   
   # separate and extract recessions:
@@ -549,24 +343,14 @@ recession.selection <- function(  dir.exe,
                               chi          = chi, 
                               delta.t.max  = delta.t.max,
                               toll         = toll)
-  
-  
-  
+
   indexessxxx = seq(which.min(abs(curves.h$t.real - period2study[1])),
-                    which.min(abs(curves.h$t.real - period2study[2])),
-                    1)
-  gtest       = gtest+geom_point(aes(x=curves.h$t.real[indexessxxx], y=curves.h$hcurve[indexessxxx]), color = "blue", size= 2)
-  #gtest
-  
-  
-  
-  
-  
-  
+                    which.min(abs(curves.h$t.real - period2study[2])),1)
+  #gtest       = gtest+geom_point(aes(x=curves.h$t.real[indexessxxx], y=curves.h$hcurve[indexessxxx]), color = "blue", size= 2)
   
   
   # GRID:
-  #******
+  #######
   hmin      = min(curves.h$hcurve); 
   hmax      = max(curves.h$hcurve); 
   hmin_grid = hmax_grid = 0
@@ -604,7 +388,7 @@ recession.selection <- function(  dir.exe,
     
     
     
-    # detect all time final of the recession curves:
+  # detect all time final of the recession curves:
     #***********************************************
     tf =  hf =  index.h =  icurve.h =  hpeak.h =  tpeak.h =0
     for (ii in 1:length(curves.h$hcurve)) {
@@ -647,12 +431,9 @@ recession.selection <- function(  dir.exe,
     
     
     
-    
-    
-    
-    #****************************************************************************************************
+    #####################################################################################################
     for (i in 2:ncurves.h) {     # LOOP on all available curves:     
-    #****************************************************************************************************
+    #####################################################################################################
         d.h[[i]] = data.frame( t  = curves.h$tcurve[(index.h[i-1]+1):(index.h[i]-1)],
                                h  = curves.h$hcurve[(index.h[i-1]+1):(index.h[i]-1)],
                                uh = uh.rec) #abs(0/100*curves.h$hcurve[(index.h[i-1]+1):(index.h[i]-1)]))
@@ -682,9 +463,8 @@ recession.selection <- function(  dir.exe,
         }
         
         
-        
-        # Remove data:
-        ##############
+        # Remove some data:
+        ###################
         if (length(eliminate.index) > 1) {
           # deltan = nobs.h - length(eliminate.index)
           # if (deltan < Nmin.rec){
@@ -761,6 +541,10 @@ recession.selection <- function(  dir.exe,
     # write recessions to file:
     df.curves   = bind_rows( d.h.selected, .id = "column_label")
     df.curves.t = bind_rows( d.h.selected.with.true.time, .id = "column_label")
+    if (is.null(d.h.selected)) {
+       err1 = print("******* ERROR: extracted recessions dataframe is NULL ! please change settings.")
+       return(err1)
+    } else {
     write.table(df.curves,file=paste0(dir.BaM.rec.pool, "/Curves_Data.txt"), sep = "\t", eol = "\n",
                 na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh", "Period"))
    
@@ -802,7 +586,7 @@ recession.selection <- function(  dir.exe,
     print("****************")
     print("   All done!    ")
     print("****************")
-  return(list(d.h.selected  = d.h.selected, 
+    return(list(d.h.selected  = d.h.selected, 
               t.real.good.h = t.real.good.h,
               curve.h       = curves.h, 
               data.curve    = Data_h, 
@@ -816,6 +600,7 @@ recession.selection <- function(  dir.exe,
               hmax          = hmax_grid,
               tmax          = tmax_grid,
               Ncurves       = Ncurves))
+    }
 }
 
 
@@ -868,6 +653,10 @@ recession.regression   <-  function(dir.exe,
   # read inputs and options for computation:
   source(file.options.general)
   source(file.options.recess)
+  
+  
+  ####################
+  # Hardcoded options
   BayesianOption         = 2                             # Type of Bayesian model (1 = simple, 2 = pooling). only 2 is available!
   limits.Y.alpha         = c(0, 1000, 200)               # Limits for the alpha (initial stage) plot.
   limits.Y.lambda        = c(0, 40, 10)                  # Limits for the lambda (recession rate) plot.
@@ -885,12 +674,13 @@ recession.regression   <-  function(dir.exe,
   plot.recession.uncert  = TRUE
   limni.time.limits      = NULL
   asymptote.limits       = stage.limits
-
+  #####################
   
   
 
   
   # Directories :
+  ###############
   dir.segment.rec.test1   = paste0(dir.segment.rec,"/",name.folder.results.recession)
   dir.BaM.recession.pool  = paste0(dir.exe,"/Recession_h_pooling") 
   dir.estim.recessions    = paste0(dir.segment.rec.test1,"/2_curves_estimation")
@@ -924,7 +714,11 @@ recession.regression   <-  function(dir.exe,
   
   
   
-  # Bayesian inference for each selected model:
+  # Start Bayesian inference of stage-recession model 
+  # for each selected model:
+  # Be sure that the recession options file is entirely filled, 
+  # in particular the options for the recession estimation:
+  # priors for recession model parameters
   read.reg.rec = list()
   ###################################
   for (irec in 1:length(rec.model)) {
@@ -943,6 +737,28 @@ recession.regression   <-  function(dir.exe,
             message(paste0("Stage-recession model =", rec.mod)); flush.console()
             message("###########################################################################################"); flush.console()            
 
+            
+            #######################################
+            if (estim.plot.results.only == TRUE) {
+            #######################################
+               if ((file.exists(paste0(dir.rec.pool.test,"/Results_Summary.txt")) == FALSE)|
+                  (file.exists(paste0(dir.rec.pool.test,"/Results_MCMC_Cooked.txt")) == FALSE)|
+                  (file.exists(paste0(dir.rec.pool.test,"/Results_Residuals.txt")) == FALSE)){
+                    plot.results.new= as.logical(dlgInput(c("You have selected the option to read results only",
+                                       "(estim.plot.results.only =  TRUE) in the Options_Recession file", 
+                                       "But there are no results to read and process.", " ",
+                                       "--> If you want to perform also the recession estimation press 'F' or 'FALSE'",
+                                       "--> Otherwise press T, check settings file and run again!"), 
+                                     Sys.info()[" "])$res)
+                    if (plot.results.new == FALSE){
+                         estim.plot.results.only = FALSE
+                    } else {
+                         err1 = print("******* ERROR: here are no results to process, please put estim.plot.results.only = FALSE")
+                         return(err1)
+                    }
+               }
+            }
+  
             
             #######################################
             if (estim.plot.results.only == FALSE) {
@@ -1060,14 +876,25 @@ recession.regression   <-  function(dir.exe,
                             labels = c("Trace plots", "Density plots"),
                             label_size = 25))
             dev.off()
+            # test convergence:
+            ###################
             #conv = Convergence.test(dir.seg  = dir.rec.pool.test , 
             #                        npar     = nparam, 
             #                        dir.plot = dir.rec.pool.test)
-            residuals.plot = ggplot(Results_residuals.pool)+
-                             geom_point(aes(x = X1_obs,  y = Y1_sim), pch =20, fill = "red", size = 1.1)+
-                             geom_point(aes(x = X1_obs,  y = Y1_obs), color = "black", size=1)+
-                             xlab("Recession time [day]") + ylab("Stage [m]") +  theme_bw()
-                             ggsave(residuals.plot, filename =paste0(dir.rec.pool.test,"/Residuals.png"),
+            
+            # Residuals:
+            ############
+            message("- Plotting stage-recessions residuals ..."); flush.console()
+            leg.obs  = "Observed recessions data"
+            leg.sim  = "Simulated recessions data"
+            leg.obs.sim  = c("Observed recessions data" = "black", "Simulated recessions data" = "orange")
+            residuals.plot = ggplot(Results_residuals.pool) +
+                             geom_point(aes(x = X1_obs,  y = Y1_sim, fill = leg.sim), pch =21, size = 1.8) +
+                             geom_point(aes(x = X1_obs,  y = Y1_obs, fill = leg.obs), pch =21, size = 1) +
+                             xlab("Recession time [day]") + ylab("Stage [m]") + 
+                             scale_fill_manual(name=element_blank(), values=leg.obs.sim, breaks=c(leg.obs,leg.sim),labels=c(leg.obs,leg.sim)) +
+                             theme_bw() + theme(legend.position = "bottom")
+                             ggsave(residuals.plot, filename =paste0(dir.rec.pool.test, "/Residuals.png"),
                                     bg = "transparent", width = 8, height =4, dpi = 200)
             
             
@@ -5242,7 +5069,7 @@ recession.segmentation <- function(dir.exe,
                                    gaugings,
                                    initial.time,
                                    colors.period) {
-  ##########################################################################################################################
+##########################################################################################################################
   # Segmentation of recessions dynamic parameters:
   # read inputs and options for computation:
   source(file.options.general)
@@ -5350,13 +5177,36 @@ A few information:
   dir.estim.recessions.model.param = paste0(dir.estim.recessions.model,"/chi_",chi)
   dir.segm.recessions.param        = NULL
   results.segment[[iter.model]]    = list()
-  
   dir.create(paste0(dir.segm.recessions,"/", rec.model[[iter.model]]))
   dir.create(paste0(dir.segm.recessions.model,"/chi_",chi))
   
   
   
   
+  
+  
+  #######################################
+  if (seg.plot.results.only == TRUE) {
+  #######################################
+    if((file.exists(paste0(dir.estim.recessions.model.param,"/Results_Summary.txt")) ==FALSE)|
+       (file.exists(paste0(dir.estim.recessions.model.param,"/Results_MCMC_cooked.txt")) == FALSE)|
+       (file.exists(paste0(dir.estim.recessions.model.param,"/Results_Residuals.txt")) == FALSE)|
+       (file.exists(paste0(dir.estim.recessions.model.param,"/Curves_Data.txt")) == FALSE)){
+      
+      plot.results.new= as.logical(dlgInput(c("You have selected the option to read results only",
+                                              "(seg.plot.results.only= T) in the Options_Recession file", 
+                                              "But there are no results to read and process.", " ",
+                                              "--> If you want to perform also the recession estimation please press 'F'",
+                                              "--> Otherwise press 'T'."), 
+                                            Sys.info()[" "])$res)
+      if (plot.results.new == FALSE){
+          seg.plot.results.only = FALSE
+      } else {
+          err1 = print("******* ERROR: there are no results to process, please put seg.plot.results.only = FALSE")
+          return(err1)
+      }
+    }
+  }
   
   
   
@@ -5368,8 +5218,9 @@ A few information:
   } else {
       parm = length(param.var.model) # only the asymptot parameter
   }
+  #####################
   for (param in parm) {
-  ##########################################  
+  #####################
        message("  "); flush.console()
        message("*****************************************************************"); flush.console()
        message(paste0("Segmentation of parameter ", param.var.model[param])); flush.console()
@@ -5398,41 +5249,37 @@ A few information:
        dir.create(paste0(dir.segm.recessions.model.param,"/", param.var.model[param]))
        dir.segm.recessions.param[[param]] = paste0(dir.segm.recessions.model.param,"/",param.var.model[param])
        file.dir.with.data                 = paste0(dir.segm.recessions.model.param,"/df.",param.var.model[param],".txt")
+       
        #initialisation of recessions segmentation :
-       seg.period.rec       = 1
+       seg.period.rec       = 1; 
        end.end              = FALSE
-       i_init.rec           = 0
-       i_final.rec          = 0
+       i_init.rec           = i_final.rec  = BIC.rec = AIC.rec = npar.rec  = maxpost.rec  = 0
        i_init.rec[1]        = 1
-       times.of.shift.rec   = NULL
-       mean.of.segments.rec = NULL
-       t.q10.rec            = NULL
-       t.q90.rec            = NULL
-       final.period.rec     = NULL
-       BIC.rec              = 0
-       AIC.rec              = 0
-       npar.rec             = 0
-       maxpost.rec          = 0
+       times.of.shift.rec   =  mean.of.segments.rec = t.q10.rec = t.q90.rec = final.period.rec = NULL
+       
          
        # read data to segment from file:
-       #************************
-       if (BayesianOption ==1) {
-       #************************
+       if (file.exists(file.dir.with.data) == FALSE) {
+           errr = print(paste0("********* ERROR: cannot find file '", file.dir.with.data, 
+                               "'!! It seems that you have not performed the recessions estimation yet!",
+                               " Please check."))
+           return(list(err = errr))
+       }
+       
+       #########################
+       if (BayesianOption ==1) { # old version of the method (without pooling approach)
+       #########################
              data.segm.rec  = read.table(file = paste0(dir.segm.recessions,"/df.h.infinity.txt"),header=TRUE)
              tss_tot_ns.rec = c(1,length(data.segm.rec$t));
              #write data file for BaM :
-             data.segm.rec.BaM  = data.frame(t  = data.segm.rec$t, 
-                                             h  = data.segm.rec$mean, 
-                                             uh = data.segm.rec$stdev)
+             data.segm.rec.BaM  = data.frame(t  = data.segm.rec$t,  h  = data.segm.rec$mean,  uh = data.segm.rec$stdev)
              write.table(data.segm.rec.BaM, paste0(dir.config.segmentation,"/Segm_data.txt"),sep="\t",row.names=FALSE)
-       #******* 
-       } else {
-       #*******
+       ######## 
+       } else { # Bayesian pooling approach:
+       ########
              data.segm.rec  = read.table(file = file.dir.with.data, header=TRUE)
              tss_tot_ns.rec = c(1,length(data.segm.rec$t));
-             data.segm.rec.BaM  = data.frame(t  = data.segm.rec$t, 
-                                             h  = data.segm.rec$maxpost, 
-                                             uh = data.segm.rec$stdev)
+             data.segm.rec.BaM  = data.frame(t  = data.segm.rec$t, h  = data.segm.rec$maxpost, uh = data.segm.rec$stdev)
              if (param.var.model[param] == tail(param.var.model,1)){
                       data.segm.rec.BaM  = data.frame(t  = data.segm.rec$t, 
                                                       h  = data.segm.rec$maxpost, # - stage.scale.shift, 
@@ -5440,19 +5287,22 @@ A few information:
              }   
              write.table(data.segm.rec.BaM, paste0(dir.config.segmentation,"/Segm_data.txt"),sep="\t",row.names=FALSE)
        }
-       #######################################################################################################
-       # initialisation:  
+       ################################################################################################################
+       # initialisation of criteria:  
        #                   AIC = Aikake Information Criterion
        #                   BIC = Bayesian Information Criterion or SIC (Schwarz)
        #                   mBIC = modified Bayesianb Information Criterion
        #                   HQC = Hannan-Quinn information Criterion
        #                   DIC = Deviance Informatiojn Criterion
-       AIC =0; AICc=0; BIC=0; mBIC = 0; HQC = 0; DIC=0;
-       npar =0 ; maxpost = 0; varLogpost=0; loglikelihood = 0;  maxLikelihood = 0; varLogLikelihood=0;
+       AIC = AICc= BIC= mBIC = HQC = DIC=0;
+       npar = maxpost = varLogpost= loglikelihood = maxLikelihood = varLogLikelihood=0;
        N = length(data.segm.rec.BaM$h) #Number of observations
        end.seg = FALSE
        i = 1
+       # start Bayesian segmentation (Darienzo et al. 2021): 
+       ########################################
        while ((i <= nSmax.rec) & ((N-i) >=2)) {
+      #########################################
               nS = i
               print(c("n.segm = ",nS))
               npar[i] = 2*nS
@@ -5484,38 +5334,29 @@ A few information:
              mcmc.segm    = read.table(file=paste0(dir.config.segmentation,"/Results_MCMC_cooked.txt"),header=TRUE)
              resid.segm   = read.table(file=paste0(dir.config.segmentation,"/Results_Residuals.txt"),header=TRUE)
              summary.segm = read.table(file=paste0(dir.config.segmentation,"/Results_Summary.txt"),header=TRUE)
+             
              write.table(mcmc.segm,    file=paste0(dir.nS,"/Results_MCMC_cooked_","nS",nS,".csv"), sep=";")
              write.table(resid.segm,   file=paste0(dir.nS,"/Results_Residuals_","nS",nS,".csv"), sep=";")
              write.table(summary.segm, file=paste0(dir.nS,"/Results_Summary_","nS",nS,".csv"), sep=";")
+             
              if (save.all.results == TRUE) {
-                plot.mcmc.segment(workspace = dir.nS, 
-                        seg.iter=1, 
-                        nS=nS)
-                converg = Convergence.test.segment(dir.seg  = dir.nS,
-                                                   npar     = npar[nS], 
-                                                   dir.plot = dir.nS)
-               if (converg==FALSE) {
-                 print(paste0("Segmentation ",nS," does not converged !!! Need to increse Ncycles ..."))
-               }
+                 plot.mcmc.segment(workspace = dir.nS, seg.iter=1, nS=nS)
+                 converg = Convergence.test.segment(dir.seg  = dir.nS,  npar = npar[nS], dir.plot = dir.nS)
+                 if (converg==FALSE) {
+                    print(paste0("Segmentation ",nS," does not converged !!! Need to increse Ncycles ..."))
+                 }
              }
              logpost           = mcmc.segm[,(2*nS+1)]
-             loglikelihood     = 0;
-             singlelikelihoods = 0; 
-             single.prior.mu   = 0; 
-             single.prior.tau  = 0;
+             loglikelihood     = singlelikelihoods = single.prior.mu = single.prior.tau = 0;
              len.mcmc          = length(mcmc.segm[,1])
              priors.mu         = matrix(NA, nrow = length(mcmc.segm[,1]), ncol = nS)
              if (prior.mu.rec.segment[1] == "Gaussian"){
                for (j in 1:nS) {
-                 priors.mu[,j] = dnorm(mcmc.segm[,j], 
-                                       mean = as.numeric(prior.mu.rec.segment[2]), 
-                                       sd = as.numeric(prior.mu.rec.segment[3]), log = TRUE)
+                 priors.mu[,j] = dnorm(mcmc.segm[,j],  mean = as.numeric(prior.mu.rec.segment[2]), sd = as.numeric(prior.mu.rec.segment[3]), log = TRUE)
                }
              } else if (prior.mu.rec.segment[1] == "Uniform") {
                for (j in 1:nS) {
-                 priors.mu[,j] = dunif(mcmc.segm[,j], 
-                                       min = as.numeric(prior.mu.rec.segment[2]), 
-                                       max = as.numeric(prior.mu.rec.segment[3]), log = TRUE)
+                 priors.mu[,j] = dunif(mcmc.segm[,j], min = as.numeric(prior.mu.rec.segment[2]), max = as.numeric(prior.mu.rec.segment[3]), log = TRUE)
                }  
              }
              if (nS > 1) {
@@ -5524,18 +5365,14 @@ A few information:
                priors.tau = matrix(0, nrow = len.mcmc, ncol = 1)
              }
              priors.gamma = 0
-             priors.gamma = dunif(mcmc.segm[, 2*nS], 
-                                  min = as.numeric(gamma.prior.rec[2]), 
-                                  max = as.numeric(gamma.prior.rec[3]), log = TRUE)
+             priors.gamma = dunif(mcmc.segm[, 2*nS], min = as.numeric(gamma.prior.rec[2]), max = as.numeric(gamma.prior.rec[3]), log = TRUE)
              #
              logprior = 0
              for (ll in 1:len.mcmc){
                logprior[ll] = sum(priors.mu[ll,]) + sum(priors.tau[ll,])  + priors.gamma[ll]   
              }
              loglikelihood        = logpost - logprior
-             df.mcmc.LL           = data.frame(loglikelihood = loglikelihood, 
-                                               logprior      = logprior, 
-                                               logposterior  = logpost)
+             df.mcmc.LL           = data.frame(loglikelihood = loglikelihood,  logprior = logprior, logposterior  = logpost)
              maxpost[nS]          = max(logpost)
              maxLikelihood[nS]    = max(loglikelihood)
              Likelihood.maxpost   = loglikelihood[which.max(logpost)]
@@ -5558,9 +5395,9 @@ A few information:
   }
   
        
-  ########################################
-  # Analysis of results:
-  ########################################
+  ######################################
+  # Analysis of results: CHOICE OF MODEL
+  ######################################
   # BIC / AIC / AICc / HQC / DIC:
   #min values  of the criteria:
   BICmin = which.min(BIC);
@@ -5569,12 +5406,8 @@ A few information:
   DICmin = which.min(DIC);
   #AICcmin = which.min(AICc, na.rm=TRUE);
   # dataframe with all criteria (for the plot):
-  criteria.df =  data.frame(BIC = BIC, AIC = AIC, HQC = HQC, DIC = DIC, 
-                            x = seq(1, nS, 1), 
-                            BICmin = BICmin, AICmin=AICmin, HQCmin = HQCmin, DICmin = DICmin)
-  BICplot  = model.selection.plot(criteria.df,  
-                                  dir.segm.recessions.param[[param]] , 
-                                  seg.iter =1)
+  criteria.df =  data.frame(BIC = BIC, AIC = AIC, HQC = HQC, DIC = DIC, x = seq(1, nS, 1), BICmin = BICmin, AICmin=AICmin, HQCmin = HQCmin, DICmin = DICmin)
+  BICplot  = model.selection.plot(criteria.df, dir.segm.recessions.param[[param]],  seg.iter =1)
   if (criterion.rec == "AIC") {
     nS.ok = AICmin
   } else if (criterion.rec == "AICc") {
@@ -5588,6 +5421,14 @@ A few information:
   }
   print(paste0("=========> Optimal number of segments (considering the minimum ", criterion.rec,") = ", nS.ok))
   dir.nS.ok        = paste0(dir.segm.recessions.param[[param]],"/nS", nS.ok)
+  
+  
+  
+  
+  
+  
+  # READ RESULTS OF THE OPTIMAL SEGMENTATION:
+  ###########################################
   Residuals        = read.table(file= paste0(dir.nS.ok,"/Results_Residuals_nS",nS.ok,".csv"),sep=";",header=TRUE)
   mu.s             = as.numeric(Residuals[,5])
   Results.seg      = read.table(file= paste0(dir.nS.ok,"/Results_Summary_nS",nS.ok,".csv"),sep=";",header=TRUE)
@@ -5647,7 +5488,7 @@ A few information:
     pdf.ts.rec     = NULL
   }
   
-  #saving to a data.frame:
+  #saving to a data.frame statistics of segmentation parameters tau, mu and gamma:
   tau.results.df = data.frame(# change point times "tau":
                               tau.MAP= ts.res, tau.q2=Q2.ts, tau.q10 = Q10.ts, tau.q90 = Q90.ts, tau.q97 = Q97.ts, 
                               tau.stdev = stdev.ts , tau.mean = ts.mean,  tau.median = ts.median)
@@ -5682,9 +5523,13 @@ A few information:
   times.of.shift.MAP <- times.of.shift.MAP[c(TRUE, !times.of.shift.MAP[-length(times.of.shift.MAP)] == times.of.shift.MAP[-1])]
   mean.of.segments   <-  mean.of.segments[c(TRUE, !mean.of.segments[-length( mean.of.segments)] ==  mean.of.segments[-1])]
   
-  ##############################################################################################################################
+  
+  
+  
+  
+  ###############################################################################################################
   #Interval of the shift time:     
-  interval = list(); ts.real = NULL; hflood =NULL;   tflood=NULL; hflood2 =NULL;  tflood2=NULL
+  interval = list(); ts.real = hflood = tflood= hflood2 = tflood2=NULL;
   if (nS.ok > 1) { # if at least one shift has been detected:
     for (i in 1:length(tau.results.df$tau.MAP)) {
       interval[[i]] = which((stage.record$t_limni >= min(tau.results.df$tau.q2[i],  tau.results.df$tau.MAP[i])) &
@@ -5698,10 +5543,8 @@ A few information:
       }
     }
     tau.results.df  = cbind(tau.results.df, tflood = tflood) 
-    CdT.tot = data.frame(tP = t_Gaug, 
-                         QP = Q_Gaug,
-                         hP = h_Gaug)
-    initial.tsplot = initial.ts.plot.rec( CdT.P           = CdT.tot, 
+    CdT.tot         = data.frame(tP = t_Gaug,  QP = Q_Gaug, hP = h_Gaug)
+    initial.tsplot  = initial.ts.plot.rec(CdT.P           = CdT.tot, 
                                           df.limni        = stage.record, 
                                           tshift          = tau.results.df,
                                           limni.labels    = limni.labels, 
@@ -5713,9 +5556,8 @@ A few information:
                                           mcmc.segment    = mcmc.segment, 
                                           nS              = nS.ok)
     
-    
-    X11()  # pupup plot of stage record with proposed segmentation
-    print(initial.tsplot)
+    # pupup plot of stage record with proposed segmentation
+    X11(); print(initial.tsplot)
     # Options:  1) if there is a flood, assign the shift time to the max peak !
     #           2) if the shift is due to other causes (vegetation, works, ice ...)
     #              then assign the shift time to the maxpost
@@ -5726,11 +5568,13 @@ A few information:
       i = i +1
       
       # 3 Options:
-      if (shift.time.adjustment.type.rec == 1) {                      # Option 1: always chose the MAP of the shift time !!!
+      ############
+      if (shift.time.adjustment.type.rec == 1) {   # Option 1: always chose the MAP of the shift time !!!
           ts.real[i] = tau.results.df$tau.MAP[i] 
         
           
-      }  else if (shift.time.adjustment.type.rec == 2) {              # Option 2: select largest flood peak.
+      } else if (shift.time.adjustment.type.rec == 2) {  # Option 2: select largest flood peak.
+      ############
         if (any(ts.real==tflood[i]) | any(ts.all.real==tflood[i])){
           print("Same flood selected twice...")
           hflood2[i] = hflood[i]
@@ -5746,14 +5590,14 @@ A few information:
           tflood2[i] = tflood[i]
           ts.real[i] = tflood2[i]
         }
-        
         ts.morpho.real = c(ts.morpho.real, ts.real[i])
         ts.morpho.MAP  = c(ts.morpho.MAP,  ts.res[i])
         ts.morpho.q2   = c(ts.morpho.q2,   Q2.ts[i])
         ts.morpho.q97  = c(ts.morpho.q97,  Q97.ts[i])
         
         
-      }  else {                                                       # Option 3: select manually the shift time.
+      } else {    # Option 3: select manually the shift time.
+      ##############
         # pop-up window for user choice of the TRUE shift time option:
         user.choice.ts[i] <- dlgInput(paste0("Which Adjusted shift time do you chose for ts",i," ? \n",
                                              "1 = MAP shift time =  ", ts.res[i], " days     interval=[ ", Q2.ts[i], " ; ", Q97.ts[i], " ]  \n",
@@ -5788,18 +5632,14 @@ A few information:
     }
     dev.off() 
     
-    # update shift times df:
+    
+    # Update shift times df:
     ts.real             = as.numeric(ts.real)
     ts.res.plus         = c( as.numeric(ts.real), tail(data.segm.rec$t,1))
     ts.res.before       = c(data.segm.rec$t[1],  ts.real)
     df.shift.times      = data.frame(Q2.ts, Q97.ts, ts.res,  ts.real)
     df.shift.times.plus = data.frame(ts.res.before, ts.res.plus, Q2.mu, Q10.mu.res, Q90.mu.res, Q97.mu,  mu.res)
-    df.shift.times2     = data.frame(tMAP	 = ts.res, 
-                                     treal =	ts.real,
-                                     t2    =	Q2.ts,
-                                     t10   = Q10.ts,	
-                                     t90   =	Q90.ts,
-                                     t97   = Q97.ts)
+    df.shift.times2     = data.frame(tMAP	= ts.res, treal =	ts.real, t2 =	Q2.ts, t10 = Q10.ts, t90 = Q90.ts, t97 = Q97.ts)
     
   ##########
   } else { # no shifts detected:  
@@ -5866,7 +5706,7 @@ A few information:
   
   
   limni.time.limits = c(stage.record$t_limni[1],  tail(stage.record$t_limni,1))
-  
+  # plotting results of segmentation:
   plot1 = plot.segmentation.results.rec(dir.results          = dir.segm.recessions.param[[param]],
                                         df                   = data.segm.rec.BaM,
                                         df.shifts            = tau.results.df,
@@ -5932,10 +5772,7 @@ A few information:
   write.table(data.segm.rec, paste0(dir.segm.recessions.param[[param]],"/Data.segm.rec.txt"),
               sep ="\t", row.names=FALSE)
   # final results for the rating shift times detection method:
-  data.annotate.recess = data.frame( q2    = Q2.ts, 
-                                     MAP   = ts.res,
-                                     q97   = Q97.ts,
-                                     t.adj = ts.res)
+  data.annotate.recess = data.frame(q2=Q2.ts,  MAP=ts.res, q97=Q97.ts, t.adj=ts.res)
   # list of results for all parameters and models:
   results.segment[[iter.model]][[param]] = list(model.and.par.name   = c("model"= rec.model[[iter.model]], "par" = param.var.model[param]),
                                                 nS.ok                = nS.ok, 
@@ -5959,9 +5796,6 @@ A few information:
                                                 data.annotate.recess = data.annotate.recess)
     }
   }
-  
-  
-  
   
   
   ############################################

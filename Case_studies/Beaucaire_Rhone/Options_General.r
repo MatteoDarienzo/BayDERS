@@ -19,7 +19,7 @@ QGaug.col            <- 3                # column position in the file ...
 hGaug.col            <- 2                # column position in the file ...
 uQGaug.col           <- 4                # column position in the file ...
 tGaug.col            <- 1                # column position in the file ...
-tGaug.type           <- "date"           # "numeric or "date".     
+tGaug.format         = "%d/%m/%Y %H:%M"    # insert "numeric" or the date format like "%d/%m/%Y %H:%M".  
 uQ.absolute          <- FALSE            # TRUE (if st dev of uncertainty) or FALSE (if % of Q)
 gaugings_filter      <- 1                # consider a gauging every "gaugings_filter" gaugings. 
 
@@ -43,7 +43,7 @@ file_limni           <-  "PtBcrJournalier.csv"     #"PtBcrJournalier.csv"   # na
 u.m.limni            = "m"                                  # unit of stage record: "m", "cm", "mm" or "ft"
 hLimni.col           = 2                                    # column position in the file of stage record
 tLimni.col           = 1                                    # column position in the file of stage record
-tLimni.type          = "date"                               # "numeric or "date".  
+tLimni.format        = "%d/%m/%Y"                           # insert "numeric" or the date format like "%d/%m/%Y %H:%M".  
 limni_filter         = 1                                    # consider a stage value every "limni_filter" values. 
 grid_limni.ylim      = c(-2,10,2)                           # grid for stage record plots
 limni.labels         = c("Time [days]", "Stage h [m]")      # limni: x and y labels (for plots)
@@ -57,7 +57,7 @@ date_origin          = as.Date("1816-05-15 00:00:00 LMT")   # "1816-05-15"  #ori
 #***********************************************
 official.shift.times =  FALSE                           # name of the csv file with official shift dates (put FALSE if not available!)
 tOfficial.col        = 1                       # column position in the file ...
-tOfficial.type       = "numeric"               # "numeric or "date".  
+tOfficial.format     = "%d/%m/%Y"              # insert "numeric" or the date format like "%d/%m/%Y %H:%M".  
 
 
 

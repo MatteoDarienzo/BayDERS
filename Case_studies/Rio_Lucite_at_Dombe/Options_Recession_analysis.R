@@ -4,15 +4,15 @@
 #####################################
 # 1) Recession extraction:
 #####################################
-name.folder.results.recession = "Test_5"                 # string with the name of the folder with results.
+name.folder.results.recession = "Test_6"                 # string with the name of the folder with results.
 uh.rec                 = 0                               # assign a stdev to the stage obs error [in cm], by default is 0.
 tburn.rec              = 0                               # discard the first n days of recession, by default is 0.
 Nmin.rec               = 5                               # min number of data in a recession curve
 tgood                  = 15                              # min length of the recession in days
 delta.t.min            = 0                               # min days between two recess data
-delta.t.max            = 20                              # max days between two recess data
+delta.t.max            = 30                              # max days between two recess data
 chi                    = 100                              # max stage rise between two recess data
-gradient.max           = -30                              # max gradient dh/dt for the recession 
+gradient.max           = -5                              # max gradient dh/dt for the recession 
 
 
 

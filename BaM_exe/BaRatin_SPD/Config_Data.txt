@@ -1,6 +1,6 @@
 'BaRatin_SPD\Gaugings_data_SPD.txt'
 1
-229
+233
 4
 1
 0

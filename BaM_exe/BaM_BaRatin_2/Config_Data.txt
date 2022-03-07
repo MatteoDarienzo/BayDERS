@@ -1,6 +1,6 @@
 'BaM_BaRatin_2\Gaugings_data.txt'
 1
-229
+6
 4
 1
 0
