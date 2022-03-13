@@ -513,7 +513,6 @@
                                                                                  gaugings               =  data4BaRatin,       
                                                                                  official.dates         =  officialShiftsTime, 
                                                                                  colors.period          =  colo,
-                                                                                 deltat_peaks           =  1000,   # change this to have more peaks to chose
                                                                                  res_gaug_recess        =  res_gaug_recess)   
                     # Apply a SPD Baratin analysis to the reference periods just defined:
                     # this will provide the shift magnitudes of the morphogenic shifts.
@@ -537,12 +536,12 @@
                                                               officialShiftsTime   = officialShiftsTime)  
                     
                     
+                    
                     # apply a linear regression to the relation V - deltab:
                     # using deltab (from baratinSPD) and V (from cumulative sediment transport for each reference event):^ù
                     ST.linear.estim = linear.estimation(dir_code             = dir_code, 
                                                         dir.sed.transp       = SPD.reference.periods$dir.reference, 
-                                                        model.type           = "null",    # options: "null" or "proportional",
-                                                        df.deltab.V          = ST.segm$df.rel.deltab.V.TOT,  # df.rel.deltab.qscum.TOT,   #ST.SPD[[1]],
+                                                        df.deltab.V          = ST.segm$df.rel.deltab.V.TOT,      # df.rel.deltab.qscum.TOT,   #ST.SPD[[1]],
                                                         file.options.general = file.options.general,
                                                         file.options.ST      = file.options.ST)
                                                         

@@ -12,7 +12,7 @@ dg.prior                 = c(0, 0.25)                    # mean and stdev for in
 dl.prior                 = c(0, 0.25)                    # mean and stdev for incremental local change priors
 dB.prior                 = c(1, 0.2)                     # mean and stdev for channel width change priors
 b.prior                  = c(0, 0, 1.2)                  # mean for parameters "b" for the oldest period 
-st_b.prior               = c(0.2, 0.2, 0.2)              # stdev for parameters "b" for the oldest period
+st_b.prior               = c(0.5, 0.5, 0.2)              # stdev for parameters "b" for the oldest period
 param.var                = c("b1, b2")                   # names of parameters that vary (e.g. = c("b1", "b2) )
 plot.results.only        = FALSE                         # [TRUE/FALSE] if TRUE it plot the results only without computation.
 do.final.hydrograph      = FALSE                         # [TRUE/FALSE] option not supported yet!

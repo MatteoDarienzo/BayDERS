@@ -55,43 +55,6 @@ type.stdev.gamma.baratin   = 1  # type of stdev for the RC structural error:  1 
 
 
 
-# df.limni          = df.limni 
-# t_Gaug            = t_Gaug
-# h_Gaug            = h_Gaug
-# Q_Gaug            = Q_Gaug 
-# uQ_Gaug           = uQ_Gaug
-# u.m.Qgaug         = u.m.Qgaug 
-# u.m.Hgaug         = u.m.Hgaug
-# ncontrols          = ncontrols
-# M                 = M 
-# b.distr           = b.distr 
-# a.distr           = a.distr 
-# c.distr           = c.distr 
-# # a.prior           = a.prior 
-# # st_a.prior        = st_a.prior 
-# c.prior           = c.prior 
-# st_c.prior        = st_c.prior 
-# Bw.prior          = Bw.prior
-# Cr.prior          = Cr.prior
-# g.prior           = g.prior
-# Bc.prior          = Bc.prior
-# KS.prior          = KS.prior
-# S0.prior          = S0.prior
-# st_Bw.prior       = st_Bw.prior
-# st_Cr.prior       = st_Cr.prior
-# st_g.prior        = st_g.prior 
-# st_Bc.prior       = st_Bc.prior
-# st_KS.prior       = st_KS.prior
-# st_S0.prior       = st_S0.prior # Priors for RC model
-# remnant.err.model = remnant.err.model 
-# g1.prior          = g1.prior 
-# g2.prior          = g2.prior
-# g1.distr.type     = g1.distr.type
-# g2.distr.type     = g2.distr.type  
-
-
-
-
 
 
 

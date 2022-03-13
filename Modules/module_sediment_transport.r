@@ -22,6 +22,13 @@
 
 
 
+
+
+
+
+
+
+
 #########################################################
 find_max = function(nmax, series,  interval, max_deltat){
 #########################################################  
@@ -70,6 +77,15 @@ find_max = function(nmax, series,  interval, max_deltat){
 
 
 
+
+
+
+
+
+
+
+
+
 ###################################################
 find_peaks <- function (x, m){
 ###################################################
@@ -92,12 +108,17 @@ find_peaks <- function (x, m){
 
 
 
+
+
+
+
+
 ###########################################################################################################
 read.refer.morphogenic.events = function(dir.exe, dir.case_study, dir.Sedim.transp, 
-                                       file.options.general, file.options.segment, file.options.recessions, file.options.ST,                                                            
-                                       stage.record,  gaugings ,   official.dates, colors.period,
-                                       deltat_peaks,
-                                       res_gaug_recess){
+                                         file.options.general, file.options.segment, 
+                                         file.options.recessions, file.options.ST,                                                            
+                                         stage.record,  gaugings ,   official.dates, colors.period,
+                                         res_gaug_recess){
 ###########################################################################################################
   source(file.options.general)
   source(file.options.recessions)
@@ -128,10 +149,9 @@ read.refer.morphogenic.events = function(dir.exe, dir.case_study, dir.Sedim.tran
                             Sys.info()[" "])$res
 
   
-  #***************************************
-  if (user.choice.ST == "2"){   # if (file_name_ref_shift_times == FALSE){
-  #***************************************  
-
+  #**************************
+  if (user.choice.ST == "2"){
+  #**************************
       # # Reading results of step 1 of the retro analysis:
       # file.copy(c(paste0(dir.retro.an,"/STEP1_SPD/bt1_df.txt"), 
       #             paste0(dir.retro.an,"/STEP1_SPD/bt2_df.txt"),
@@ -239,7 +259,7 @@ read.refer.morphogenic.events = function(dir.exe, dir.case_study, dir.Sedim.tran
              
              if (user.adjust.ts.ST == "Y"){
                print(paste0("time ", res_gaug_recess$df_gaug_rec$t.adj[ii], " accepted"))
-               data.annotate.ST[ii,] = res_gaug_recess$df_gaug_rec
+               data.annotate.ST[ii,] = res_gaug_recess$df_gaug_rec[ii,]
              } else if (user.adjust.ts.ST == "F"){
                
                user.eliminate.ST = c(user.eliminate.ST, ii)
@@ -249,6 +269,7 @@ read.refer.morphogenic.events = function(dir.exe, dir.case_study, dir.Sedim.tran
                  data.annotate.ST[ii,]$t.adj = as.numeric(user.adjust.ts.ST)
                  print(paste0("time ", res_gaug_recess$df_gaug_rec$t.adj[ii], " adjusted to ", data.annotate.ST[ii,]$t.adj))
                } else {
+                 #choose one of the peaks proposed in the list:
                  data.annotate.ST[ii,]$t.adj = h_peaks$t_hmax[as.numeric(user.adjust.ts.ST)]
                  print(paste0("time ", res_gaug_recess$df_gaug_rec$t.adj[ii], " adjusted to ", data.annotate.ST[ii,]$t.adj))
                }
@@ -259,7 +280,7 @@ read.refer.morphogenic.events = function(dir.exe, dir.case_study, dir.Sedim.tran
              data.annotate.ST    = data.annotate.ST[-c(user.eliminate.ST),]
              pdf.ts.ST           = res_gaug_recess$pdf_gaug_rec[ , - user.eliminate.ST]
            }
-           
+           # plot new modified reference shift times:
            plot.shifts =  plot.time.shifts.step1(dir                  = dir.ST.test.step1 ,
                                                  gaug.1               = gaugings, 
                                                  rec.1                = NULL, 
@@ -277,21 +298,23 @@ read.refer.morphogenic.events = function(dir.exe, dir.case_study, dir.Sedim.tran
                                                  save_file_name       = "/reference_shift_times_adjusted.pdf")
            
       } else {
+        # no modifications:
+        ###################
         data.annotate.ST = res_gaug_recess$df_gaug_rec
         pdf.ts.ST        = res_gaug_recess$pdf_gaug_rec                     
       }  
-                                                              
-
-
       # # save into files:
       # write.table(pdf.ts.ST, paste0(dir.sed.transp.SPD,"/STEP1_pdf_ts_for_ST.txt"),  sep ="\t", row.names=FALSE)
       # write.table(data.annotate.ST, paste0(dir.sed.transp.SPD,"/STEP1_shift_times_for_ST.txt"),  sep ="\t", row.names=FALSE)
       
+      
+      
+      
   ############
   } else {   # if reference shift times are directed provided by user through a text file:
   ############
-      print(c("you have chosen to consider as reference shift times for",
-                   "the sediment transport analysis your .txt file.", file_name_ref_shift_times))
+      print(c("You have chosen to consider as reference shift times for",
+                   "the sediment transport analysis your .txt file ", file_name_ref_shift_times))
       user.file.ST = dlgInput(paste0("Is the file below ?  [Y/F] \n", 
                                        file_name_ref_shift_times),  Sys.info()[" "])$res
       if (user.file.ST == "Y"){
@@ -431,6 +454,7 @@ read.refer.morphogenic.events = function(dir.exe, dir.case_study, dir.Sedim.tran
       # pdf.ts.ST        = res_gaug_recess$pdf_gaug_rec  
     
   }
+  
   if (!is.null(dev.list())){
     while (!is.null(dev.list())) {
       dev.off()
@@ -465,9 +489,10 @@ read.refer.morphogenic.events = function(dir.exe, dir.case_study, dir.Sedim.tran
 
 
 
-##################################################################################################################
+
+#############################################################################################
 transp <- function(s,d50,h,hcr,beta,alpha, S0.sed.transp) {
-##################################################################################################################
+#############################################################################################
   #Function that computes the sediment transport flux (per unit of time) ==> q = m3/s
   # riverbed elevation z = b2
   # (h-hcritic) or (y-ycritic) 
@@ -566,22 +591,23 @@ sediment.transport.segmentation <- function(dir.sed.transp,
                   dir.sed.transp.ST = getwd()
                   dir.sed.transp.d50 = paste0(dir.sed.transp.ST,"/2_transport_computation")
                   dir.create(dir.sed.transp.d50)
-                             
                   # dir.create(paste0(dir.sed.transp,"/d",d50))
                   # dir.sed.transp.d50 = paste0(dir.sed.transp,"/d",d50)
-                  # 
+                  
+                  
    # b evolution per period (results from Baratin SPD):
                   message("- Computing the bed evolution (parameter b) in time !!!  Wait ... "); flush.console()
                   # Dataframes with asymptote parameter (stage at time infinity):
-                  bt1.df          = read.table(paste0(dir.sed.transp.SPD,"/bt1_df.txt"), header =TRUE)
-                  bt2.df          = read.table(paste0(dir.sed.transp.SPD,"/bt2_df.txt"), header =TRUE)
+                  bt1.df          = read.table(paste0(dir.sed.transp.SPD,"/bt", 1, "_df.txt"), header =TRUE)
+                  if (control.main.channel >1){
+                     bt2.df          = read.table(paste0(dir.sed.transp.SPD,"/bt", control.main.channel, "_df.txt"), header =TRUE)
+                     # needs to be improved this to be generalized !!!!!!
+                  } else {
+                     bt2.df = bt1.df
+                  } 
                   gaugings_SPD_ST = read.table(paste0(dir.sed.transp,"/data_with_periods.txt"), header =TRUE)
                   gaugings_SPD    = gaugings_SPD_ST
                   nperiods        = tail(gaugings_SPD_ST$Period,1)
-                  #
-                  # ts              = read.table(paste0(dir.sed.transp,"/shift_times.txt"), header =TRUE)
-                  # ts.before       = sort(c(0, ts$t.adj))
-                  # ts.plus         = sort(c(ts$t.adj, tail(df.limni.ST$t_limni,1)))
                   #
                   ts.ST           = read.table(paste0(dir.sed.transp,"/shift_times.txt"), header =TRUE)
                   ts.before.ST    = sort(c(0, ts.ST$t.adj))
@@ -599,6 +625,8 @@ sediment.transport.segmentation <- function(dir.sed.transp,
                   s.sed.transp  = s.st
                   d50.st        = d50.st
                   phi.st        = d50.st/S0.st
+                  
+                  
                   
                   set.seed(bt2.df.ST$mean)  
                   for (pp in 1:nperiods.ST){
@@ -645,7 +673,7 @@ sediment.transport.segmentation <- function(dir.sed.transp,
                   # plot hcr.df per period:
                   hcr.plot = ggplot(data = hcr.df)+ 
                              geom_point(aes(x=seq(1,length(hcr.df$mean),1), y=mean), color="green")+
-                               geom_line(aes(x=seq(1,length(hcr.df$mean),1), y=mean), color="green")+
+                             geom_line(aes(x=seq(1,length(hcr.df$mean),1), y=mean), color="green")+
                                geom_errorbar(aes(x=seq(1,length(hcr.df$mean),1), 
                                                  ymin=mean-2*stdev, 
                                                  ymax=mean+2*stdev), color="green")+
@@ -691,18 +719,17 @@ sediment.transport.segmentation <- function(dir.sed.transp,
   # defining shifting periods:
                   # Define the index j of the shifting events
                   t.shifts.limni = NULL; t  = 1; j  = NULL;  i  = 1;  ev = 1
-                  
                   while (df.limni.ST$t_limni[t] < ts.ST$t.adj[length(ts.ST$t.adj)])  {
-                  #********************************************************************
+                  #*******************************************************************
                       if ((df.limni.ST$t_limni[t] <= ts.ST$t.adj[i]) &
                           (df.limni.ST$t_limni[t+1] >= ts.ST$t.adj[i])) {
                       #**************************************************
                           t.shifts.limni[i] = df.limni.ST$t_limni[t+1]
-                          j[i] = t+1   #define the indexes of the time vector for peak t.shift 
-                                     #(it is the time data before the shift time)
-                          i = i +1   #i is the number of inter-event stable periods
+                          j[i] = t+1   # Define the indexes of the time vector for peak t.shift 
+                                       # (it is the time data before the shift time)
+                          i = i +1     # i is the number of inter-event stable periods
                       }
-                      t = t+1       #t is the time index of the limni
+                      t = t+1          # t is the time index of the limni
                   }
                   
                   
@@ -741,7 +768,7 @@ sediment.transport.segmentation <- function(dir.sed.transp,
                       
                       if (is.null(event.right.t)==TRUE){
                         calibration.ON = FALSE
-                        print("********* one event is missed !!! ")
+                        print(paste0("********* Event flood at = ", ts.ST$t.adj[i], "days has been missed !!! "))
                         message("- Please, check your input settings. You may need to change some parameters:")
                         message("  e.g.,")
                         message("  . decrease the characteristic sediment diameter d50")
@@ -843,6 +870,8 @@ sediment.transport.segmentation <- function(dir.sed.transp,
                   #              ycr, 
                   #              ylimits=c(0,5), 
                   #              d50) 
+                  
+                  
 ######################################################################################################
                   # for each shift time define the event period (left and right respect to the peak):  
                   event.t = NULL; event.h =NULL; start.event.index=NULL; end.event.index =NULL;
@@ -883,7 +912,7 @@ sediment.transport.segmentation <- function(dir.sed.transp,
                   
                   
                   
-  #Application of sediment transport model qs(t):
+  #Application of sediment transport model qs(t) ==> MPM model:
                   message("- Computing the bedload qs(t) at instant t !!!  Wait ... "); flush.console()
                   qs = NULL
                   pb <- txtProgressBar(min = 0,               # Minimum value of the progress bar
@@ -939,7 +968,7 @@ sediment.transport.segmentation <- function(dir.sed.transp,
 # identify among all the known shift events the one that has the lowest qs cumulative:
                   qsc_crit   = min(cum.qs)
                   message("*********************************************")
-                  print(paste0("V_crit (minimum sed. volume observed) = ",qsc_crit, " m^3"))
+                  print(paste0("V_crit (minimum sedim. volume observed) = ", round(qsc_crit, digits=3), " m^3"))
                   message("*********************************************")
                   event.crit = which.min(cum.qs)
 
@@ -1101,9 +1130,8 @@ sediment.transport.segmentation <- function(dir.sed.transp,
                   qsc.t.plot.one.choice(dir.sed.transp.d50  = dir.sed.transp.d50, 
                                         df.limni.ST         = df.limni.ST, 
                                         y_limni             = y_limni, 
-                                        ylimits.st          = c(0, 7), 
+                                        ylimits.st          = ylimits, 
                                         hlimits.st          = c(ylimits[1], ylimits[2]), 
-                                        tlimits.st          = tlimits,
                                         gaugings_SPD        = gaugings_SPD,
                                         t.event1            = t.event1, 
                                         y.event1            = y.event1, 
@@ -1122,7 +1150,7 @@ sediment.transport.segmentation <- function(dir.sed.transp,
                                         qscum.tot1          = qscum.tot1,
                                         plot.event.index    = FALSE,
                                         V.limits            = V.limits,
-                                        V.for.text          = V.for.text) 
+                                        V.for.text          = V.limits[2]) 
                   
                   
 # the Volumes V associated to each reference event:
@@ -1138,10 +1166,11 @@ sediment.transport.segmentation <- function(dir.sed.transp,
                         delta.b1.mean[evento]  = (bt1.df.ST.merge$mean[evento+1] - bt1.df.ST.merge$mean[evento])
                         delta.b1.stdev[evento] = (bt1.df.ST.merge$stdev[evento+1]^2 + bt1.df.ST.merge$stdev[evento]^2)^0.5
                   }
+                  
                   delta.b2.MAP =NULL; delta.b2.stdev = NULL; delta.b2.mean =NULL;
                   for (evento in 1:(length(bt2.df.ST.merge$maxpost)-1)) {
                        delta.b2.MAP[evento]   = (bt2.df.ST.merge$maxpost[evento+1] - bt2.df.ST.merge$maxpost[evento])
-                       delta.b2.mean[evento]  = (bt2.df.ST.merge$mean[evento+1] - bt2.df.ST.merge$mean[evento])
+                       delta.b2.mean[evento]  = (bt2.df.ST.merge$mean[evento+1]    - bt2.df.ST.merge$mean[evento])
                        delta.b2.stdev[evento] = (bt2.df.ST.merge$stdev[evento+1]^2 + bt2.df.ST.merge$stdev[evento]^2)^0.5
                   }
                   df.rel.deltab.V.TOT = data.frame(index.tstart  =  start.event.index1,
@@ -1152,74 +1181,46 @@ sediment.transport.segmentation <- function(dir.sed.transp,
                                                    deltab2       = delta.b2.mean,
                                                    stdev_deltab2 = delta.b2.stdev,
                                                    Period        = seq(1,length(delta.b1.mean),1))
-                  #************************************************************************************
+                  
+                  #*************************************************************************************
                   # df.rel.deltab.qscum = df.rel.deltab.V.TOT[which(data.annotate.step2.sort$index>0,),]
                   # df.rel.deltab.qscum = cbind(data.annotate.ST, df.rel.deltab.qscum)
 
                   db1_db2_V.plot = ggplot(data=df.rel.deltab.V.TOT) +
-                    geom_point(aes(y=deltab1, x= V), color ="red" , size=2)+
-                    geom_errorbar(aes(ymin = deltab1 - 2*stdev_deltab1, 
-                                      ymax = deltab1 + 2*stdev_deltab1,
-                                      x = V),
-                                  color = "red",  size = 0.2, width=20)+
-                    geom_point(aes(y=deltab2, x = V), 
-                               color ="blue" , size=2)+
-                    geom_errorbar(aes(ymin = deltab2 - 2*stdev_deltab2, 
-                                      ymax = deltab2 + 2*stdev_deltab2,
-                                      x = V),
-                                  color = "blue",  size = 0.2, width=20)+
-                    annotate("text", 
-                             x=df.rel.deltab.V.TOT$V, 
-                             y=df.rel.deltab.V.TOT$deltab1 + df.rel.deltab.V.TOT$stdev_deltab1+0.05,
-                             label= df.rel.deltab.V.TOT$Period, color = "black", size=2) +
-                    geom_point(data =data.frame(x=df.rel.deltab.V.TOT$V, 
-                                                y=df.rel.deltab.V.TOT$deltab1 + df.rel.deltab.V.TOT$stdev_deltab1+0.05),
-                               aes(x=x, y=y),  size = 3, color="black", pch=21, fill="NA")+
-                    ylab("Delta b1, Delta b2 [m]") + xlab("Cumulative bedload, V [m3]")+
-                    theme_bw(base_size = 15)
-                  ggsave(db1_db2_V.plot, filename = paste0(dir.sed.transp.d50,"/db1_db2_V.png"), 
-                         bg = "transparent", device = "png", width = 6, height =4, dpi = 400)
-                  
-                  
-                  
+                                   geom_point(aes(y=deltab1, x= V), color ="red" , size=2)+
+                                   geom_errorbar(aes(ymin = deltab1 - 2*stdev_deltab1,  ymax = deltab1 + 2*stdev_deltab1,  x = V),
+                                                 color = "red",  size = 0.2, width=20)+
+                                   geom_point(aes(y=deltab2, x = V),   color ="blue" , size=2)+
+                                   geom_errorbar(aes(ymin = deltab2 - 2*stdev_deltab2,  ymax = deltab2 + 2*stdev_deltab2, x = V),
+                                                 color = "blue",  size = 0.2, width=20)+
+                                   annotate("text",  x=df.rel.deltab.V.TOT$V, y=df.rel.deltab.V.TOT$deltab1 + df.rel.deltab.V.TOT$stdev_deltab1+0.05,
+                                            label= df.rel.deltab.V.TOT$Period, color = "black", size=2) +
+                                   geom_point(data =data.frame(x=df.rel.deltab.V.TOT$V,  y=df.rel.deltab.V.TOT$deltab1 + df.rel.deltab.V.TOT$stdev_deltab1+0.05),
+                                              aes(x=x, y=y),  size = 3, color="black", pch=21, fill="NA")+
+                                   ylab("Delta b1, Delta b2 [m]") + xlab("Cumulative bedload, V [m3]")+
+                                   theme_bw(base_size = 15)
+                                   ggsave(db1_db2_V.plot, filename=paste0(dir.sed.transp.d50,"/db1_db2_V.png"),bg = "transparent", device="png", width=6, height=4, dpi=400)
+                                   
+                                   
 
+                    
+                    
+                
                   print("****************")
                   print("   All done!    ")
                   print("****************")
                   
-# Outputs of the function:
+                  
+                  
+# Main Outputs:
+###############
                   return(list(ycritic = ycr , 
                               hcritic = hcr,
                               Vt      = Vt,
-                              # y_limni = y_limni, 
-                              # merge.qsc_crit =merge.qsc_crit,
-                              # 
-                              # start.new = start.new , 
-                              # end.new = end.new , 
-                              # qsc.new = qsc.new , 
-                              # 
-                              # start.event.new = start.event.new, 
-                              # end.event.new = end.event.new, 
-                              # finalqs.cum = finalqs.cum,
-                              
-                              #
                               db1_db2_V.plot  = db1_db2_V.plot,
                               df.rel.deltab.V.TOT  = df.rel.deltab.V.TOT,
                               potential.shift.time  = potential.shift.times
-                              # merge.start.event.new = merge.start.event.new, 
-                              # merge.end.event.new = merge.end.event.new, 
-                              # merge.finalqs.cum = merge.finalqs.cum,
-                              # 
-                              # df.event.effect = qs.cum.plot$df.event.effect, 
-                              # df.event.potent = qs.cum.plot$df.event.potent, 
-                              # df.merge.event.new = qs.cum.plot$df.merge.event.new,
-                              # df.event.new = qs.cum.plot$df.event.new,
-                              # 
-                              # calibration.ON = calibration.ON
                              ))
-# } else {
-#   return(list(  calibration.ON = calibration.ON))
-#   
 }
 
                                 
@@ -1242,6 +1243,586 @@ sediment.transport.segmentation <- function(dir.sed.transp,
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+#########################################################################################################
+linear.estimation = function(dir_code, 
+                             dir.sed.transp,
+                             df.deltab.V,
+                             file.options.general,
+                             file.options.ST) {
+#########################################################################################################
+  # with the results of the SPD estimation , estimate a relation between Delta(b1,b2) and qs,cum
+  # Use a linear regression with BaM.
+  # Apply a BaM Linear Regression estimation (with data uncertainties).
+  
+  # Preparation of the dataframes:
+  df.linear.regress.deltab1 = data.frame(X  = df.deltab.V$V, 
+                                         uX = rep(0,length(df.deltab.V$V)), 
+                                         y  = df.deltab.V$deltab1, 
+                                         uY = df.deltab.V$stdev_deltab1)
+  
+  df.linear.regress.deltab2 = data.frame(X= df.deltab.V$V, 
+                                         uX = rep(0,length(df.deltab.V$V)), 
+                                         y = df.deltab.V$deltab2,
+                                         uY = df.deltab.V$stdev_deltab2)
+  #directories:     
+  setwd(dir.sed.transp)
+  setwd("./..")
+  dir.sed.transp.ST = getwd()
+  dir.sed.transp.linear = paste0(dir.sed.transp.ST,"/3_linear_relation")
+  dir.create(dir.sed.transp.linear)
+  dir.config.linear     = paste0(dir_code,"/BaM_exe/Linear")
+  dir.qs.delta_b1       = paste0(dir.sed.transp.linear, "/delta_b1")
+  dir.qs.delta_b2       = paste0(dir.sed.transp.linear, "/delta_b2")
+  dir.results.qs.deltab = dir.sed.transp.linear
+  dir.create(paste0(dir.sed.transp.linear, "/delta_b1"))
+  dir.create(paste0(dir.sed.transp.linear, "/delta_b2"))
+  
+  
+  # user options:                 
+  source(file.options.general)
+  source(file.options.ST)
+  xgrid   = seq(V.limits[1], V.limits[2], V.limits[3]) #(V.limits[2] -V.limits[1])/20)
+  Nmcmc   = Nmcmc.st
+  Ncycles = Ncycles.st
+  # delta b1:
+  
+  write.table(df.linear.regress.deltab1, file=paste0(dir.config.linear,"/data.txt"), sep="\t", row.names=FALSE )
+  setwd(dir.exe)
+  #launch BaM :
+  linear_app(model.type         = model.type ,
+             Nmcmc              = Nmcmc, 
+             Ncycles            = Ncycles, 
+             xgrid              = xgrid,
+             nobs               = length(df.linear.regress.deltab1$X), 
+             simMCMC            = TRUE, 
+             prediction         = TRUE, 
+             prediction.t       = FALSE, 
+             nobs.t             = 1,
+             prior.param.propor = prior.param.propor,
+             prior.gamma.linear = prior.gamma.linear) 
+  #read results :
+  env.linear.regress.b1       = read.table(file = paste0(dir.config.linear,"/Lin_TotalU.env"), header=TRUE)
+  env.linear.regress.b1       = cbind(env.linear.regress.b1, xgrid)
+  env.param.linear.regress.b1 = read.table(file = paste0(dir.config.linear,"/Lin_ParamU.env"), header=TRUE)
+  env.param.linear.regress.b1 = cbind(env.param.linear.regress.b1, xgrid)
+  maxpost.linear.regress.b1   = read.table(file = paste0(dir.config.linear,"/Lin_Maxpost.spag"), header=FALSE)
+  maxpost.linear.regress.b1   = cbind(maxpost.linear.regress.b1, xgrid)
+  #write and save results of this linear regression Deltab1,b2 vs qscum :
+  list.of.files <- c(
+    paste0(dir.config.linear,"/Lin_maxpost.spag"),
+    paste0(dir.config.linear,"/Lin_ParamU.spag"), 
+    paste0(dir.config.linear,"/Lin_TotalU.spag"),
+    paste0(dir.config.linear,"/Lin_ParamU.env"),  
+    paste0(dir.config.linear,"/Lin_TotalU.env"),
+    paste0(dir.config.linear,"/Results_MCMC_Cooked.txt"), 
+    paste0(dir.config.linear,"/Results_Residuals.txt"),
+    paste0(dir.config.linear,"/Results_Summary.txt"), 
+    paste0(dir.config.linear,"/Config_Model.txt"),
+    paste0(dir.config.linear,"/xgrid.txt"), 
+    paste0(dir.config.linear,"/data.txt")
+  )
+  for (ll in 1:length(list.of.files)) {
+    file.copy(list.of.files[ll], dir.qs.delta_b1, overwrite = TRUE) 
+  }
+  
+  #converg = Convergence.test(dir.seg = dir.qs.delta_b1, npar = 2, dir.plot = dir.qs.delta_b1)
+  # plot.mcmc.seg(workspace=dir.qs.delta_b1, seg.iter=1, nS=2)
+  
+  # plot results :
+  lin.relat.deltab1.plot = ggplot(data=df.deltab.V) +
+    geom_ribbon(data = env.linear.regress.b1, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.1)+
+    geom_ribbon(data = env.param.linear.regress.b1, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.2)+
+    geom_errorbar(aes(ymin= df.linear.regress.deltab1$y - 2*df.linear.regress.deltab1$uY, 
+                      ymax= df.linear.regress.deltab1$y + 2*df.linear.regress.deltab1$uY, x   = df.linear.regress.deltab1$X ),
+                  color = "black",  size = 0.3, width=2000)+
+    geom_point(aes(y=deltab1, x= V), fill ="red" , size=3, pch = 21)+
+    geom_line(data = maxpost.linear.regress.b1, aes(x=xgrid, y =V1), color="blue", size=1)+
+    #geom_hline(yintercept = 0, color="black", size=0.3, linetype ="dashed")+
+    geom_point(data =data.frame(x=df.deltab.V$V, y=df.deltab.V$deltab1 + df.deltab.V$stdev_deltab1+0.1), 
+               aes(x=x, y=y),  size = 10, color="black", pch=21, fill="white")+
+    annotate("text", x=df.deltab.V$V,  y=df.deltab.V$deltab1 + df.deltab.V$stdev_deltab1 + 0.1, label= df.deltab.V$Period, color = "black", size=7) +
+    scale_x_continuous(name = TeX("$V \\; \\left[m^{3} \\right] $"), expand = c(0,0), limits=c(xgrid[1], tail(xgrid,1))) +
+    scale_y_continuous(name = TeX("$\\Delta b_1 \\; \\left[m\\right]$"), expand = c(0,0)) +
+    theme_bw()+ coord_cartesian(clip = 'off')+
+    theme(plot.background    = element_rect(fill ="transparent", color = NA)
+          ,panel.grid.major  = element_blank()
+          ,panel.grid.minor  = element_blank()
+          ,panel.background  = element_rect(fill ="transparent") 
+          ,axis.ticks        = element_line(colour = "black")
+          ,plot.margin       = unit(c(0.3,0.7,0.3,0.3),"cm")
+          ,text              = element_text(size=14)
+          ,axis.title        = element_text(size=20)
+          ,legend.key        = element_rect(colour = "transparent", fill = "transparent")
+          ,legend.background = element_rect(colour = "transparent", fill = "transparent")
+          ,legend.position   ="none")
+  
+  ggsave(lin.relat.deltab1.plot, filename=paste0(dir.qs.delta_b1,"/Linear_qs_Deltab1.png"), 
+         bg = "transparent", width = 7, height =7, dpi = 400)
+  ##############################################################################################################
+  # delta b2:
+  write.table(df.linear.regress.deltab2, file=paste0(dir.config.linear,"/data.txt"), sep="\t", row.names=FALSE )
+  setwd(dir.exe)
+  #launch BaM :
+  linear_app(model.type         = model.type, 
+             Nmcmc              = Nmcmc, 
+             Ncycles            = Ncycles, 
+             xgrid              = xgrid,
+             nobs               = length(df.linear.regress.deltab2$X), 
+             simMCMC            = TRUE, 
+             prediction         = TRUE, 
+             prediction.t       = FALSE, 
+             nobs.t             = 1,
+             prior.param.propor = prior.param.propor,
+             prior.gamma.linear = prior.gamma.linear) 
+  #read results :
+  env.linear.regress.b2       = read.table(file = paste0(dir.config.linear,"/Lin_TotalU.env"), header=TRUE)
+  env.linear.regress.b2       = cbind(env.linear.regress.b2, xgrid)
+  env.param.linear.regress.b2 = read.table(file = paste0(dir.config.linear,"/Lin_ParamU.env"), header=TRUE)
+  env.param.linear.regress.b2 = cbind(env.param.linear.regress.b2, xgrid)
+  maxpost.linear.regress.b2   = read.table(file = paste0(dir.config.linear,"/Lin_Maxpost.spag"), header=FALSE)
+  maxpost.linear.regress.b2   = cbind(maxpost.linear.regress.b2, xgrid)
+  #write and save results of this linear regression Deltab1,b2 vs qscum :
+  list.of.files <- c(
+    paste0(dir.config.linear,"/Lin_maxpost.spag"),
+    paste0(dir.config.linear,"/Lin_ParamU.spag"), 
+    paste0(dir.config.linear,"/Lin_TotalU.spag"),
+    paste0(dir.config.linear,"/Lin_ParamU.env"),  
+    paste0(dir.config.linear,"/Lin_TotalU.env"),
+    paste0(dir.config.linear,"/Results_MCMC_Cooked.txt"), 
+    paste0(dir.config.linear,"/Results_Residuals.txt"),
+    paste0(dir.config.linear,"/Results_Summary.txt"), 
+    paste0(dir.config.linear,"/Config_Model.txt"),
+    paste0(dir.config.linear,"/xgrid.txt"),
+    paste0(dir.config.linear,"/data.txt")
+  )
+  for (ll in 1:length(list.of.files)) {
+    file.copy(list.of.files[ll], dir.qs.delta_b2, overwrite = TRUE)
+  }
+  
+  # plot results :
+  lin.relat.deltab2.plot = ggplot(data=df.deltab.V) +
+    geom_ribbon(data = env.linear.regress.b2, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.1)+
+    geom_ribbon(data = env.param.linear.regress.b2, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.2)+
+    geom_errorbar(aes(ymin = deltab2 - 2*stdev_deltab2, ymax = deltab2 + 2*stdev_deltab2, x = V), color = "blue",  size = 0.3, width=2000)+
+    geom_point(aes(y=deltab2,   x = V),  fill ="blue" , size=3, pch = 21)+
+    geom_line(data = maxpost.linear.regress.b2, aes(x=xgrid, y =V1), color="blue", size=1)+
+    geom_point(data =data.frame(x=df.deltab.V$V,  y=df.deltab.V$deltab2 + df.deltab.V$stdev_deltab2+0.1),
+               aes(x=x, y=y),  size = 10, color="black", pch=21, fill="white")+
+    annotate("text", x=df.deltab.V$V, y=df.deltab.V$deltab2 + df.deltab.V$stdev_deltab2 + 0.1,
+                    label= df.deltab.V$Period, color = "black", size=7) +
+    scale_x_continuous(name = TeX("$V \\; \\left[m^{3} \\right] $"), expand = c(0,0), limits=c(xgrid[1], tail(xgrid,1))) +
+    scale_y_continuous(name = TeX("$\\Delta b_2 \\; \\left[m\\right]$"), expand = c(0,0)) +
+    theme_bw()+ coord_cartesian(clip = 'off')+
+    theme(plot.background    = element_rect(fill ="transparent", color = NA)
+          ,panel.grid.major  = element_blank()
+          ,panel.grid.minor  = element_blank()
+          ,panel.background  = element_rect(fill ="transparent") 
+          ,axis.ticks        = element_line(colour = "black")
+          ,plot.margin       = unit(c(0.3,0.7,0.3,0.3),"cm")
+          ,text              = element_text(size=14)
+          ,axis.title        = element_text(size=20)
+          ,legend.key        = element_rect(colour = "transparent", fill = "transparent")
+          ,legend.background = element_rect(colour = "transparent", fill = "transparent")
+          ,legend.position   ="none")
+  ggsave(lin.relat.deltab2.plot, filename=paste0(dir.qs.delta_b2,"/Linear_qs_Deltab2.png"), bg = "transparent",
+         width = 7, height =7, dpi = 400)
+  
+  
+  
+  #both figures:
+  both.plot = plot_grid( lin.relat.deltab1.plot, lin.relat.deltab2.plot,
+                         ncol = 2, nrow = 1, rel_widths = c(1,1), labels=c("a)", "b)"), label_size = 25)
+  ggsave(both.plot, filename=paste0(dir.sed.transp.linear,"/Linear_V_Deltab.png"), bg = "transparent",
+         width = 14, height =8, dpi = 400)
+  
+  
+  print("****************")
+  print("   All done!    ")
+  print("****************")           
+  
+  return(list(df.linear.regress.deltab1 = df.linear.regress.deltab1, 
+              df.linear.regress.deltab2 = df.linear.regress.deltab2))
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#########################################################################################
+linear_app <- function(  model.type ,
+                         Nmcmc, Ncycles,  
+                         xgrid, nobs, simMCMC, 
+                         prediction , 
+                         prediction.t , 
+                         nobs.t, 
+                         prior.param.propor,
+                         prior.gamma.linear) {               # Linear Model regression
+  #########################################################################################
+  BaM.linear.config(model.type , Nmcmc, Ncycles, xgrid, nobs, simMCMC, 
+                    prediction, prediction.t, nobs.t, 
+                    prior.param.propor, prior.gamma.linear)
+  message("Applying Linear regression - BaM !!!  Wait ... "); flush.console()
+  #system2(paste(dir_code,"/BaM_exe/BaM_Segmentation.exe",sep=""),stdout =NULL, stderr = NULL);
+  system2(paste0(dir_code,"/BaM_exe/BaM_2exp_pool2.exe")) #, stdout =NULL, stderr = NULL); 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Linear Model regression
+###############################################################################
+BaM.linear.config <- function(model.type , 
+                              Nmcmc,Ncycles, xgrid, nobs, 
+                              simMCMC, prediction, prediction.t, nobs.t,
+                              prior.param.propor, prior.gamma.linear) {  
+###############################################################################
+  write.table(xgrid, file =paste0(dir_code,"/BaM_exe/Linear/xgrid.txt"), 
+              col.names = FALSE, row.names = FALSE)
+  ngrid = length(xgrid)
+  theta1 <- 1  ; St_theta1 <- 100
+  
+  
+  #---------------------------------------------------------------------------
+  #creation of Config_BaM.txt
+  file.bam = paste0(dir_code,"/BaM_exe/Config_BaM.txt")
+  cat('"Linear/"',                 file = file.bam , sep="\n", append = FALSE)
+  cat('"Config_RunOptions.txt"',   file = file.bam , sep="\n", append = TRUE)    
+  cat('"Config_Model.txt"',        file = file.bam , sep="\n", append = TRUE)
+  cat('""',                        file = file.bam , sep="\n", append = TRUE)
+  cat('"Config_Data.txt"',         file = file.bam , sep="\n", append = TRUE)
+  cat('"Config_RemnantSigma.txt"', file = file.bam , sep="\n", append = TRUE)                                       
+  cat('"Config_MCMC.txt"',         file = file.bam , sep="\n", append = TRUE)                                            
+  cat('"Config_Cooking.txt"',      file = file.bam , sep="\n", append = TRUE)
+  cat('"Config_Summary.txt"',      file = file.bam , sep="\n", append = TRUE)
+  cat('"Config_Residuals.txt"',    file = file.bam , sep="\n", append = TRUE)
+  if( (prediction ==TRUE) | (prediction.t ==TRUE)) {
+    cat('"Config_Pred_Master.txt"',file = file.bam , sep="\n", append = TRUE)
+  } else {
+    cat('""',                      file = file.bam , sep="\n", append = TRUE)
+  }
+  #-------------------------------------------------------------------------
+  file.name = paste0(dir_code,"/BaM_exe/Linear/Config_Model.txt")
+  cat('"Linear"',                  file = file.name,sep="\n")
+  cat(1,                           file = file.name, append = TRUE, sep="\n")
+  cat(1,                           file = file.name, append = TRUE, sep="\n")
+  cat(2,                           file = file.name, append = TRUE, sep="\n") # n parameters
+  
+  if (model.type == "null"){
+  ###########################
+    cat('"a1"',                    file = file.name, append = TRUE, sep="\n")
+    cat(prior.param.propor[2],     file = file.name, append = TRUE, sep="\n")
+    cat(prior.param.propor[3],     file = file.name, append = TRUE, sep="\n")
+    cat(prior.param.propor[4],     file = file.name, append = TRUE, sep=",")
+    cat(",",                       file = file.name, append = TRUE, sep=",")
+    cat(prior.param.propor[5],     file = file.name, append = TRUE, sep="\n")
+    
+    cat('"a2"',                    file = file.name, append = TRUE, sep="\n")
+    cat(prior.param.propor[7],     file = file.name, append = TRUE, sep="\n")
+    cat(prior.param.propor[8],     file = file.name, append = TRUE, sep="\n")
+    cat(prior.param.propor[9],     file = file.name, append = TRUE, sep=",")
+    cat(",",                       file = file.name, append = TRUE, sep=",")
+    cat(prior.param.propor[10],    file = file.name, append = TRUE, sep="\n")
+    
+    
+  } else if (model.type == "proportional"){
+    #########################################
+    cat('"a1"',                    file = file.name, append = TRUE,sep="\n")
+    cat(prior.param.propor[2],     file = file.name, append = TRUE,sep="\n")
+    cat(prior.param.propor[3],     file = file.name, append = TRUE,sep="\n")
+    cat(prior.param.propor[4],     file = file.name, append = TRUE,sep=",")
+    cat(",",                       file = file.name, append = TRUE,sep=",")
+    cat(prior.param.propor[5],     file = file.name, append = TRUE,sep="\n")
+    
+    cat('"a2"',                    file = file.name, append = TRUE,sep="\n")
+    cat(prior.param.propor[7],     file = file.name, append = TRUE,sep="\n")
+    cat(prior.param.propor[8],     file = file.name, append = TRUE,sep="\n")
+    cat(prior.param.propor[9],     file = file.name, append = TRUE,sep=",")
+    cat(",",                       file = file.name, append = TRUE,sep=",")
+    cat(prior.param.propor[10],    file = file.name, append = TRUE,sep="\n")
+  }
+  #-------------------------------------------------------------------------  
+  file.name2 = paste0(dir_code,"/BaM_exe/Linear/Config_Data.txt")
+  name = "'Linear/data.txt'"
+  cat(name,                        file = file.name2, sep="\n") 	             # path to data file
+  cat(1,                           file = file.name2, sep="\n",append = TRUE)  # number of header lines
+  cat(nobs,                        file = file.name2, sep="\n",append = TRUE)  # Nobs, number of rows in data file (excluding header lines)
+  cat(4,                           file = file.name2, sep="\n",append = TRUE)  # number of columns in the data file
+  cat(1,                           file = file.name2, sep="\n",append = TRUE)  # columns for X (observed inputs) in data file - comma-separated if several (order: t, h, T, T_smooth)
+  cat(0,                           file = file.name2, sep="\n",append = TRUE)  # 8,9,10,11,12 !!! columns for Xu (random uncertainty in X, EXPRESSED AS A STANDARD DEVIATION - use 0 for a no-error assumption)
+  cat(0,                           file = file.name2, sep="\n",append = TRUE)  # columns for Xb (systematic uncertainty in X, EXPRESSED AS A STANDARD DEVIATION - use 0 for a no-error assumption)
+  cat(0,                           file = file.name2, sep="\n",append = TRUE)  # columns for Xb_indx (index of systematic errors in X - use 0 for a no-error assumption)
+  cat(3,                           file = file.name2, sep="\n",append = TRUE)  # 16,18,20,21 columns for Y (observed outputs) in data file - comma-separated if several (order: Q, g0, cos(pi*g0), sin(pi*g0))
+  cat(4,                           file = file.name2, sep="\n",append = TRUE)  # 17,19,22,23 columns for Yu (uncertainty in Y, EXPRESSED AS A STANDARD DEVIATION - use 0 for a no-error assumption)
+  cat(0,                           file = file.name2, sep="\n",append = TRUE)  # columns for Yb (systematic uncertainty in Y, EXPRESSED AS A STANDARD DEVIATION - use 0 for a no-error assumption)
+  cat(0,                           file = file.name2, sep="",  append = TRUE)  # columns for Yb_indx (index of systematic errors in Y - use 0 for a no-error assumption)
+  #------------------------------------------------------------------------
+  file.mcmc = paste0(dir_code,"/BaM_exe/Linear/Config_MCMC.txt")
+  cat('"Results_MCMC.txt"',        file = file.mcmc, sep="\n")
+  cat(Nmcmc,                       file = file.mcmc, append = TRUE,sep="\n")   #Nadapt
+  cat(Ncycles,                     file = file.mcmc, append = TRUE,sep="\n")  #Ncycles
+  cat(0.1,                         file = file.mcmc, append = TRUE,sep="\n")    #minMoveRate
+  cat(0.5,                         file = file.mcmc, append = TRUE,sep="\n")    #maxMoveRate
+  cat(0.9,                         file = file.mcmc, append = TRUE,sep="\n")    #DownMult
+  cat(1.1,                         file = file.mcmc, append = TRUE,sep="\n")    #UpMult
+  cat(0,                           file = file.mcmc, append = TRUE,sep="\n")      #mode for init jump distr
+  cat("****",                      file = file.mcmc, append = TRUE,sep="\n") 
+  cat(0.1,                         file = file.mcmc, append = TRUE,sep="\n")    #MultFact
+  cat(0.1,                         file = file.mcmc, append = TRUE, sep=",")     #RC MultiFact
+  cat(0.1,                         file = file.mcmc, append = TRUE, sep=",")     
+  cat(0.1,                         file = file.mcmc, append = TRUE,sep="\n")
+  cat(0.1,                         file = file.mcmc, append = TRUE, sep=",")      #Remnant MultiFact
+  cat(0.1,                         file = file.mcmc, append = TRUE,sep="\n")
+
+  
+  
+  # PREDICTIONS:
+  ##############
+  if(prediction ==TRUE) {  
+    file.Pred1 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_Master.txt")
+    if(prediction.t ==TRUE) {      
+      cat(6,                         file = file.Pred1,sep="\n")
+    } else {
+      cat(3,                         file = file.Pred1,sep="\n")
+    }  
+    cat("'Config_Pred_Maxpost.txt'", file = file.Pred1, append = TRUE,sep="\n")
+    cat("'Config_Pred_ParamU.txt'",  file = file.Pred1, append = TRUE,sep="\n")
+    cat("'Config_Pred_TotalU.txt'",  file = file.Pred1, append = TRUE,sep="\n")
+    
+    #------------------------------------------------------------------------ 
+    # MAXPOST:
+    file.Pred3 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_Maxpost.txt")
+    cat("'Linear\\xgrid.txt'",       file = file.Pred3, sep="\n")
+    cat(ngrid,                       file = file.Pred3, sep="\n", append = TRUE)
+    cat("1",                         file = file.Pred3, append = TRUE,sep="\n")   # n of spaghetti
+    cat(".false.",                   file = file.Pred3, append = TRUE,sep="\n")   # Propagate parametric uncertainty?
+    cat(".false.",                   file = file.Pred3, append = TRUE,sep="\n")   # Propagate remnant uncertainty for each output variable? (size nY)
+    cat("-1",                        file = file.Pred3, append = TRUE,sep="\n")   # Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
+    cat("'Lin_Maxpost.spag'",        file = file.Pred3, append = TRUE,sep="\n")   # Files containing spaghettis for each output variable (size nY)
+    cat(".true.",                    file = file.Pred3, append = TRUE,sep="\n")   # Post-processing: transpose spag file (so that each column is a spaghetti)? 
+    cat(".true.",                    file = file.Pred3, append = TRUE,sep="\n")   # Post-processing: create envelops? (size nY)
+    cat("'Lin_Maxpost.env'",         file = file.Pred3, append = TRUE,sep="\n")   # Post-processing: name of envelop files (size nY)
+    cat(".true.",                    file = file.Pred3, append = TRUE,sep="\n")   # Print progress in console during computations?
+    cat(".false." ,                  file = file.Pred3, append = TRUE,sep="\n")   # Do state prediction? (size nState)
+    #-------------------------------------------------------------------------
+    # PARAMETRIC UNCERTAINTY:
+    file.Pred4 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_ParamU.txt")
+    cat("'Linear\\xgrid.txt'",       file = file.Pred4, sep="\n")
+    cat(ngrid,                       file = file.Pred4, sep="\n", append = TRUE)
+    cat("1",                         file = file.Pred4, append = TRUE,sep="\n")   # n of spaghetti
+    cat(".true.",                    file = file.Pred4, append = TRUE,sep="\n")   # Propagate parametric uncertainty?
+    cat(".false.",                   file = file.Pred4, append = TRUE,sep="\n")   # Propagate remnant uncertainty for each output variable? (size nY)
+    cat("-1",                        file = file.Pred4, append = TRUE,sep="\n")   # Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
+    cat("'Lin_ParamU.spag'",         file = file.Pred4, append = TRUE,sep="\n")   # Files containing spaghettis for each output variable (size nY)
+    cat(".true.",                    file = file.Pred4, append = TRUE,sep="\n")   # Post-processing: transpose spag file (so that each column is a spaghetti)? 
+    cat(".true.",                    file = file.Pred4, append = TRUE,sep="\n")   # Post-processing: create envelops? (size nY)
+    cat("'Lin_ParamU.env'",          file = file.Pred4, append = TRUE,sep="\n")   # Post-processing: name of envelop files (size nY)
+    cat(".true.",                    file = file.Pred4, append = TRUE,sep="\n")   # Print progress in console during computations?
+    cat(".false." ,                  file = file.Pred4, append = TRUE,sep="\n")   # Do state prediction? (size nState)
+    #------------------------------------------------------------------------- 
+    # TOTAL UNCERTAINTY
+    file.Pred5 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_TotalU.txt")
+    cat("'Linear\\xgrid.txt'",       file = file.Pred5, sep ="\n")
+    cat(ngrid,                       file = file.Pred5, append = TRUE, sep="\n")
+    cat("1",                         file = file.Pred5, append = TRUE, sep="\n")   # n of spaghetti
+    cat(".true.",                    file = file.Pred5, append = TRUE, sep="\n")   # Propagate parametric uncertainty?
+    cat(".true.",                    file = file.Pred5, append = TRUE, sep="\n")   # Propagate remnant uncertainty for each output variable? (size nY)
+    cat("-1",                        file = file.Pred5, append = TRUE, sep="\n")   # Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
+    cat("'Lin_TotalU.spag'",         file = file.Pred5, append = TRUE, sep="\n")   # Files containing spaghettis for each output variable (size nY)
+    cat(".true.",                    file = file.Pred5, append = TRUE, sep="\n")   # Post-processing: transpose spag file (so that each column is a spaghetti)? 
+    cat(".true.",                    file = file.Pred5, append = TRUE, sep="\n")   # Post-processing: create envelops? (size nY)
+    cat("'Lin_TotalU.env'",          file = file.Pred5, append = TRUE, sep="\n")   # Post-processing: name of envelop files (size nY)
+    cat(".true.",                    file = file.Pred5, append = TRUE, sep="\n")   # Print progress in console during computations?
+    cat(".false." ,                  file = file.Pred5, append = TRUE, sep="\n")   # Do state prediction? (size nState)
+  }
+  #---------------------------------------------------------------------- 
+  if(prediction.t==TRUE) {
+    file.Pred1 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_Master.txt")
+    if(prediction==FALSE) {      
+      cat(3,                            file =file.Pred1,sep="\n")
+    }  
+    cat("'Config_Pred_qs_Maxpost.txt'", file =file.Pred1, append = TRUE,sep="\n")
+    cat("'Config_Pred_qs_ParamU.txt'",  file =file.Pred1, append = TRUE,sep="\n")
+    cat("'Config_Pred_qs_TotalU.txt'",  file =file.Pred1, append = TRUE,sep="\n")
+    ###################################################################
+    file.Pred6 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_qs_Maxpost.txt")
+    cat("'Linear\\qs_t.txt'",            file = file.Pred6, sep="\n")
+    cat(nobs.t,                          file = file.Pred6, append = TRUE, sep="\n")
+    cat("1",                             file = file.Pred6, append = TRUE,sep="\n")   #n of spaghetti
+    cat(".false.",                       file = file.Pred6, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
+    cat(".false.",                       file = file.Pred6, append = TRUE,sep="\n")                             #!!! Propagate remnant uncertainty for each output variable? (size nY)
+    cat("-1",                            file = file.Pred6, append = TRUE,sep="\n")                                #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
+    cat("'qst_maxpost.spag'",            file = file.Pred6, append = TRUE,sep="\n")                    # !!! Files containing spaghettis for each output variable (size nY)
+    cat(".true.",                        file = file.Pred6, append = TRUE,sep="\n")                              #!!! Post-processing: transpose spag file (so that each column is a spaghetti)? 
+    cat(".true.",                        file = file.Pred6, append = TRUE,sep="\n")                              #!!! Post-processing: create envelops? (size nY) 
+    cat("'qst_Maxpost.env'",             file = file.Pred6, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
+    cat(".true.",                        file = file.Pred6, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
+    cat(".false." ,                      file = file.Pred6, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
+    ###################################################################
+    file.Pred8 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_qs_ParamU.txt")
+    cat("'Linear\\qs_t.txt'",            file = file.Pred8, sep="\n")
+    cat(nobs.t,                          file = file.Pred8, append = TRUE, sep="\n")
+    cat("1",                             file = file.Pred8, append = TRUE,sep="\n")   #n of spaghetti
+    cat(".true.",                        file = file.Pred8, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
+    cat(".false.",                       file = file.Pred8, append = TRUE,sep="\n")                             #!!! Propagate remnant uncertainty for each output variable? (size nY)
+    cat("-1",                            file = file.Pred8, append = TRUE,sep="\n")                                #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
+    cat("'qst_ParamU.spag'",             file = file.Pred8, append = TRUE,sep="\n")                    # !!! Files containing spaghettis for each output variable (size nY)
+    cat(".true.",                        file = file.Pred8, append = TRUE,sep="\n")                              #!!! Post-processing: transpose spag file (so that each column is a spaghetti)? 
+    cat(".true.",                        file = file.Pred8, append = TRUE,sep="\n")                              #!!! Post-processing: create envelops? (size nY)
+    cat("'qst_ParamU.env'",              file = file.Pred8, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
+    cat(".true.",                        file = file.Pred8, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
+    cat(".false." ,                      file = file.Pred8, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
+    ###################################################################
+    file.Pred7 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_qs_TotalU.txt")
+    cat("'Linear\\qs_t.txt'",            file = file.Pred7, sep="\n")
+    cat(nobs.t,                          file = file.Pred7, append = TRUE, sep="\n")
+    cat("1",                             file = file.Pred7, append = TRUE,sep="\n")   #n of spaghetti
+    cat(".true.",                        file = file.Pred7, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
+    cat(".true.",                        file = file.Pred7, append = TRUE,sep="\n")                             #!!! Propagate remnant uncertainty for each output variable? (size nY)
+    cat("-1",                            file = file.Pred7, append = TRUE,sep="\n")                                #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
+    cat("'qst_TotalU.spag'",             file = file.Pred7, append = TRUE,sep="\n")                    # !!! Files containing spaghettis for each output variable (size nY)
+    cat(".true.", file = file.Pred7, append = TRUE,sep="\n")                              #!!! Post-processing: transpose spag file (so that each column is a spaghetti)? 
+    cat(".true.", file = file.Pred7, append = TRUE,sep="\n")                              #!!! Post-processing: create envelops? (size nY)
+    cat("'qst_TotalU.env'", file = file.Pred7, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
+    cat(".true.", file = file.Pred7, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
+    cat(".false." , file = file.Pred7, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
+  }
+  #-------------------------------------------------------------------------- 
+  file.remnant = paste0(dir_code,"/BaM_exe/Linear/Config_RemnantSigma.txt")
+  # cat("'Constant'", file = file.remnant, sep="\n")     #! Function f used in sdev=f(Qrc) 
+  # cat(1, file = file.remnant, append = TRUE, sep="\n")                    #! Number of parameters gamma for f
+  # cat("gamma1", file = file.remnant, append = TRUE, sep="\n")             #! Parameter Name
+  # cat(0.1, file = file.remnant, append = TRUE, sep="\n")                   #! Initial Guess
+  # cat("'Uniform'", file = file.remnant, append = TRUE, sep="\n")            #! Prior distribution
+  # cat(0,file =file.remnant, append = TRUE, sep=",")
+  # cat(",",file =file.remnant, append = TRUE, sep=",")
+  # cat(100,file =file.remnant, append = TRUE, sep="\n")
+  
+  cat(prior.gamma.linear[1], file = file.remnant, sep="\n")     #! Function f used in sdev=f(Qrc) 
+  if (prior.gamma.linear[1] == "'Linear'"){ 
+    cat(2,                   file = file.remnant, append = TRUE, sep="\n")         #! Number of parameters gamma
+  } else if (prior.gamma.linear[1] == "'Constant'"){
+    cat(1,                   file = file.remnant, append = TRUE, sep="\n") 
+  }
+  cat(prior.gamma.linear[2], file = file.remnant, append = TRUE, sep="\n")         #! Parameter Name
+  cat(prior.gamma.linear[3], file = file.remnant, append = TRUE, sep="\n")         #! Initial Guess
+  cat(prior.gamma.linear[4], file = file.remnant, append = TRUE, sep="\n")         #! Prior distribution
+  cat(prior.gamma.linear[5], file = file.remnant, append = TRUE, sep=",")
+  cat(","                  , file = file.remnant, append = TRUE, sep=",")
+  cat(prior.gamma.linear[6], file = file.remnant, append = TRUE, sep="\n")
+  
+  if (prior.gamma.linear[1] == "'Linear'"){ 
+    cat(prior.gamma.linear[7],  file = file.remnant, append = TRUE, sep="\n")      #! Parameter Name
+    cat(prior.gamma.linear[8],  file = file.remnant, append = TRUE, sep="\n")      #! Initial Guess
+    cat(prior.gamma.linear[9],  file = file.remnant, append = TRUE, sep="\n")      #! Prior distribution
+    cat(prior.gamma.linear[10], file = file.remnant, append = TRUE, sep=",")
+    cat(","                  ,  file = file.remnant, append = TRUE, sep=",")
+    cat(prior.gamma.linear[11], file = file.remnant, append = TRUE, sep="\n")
+  }
+  
+  ###################################################################   RUN OPTIONS
+  file.run = paste0(dir_code,"/BaM_exe/Linear/Config_RunOptions.txt")
+  if (simMCMC == TRUE) {  
+    cat(".true.", file =file.run,sep="\n")                     #Do MCMC?
+  } else {
+    cat(".false.", file =file.run,sep="\n")                    #Do MCMC?    
+  }
+  cat(".true.", file =file.run, append = TRUE, sep="\n")       #Do MCMC summary?
+  cat(".true.", file =file.run, append = TRUE, sep="\n")       #Do Residual diagnostics?
+  if ((prediction == TRUE) | (prediction.t == TRUE)) {
+    cat(".true.", file =file.run, append = TRUE, sep="\n")     #Do Predictions?
+    cat(".false.", file =file.run, append = TRUE, sep="\n")    #Do Predictions?
+  }
+  
+  ###################################################################   COOKING CONFIG
+  file.cooking = paste(dir_code,"/BaM_exe/Linear/Config_Cooking.txt",sep="")
+  cat("'Results_MCMC_Cooked.txt'" , file =file.cooking ,sep="\n")    #Result file
+  cat(0.5, file =file.cooking, append = TRUE, sep="\n")            #Burn factor
+  cat(10, file =file.cooking, append = TRUE, sep="\n")             #Nslim
+  ###################################################################   RESIDUALS CONFIG
+  file.residuals = paste(dir_code,"/BaM_exe/Linear/Config_Residuals.txt",sep="")
+  cat("'Results_Residuals.txt'" , file =file.residuals ,sep="\n")    #Result file
+  ###################################################################   SUMMARY CONFIG
+  file.summary = paste(dir_code,"/BaM_exe/Linear/Config_Summary.txt",sep="")
+  cat("'Results_Summary.txt'" , file =file.summary ,sep="\n")    #Result file
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# NO MORE USED #######
 #####################################################################################################
 # Analyze results of the sediment transport detection:
 ST.results.analysis =  function(dir.retro.an, dir.SPD.exe, dir.sed.transp, case_study_name,
@@ -1285,146 +1866,6 @@ ST.results.analysis =  function(dir.retro.an, dir.SPD.exe, dir.sed.transp, case_
                   dir.SPD.exe <- paste0(dir_code,"/BaM_exe/BaRatin_SPD")
                   dir.SPD.Sed.Transp.results <- paste0(dir.retro.an,"/STEP1_SPD")
                   
-                  
-#                   
-#                   #new shift times are the the times corresponding to the Ypeak: 
-#                   for (event.final in 1:length(start.event.new)) {
-#                        max.event = which.max(y_limni[start.event.new[[event.final]] : end.event.new[[event.final]]])
-#                        shift.times[event.final] = df.limni$t_limni[start.event.new[[event.final]]+max.event]
-#                   } 
-#                   #shift.times = df.limni$t_limni[start.event.new]
-#                   write.table(shift.times, paste0(dir.sed.transp,"/real_shift_times.txt"), sep ="\t", row.names=FALSE) 
-# # Define the new periods and the gaugings per period (assign colors):
-#                   colo <- c(
-#                             "red","blue","chartreuse", "orange","darkviolet", "forestgreen",  
-#                             "cyan", "saddlebrown","pink", "black",  "yellow2",
-#                             "navyblue", "magenta", "lightsteelblue4", "khaki", "darkolivegreen", 
-#                             "lightsalmon", "mediumvioletred", "orange3", "indianred4", "brown4",
-#                             "black" , "green", "lightblue3", "hotpink4", "lightgoldenrod4",
-#                             #repeat colors in case of many periods:
-#                             "red","blue","chartreuse", "orange","darkviolet", "forestgreen",  
-#                             "cyan", "saddlebrown","pink", "black",  "yellow2",
-#                             "navyblue", "magenta", "lightsteelblue4", "khaki", "darkolivegreen", 
-#                             "lightsalmon", "mediumvioletred", "orange3", "indianred4", "brown4",
-#                             "black" , "green", "lightblue3", "hotpink4", "lightgoldenrod4")
-#                   
-#                   color = 0; Period.s.t. = 0; t.shift.for.b =0; index.ts.without.gaugings=0; kkk=0; gtime = 0;
-#                   gaugings = data.frame(time=numeric(), h=numeric(), Q=numeric(), period=integer());
-#                   
-#                   if (!is.null(shift.times[1])) {
-#                     for (i in 1:length(t_Gaug)) { 
-#                       if(t_Gaug[i] <= shift.times[1]) {
-#                         #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
-#                         color[i] = colo[1]
-#                         Period.s.t.[i] = 1
-#                         t.shift.for.b[1] = shift.times[1]
-#                         gaugings=rbind(gaugings, data.frame(time=t_Gaug[i], h=h_Gaug[i], Q=Q_Gaug[i], uQ=uQ_Gaug[i], period=Period.s.t.[i]))
-#                       }
-#                     }
-#                     kk=1; jj = 1
-#                     while (kk < (length(shift.times))) {
-#                       kk=kk+1
-#                       jj= jj +1
-#                       for (i in 1:(length(t_Gaug)-1)) { 
-#                         if ((t_Gaug[i] <= shift.times[kk-1]) & (t_Gaug[i+1] > shift.times[kk])) {
-#                           jj = jj -1
-#                           #print(c("period=",jj,"kk=",kk,"kk-1=",kk-1, "ts=",shift.times[kk] ))
-#                           kkk =kkk+1
-#                           index.ts.without.gaugings[kkk] = kk
-#                           gaugings=rbind(gaugings, data.frame(time=-999, h=-999, Q=-999, uQ=-999, period=jj))
-#                         }
-#                       }
-#                       for (i in 1:length(t_Gaug)) {   
-#                         if ((t_Gaug[i] > shift.times[kk-1]) & (t_Gaug[i] <= shift.times[kk])) {
-#                           #points(x=hP[i], y=QP[i], log ="y", col = colo[j],pch=1,lwd=4)
-#                           color[i] = colo[jj]
-#                           Period.s.t.[i] = jj
-#                           t.shift.for.b[jj] = shift.times[kk] 
-#                           gaugings= rbind(gaugings, data.frame(time=t_Gaug[i], h=h_Gaug[i], Q=Q_Gaug[i], uQ=uQ_Gaug[i], period=Period.s.t.[i]))
-#                           #print(i)
-#                           #print(c("period=",jj,"kk=",kk,"kk-1=",kk-1, "ts=",shift.times[kk] ))
-#                         }
-#                       }
-#                     }
-# 
-#                     for (i in 1:length(t_Gaug)) {   
-#                       if ((t_Gaug[i] > tail(shift.times,1)) & (t_Gaug[i] <= tail(df.limni$t_limni,1))){
-#                         
-#                         color[i] = colo[jj]
-#                         Period.s.t.[i] = jj
-#                         print(i)
-#                         #print(c("period=",jj,"kk=",kk,"kk-1=",kk-1, "ts=",shift.times[kk] ))
-#                       }
-#                     }
-#                     # if (tail(t_Gaug,1) <= tail(shift.times,1)) {
-#                     #       kkk =kkk+1
-#                     #       index.ts.without.gaugings[kkk] = length(shift.times)
-#                     # }
-#                     for (f in 1:length(which(shift.times > tail(t_Gaug,1)))) {
-#                           jjjjj=jj+f
-#                           kkk =kkk+1
-#                           gaugings=rbind(gaugings, data.frame(time=-999, h=-999, Q=-999, uQ=-999, period=jjjjj))
-#                           index.ts.without.gaugings[kkk] = jjjjj+1
-#                     }
-#                   } else {
-#                       for (i in 1:length(t_Gaug)) { 
-#                          #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
-#                          color[i] = colo[1]
-#                          Period.s.t.[i] = 1
-#                       }
-#                   }
-# # Save results of gaugings new segmentation ( /!\  periods of gaugings are not the same of sed transport !!)
-#                   Gaug.sed.transp = data.frame(t=t_Gaug, h=h_Gaug, Q=Q_Gaug, uQ=uQ_Gaug, Period= Period.s.t.)
-#                   nperiod.ST.gaug = tail(Gaug.sed.transp$Period,1)
-#                   #nperiod.ST.gaug.NA = tail(gaugings$period,1)  
-#                   df.RC.sed.trasnp = data.frame(t_Gaug, h_Gaug,Q_Gaug,uQ_Gaug, color, Period.s.t.)
-#                   #
-#                   #save results of gaugings new segmentation ( /!\  periods of gaugings are not the same of sed transport !!)
-#                   Gaug.sed.transp = data.frame(t=t_Gaug, h=h_Gaug, Q=Q_Gaug, uQ=uQ_Gaug, Period=Period.s.t.)
-#                   write.table(Gaug.sed.transp[2:5], paste0(dir.sed.transp,"/Gaugings_data_SPD.txt"),
-#                               sep="\t", row.names=FALSE , col.names = c("h","Q", "uQ", "Period"))  
-#                   write.table(Gaug.sed.transp[2:5], paste0(dir.SPD.Sed.Transp.results,"/Gaugings_data_SPD.txt"),
-#                               sep="\t", row.names=FALSE , col.names = c("h","Q", "uQ", "Period"))  
-#                   write.table(Gaug.sed.transp[2:5], paste0(dir.SPD.exe,"/Gaugings_data_SPD.txt"),
-#                               sep="\t", row.names=FALSE , col.names = c("h","Q", "uQ", "Period"))  
-#   #Plot shift times detected by sed transport analysis:
-#                   data.annotate.off <- data.frame(x = officialShiftsTime)
-#                   shift.plot = ggplot() +    
-#                                geom_vline(xintercept = shift.times, color="blue",lwd =0.3, linetype = "solid")+
-#                                geom_line(aes(x=df.limni$t_limni, y=df.limni$h_limni) , color="black", lwd =0.2)+
-#                                geom_point(aes(x=t_Gaug, y = h_Gaug), color=color, size=1)+
-#                                scale_y_continuous(name = "Stage record with gaugings [m]") + 
-#                                scale_x_continuous(name = "time [days]", expand = c(0,0))
-#                                #    theme_bw(base_size = 10)
-#                                if (exists("data.annotate.off")==TRUE)  {
-#                                   if (is.null("data.annotate.off")==FALSE) {
-#                                       shift.plot <- shift.plot + 
-#                                                     geom_point(data = data.annotate.off, aes(x = x, y = -1),
-#                                                                color= "black", size = 1.8, shape =4, stroke=0.8)
-#                                   }
-#                                }
-#                                ggsave(shift.plot, filename=paste0(dir.sed.transp,"/shift_times_sedtransp.png"), 
-#                                       bg = "transparent", width = 7, height =3.5, dpi = 400)
-#   #plot h-Q RC with all gaugings by colors:
-#                   plot.RC.sed.transp <- ggplot(data= df.RC.sed.trasnp) +
-#                                                geom_point(aes(x=h_Gaug, y=Q_Gaug), size = 3, pch =21, fill =color) +
-#                                                geom_errorbar(aes(x=h_Gaug, ymin =Q_Gaug-2*uQ_Gaug, ymax =Q_Gaug + 2*uQ_Gaug),
-#                                                              width=.05, size = 0.3, color = color) +
-#                                                coord_trans(limx = grid_RC.xlim, limy = grid_RC.ylim.log) +
-#                                                scale_y_log10(na.value=-10,  breaks=ticks_RC.y.log,   labels=ticks_RC.y.log) +
-#                                                scale_x_continuous(breaks=seq(grid_RC.xlim[1], grid_RC.xlim[2],  grid_RC.xstep))   +
-#                                                ylab(bquote(.(RC.y.labels) ~ .("[") ~ m^3*s^-1 ~ .("]"))) +  
-#                                                xlab(bquote(.(RC.x.labels) ~ .("[") ~ m ~ .("]"))) +
-#                                                theme_bw(base_size=20) +
-#                                                theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-#                                                ,panel.grid.major=element_line(size=1.2),panel.grid.minor=element_line(size=0.8)
-#                                                ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-#                                                ,legend.key.size=unit(1.5, "cm"),legend.position="none") +
-#                                                annotation_logticks(base = 10, sides = "l", scaled = TRUE,
-#                                                                    colour = "black", size = 0.5, linetype = 1)
-#                                                ggsave(plot.RC.sed.transp, filename=paste0(dir.sed.transp,"/RC_sedtransp.png"), 
-#                                                       device = "png", width = 16, height =8,
-#                                                       dpi = 600, units = "in")
   #Application of BaRatin-SPD:
                   # write.table(Gaug.sed.transp[2:5], paste0(dir.SPD.Sed.Transp.results,"/Gaugings_data_SPD.txt"),
                   #             sep="\t", row.names=FALSE , col.names = c("h","Q", "uQ", "Period"))  
@@ -1549,6 +1990,7 @@ ST.results.analysis =  function(dir.retro.an, dir.SPD.exe, dir.sed.transp, case_
                     delta.b2.mean[evento] = (bt2.SPD[[evento+1]][5] - bt2.SPD[[evento]][5]) 
                     delta.b2.stdev[evento] = (bt2.SPD[[evento+1]][4]^2 + bt2.SPD[[evento]][4]^2)^0.5
                   }
+                  
  # # if you want to cumulate the events because no enough gaugings:
  #                  realqs.cum = 0
  #                  jkl = 0
@@ -1567,7 +2009,6 @@ ST.results.analysis =  function(dir.retro.an, dir.SPD.exe, dir.sed.transp, case_
                                                        stdev_deltab2 = delta.b2.stdev,
                                                        Period = seq(1,length(delta.b1.mean),1))
                   
-                    
   #final plot:
                   # finding which estimated deltab has a corresponding qsc ??
                   #*********************************************************
@@ -1608,1965 +2049,3 @@ ST.results.analysis =  function(dir.retro.an, dir.SPD.exe, dir.sed.transp, case_
                   return(list(df.rel.deltab.qscum))
 }
   
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  #########################################################################################################
-  linear.estimation = function(dir_code, 
-                               dir.sed.transp,
-                               model.type ,
-                               df.deltab.V,
-                               file.options.general,
-                               file.options.ST) {
-  #########################################################################################################
-  # with the results of the SPD estimation , estimate a relation between Delta(b1,b2) and qs,cum
-  # Use a linear regression with BaM.
-  # Apply a BaM Linear Regression estimation (with data uncertainties).
-    
-  # Preparation of the dataframes:
-                  df.linear.regress.deltab1 = data.frame(X  = df.deltab.V$V, 
-                                                         uX = rep(0,length(df.deltab.V$V)), 
-                                                         y  = df.deltab.V$deltab1, 
-                                                         uY = df.deltab.V$stdev_deltab1)
-                  
-                  df.linear.regress.deltab2 = data.frame(X= df.deltab.V$V, 
-                                                         uX = rep(0,length(df.deltab.V$V)), 
-                                                         y = df.deltab.V$deltab2,
-                                                         uY = df.deltab.V$stdev_deltab2)
-  #directories:     
-                  setwd(dir.sed.transp)
-                  setwd("./..")
-                  dir.sed.transp.ST = getwd()
-                  dir.sed.transp.linear = paste0(dir.sed.transp.ST,"/3_linear_relation")
-                  dir.create(dir.sed.transp.linear)
-                  dir.config.linear     = paste0(dir_code,"/BaM_exe/Linear")
-                  dir.qs.delta_b1       = paste0(dir.sed.transp.linear, "/delta_b1")
-                  dir.qs.delta_b2       = paste0(dir.sed.transp.linear, "/delta_b2")
-                  dir.results.qs.deltab = dir.sed.transp.linear
-                  dir.create(paste0(dir.sed.transp.linear, "/delta_b1"))
-                  dir.create(paste0(dir.sed.transp.linear, "/delta_b2"))
-                  
-                  
-  # user options:                 
-                  source(file.options.general)
-                  source(file.options.ST)
-                  xgrid   = seq(V.limits[1], V.limits[2], V.limits[3])
-                  Nmcmc   = Nmcmc.st
-                  Ncycles = Ncycles.st
-  # delta b1:
-
-                  write.table(df.linear.regress.deltab1, file=paste0(dir.config.linear,"/data.txt"), sep="\t", row.names=FALSE )
-                  setwd(dir.exe)
-                  #launch BaM :
-                  linear_app(model.type         = model.type ,
-                             Nmcmc              = Nmcmc, 
-                             Ncycles            = Ncycles, 
-                             xgrid              = xgrid,
-                             nobs               = length(df.linear.regress.deltab1$X), 
-                             simMCMC            = TRUE, 
-                             prediction         = TRUE, 
-                             prediction.t       = FALSE, 
-                             nobs.t             = 1,
-                             prior.param.propor = prior.param.propor,
-                             prior.gamma.linear = prior.gamma.linear) 
-                  #read results :
-                  env.linear.regress.b1       = read.table(file = paste0(dir.config.linear,"/Lin_TotalU.env"), header=TRUE)
-                  env.linear.regress.b1       = cbind(env.linear.regress.b1, xgrid)
-                  env.param.linear.regress.b1 = read.table(file = paste0(dir.config.linear,"/Lin_ParamU.env"), header=TRUE)
-                  env.param.linear.regress.b1 = cbind(env.param.linear.regress.b1, xgrid)
-                  maxpost.linear.regress.b1   = read.table(file = paste0(dir.config.linear,"/Lin_Maxpost.spag"), header=FALSE)
-                  maxpost.linear.regress.b1   = cbind(maxpost.linear.regress.b1, xgrid)
-                  #write and save results of this linear regression Deltab1,b2 vs qscum :
-                  list.of.files <- c(
-                                    paste0(dir.config.linear,"/Lin_maxpost.spag"),
-                                    paste0(dir.config.linear,"/Lin_ParamU.spag"), 
-                                    paste0(dir.config.linear,"/Lin_TotalU.spag"),
-                                    paste0(dir.config.linear,"/Lin_ParamU.env"),  
-                                    paste0(dir.config.linear,"/Lin_TotalU.env"),
-                                    paste0(dir.config.linear,"/Results_MCMC_Cooked.txt"), 
-                                    paste0(dir.config.linear,"/Results_Residuals.txt"),
-                                    paste0(dir.config.linear,"/Results_Summary.txt"), 
-                                    paste0(dir.config.linear,"/Config_Model.txt"),
-                                    paste0(dir.config.linear,"/xgrid.txt"), 
-                                    paste0(dir.config.linear,"/data.txt")
-                                    )
-                  for (ll in 1:length(list.of.files)) {
-                      file.copy(list.of.files[ll], dir.qs.delta_b1, overwrite = TRUE) 
-                  }
-                  #converg = Convergence.test(dir.seg = dir.qs.delta_b1, npar = 2, dir.plot = dir.qs.delta_b1)
-                  # plot.mcmc.seg(workspace=dir.qs.delta_b1, seg.iter=1, nS=2)
-                  # plot results :
-                  lin.relat.deltab1.plot = ggplot(data=df.deltab.V) +
-                                           # annotate("rect", 
-                                           #          xmin = max(0, qsc.crit.stat[1]  - 2*qsc.crit.stat[2]), 
-                                           #          xmax =  qsc.crit.stat[1] + 2*qsc.crit.stat[2],
-                                           #          ymin=-Inf, ymax=Inf,
-                                           #          fill = "gray20", alpha = 0.1)+
-                                           # geom_vline(xintercept = qsc.crit.stat[1], color="gray60", size=1, linetype ="dashed") +
-                                           geom_ribbon(data = env.linear.regress.b1, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5),
-                                                       fill = "blue", alpha = 0.1)+
-                                           geom_ribbon(data = env.param.linear.regress.b1, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), 
-                                                       fill = "blue", alpha = 0.2)+
-                                           geom_errorbar(aes(ymin= df.linear.regress.deltab1$y - 2*df.linear.regress.deltab1$uY , 
-                                                             ymax= df.linear.regress.deltab1$y + 2*df.linear.regress.deltab1$uY , 
-                                                             x   = df.linear.regress.deltab1$X ), 
-                                                             color = "black",  size = 0.3, width=3000)+
-                                           # geom_errorbarh(aes(y = deltab1,
-                                           #                    xmin = V - 2*qsc.stdev,
-                                           #                    xmax = V + 2*qsc.stdev),
-                                           #                    color = "black",  size = 0.3, height =0.1)+
-                                           geom_point(aes(y=deltab1, x= V), fill ="red" , size=3, pch = 21)+
-                                           # annotate("text", 
-                                           #          x=df.deltab.V$V , 
-                                           #          y=df.deltab.V$deltab1 + 0.3,
-                                           #          label= df.deltab.V$Period, 
-                                           #          color = "black", size=3)+
-                                           geom_line(data = maxpost.linear.regress.b1, aes(x=xgrid, y =V1), color="blue", size=1)+
-                                           #geom_hline(yintercept = 0, color="black", size=0.3, linetype ="dashed")+
-                                           geom_point(data =data.frame(x=df.deltab.V$V, 
-                                                                       y=df.deltab.V$deltab1 + df.deltab.V$stdev_deltab1+0.1),
-                                                      aes(x=x, y=y),  size = 10, color="black", pch=21, fill="white")+
-                                           annotate("text", 
-                                                      x=df.deltab.V$V, 
-                                                      y=df.deltab.V$deltab1 + df.deltab.V$stdev_deltab1 + 0.1,
-                                                      label= df.deltab.V$Period, color = "black", size=7) +
-                                           scale_x_continuous(name = TeX("$V \\; \\left[m^{3} \\right] $"), expand = c(0,0), 
-                                                                limits=c(xgrid[1], tail(xgrid,1))) +
-                                           scale_y_continuous(name = TeX("$\\Delta b_1 \\; \\left[m\\right]$"), expand = c(0,0)) +
-                                           theme_bw()+
-                                           coord_cartesian(clip = 'off')+
-                                           theme(plot.background = element_rect(fill ="transparent", color = NA)
-                                                   #,panel.grid.major=element_line(size=0.4, linetype = "dashed")
-                                                   ,panel.grid.major=element_blank()
-                                                   ,panel.grid.minor=element_blank()
-                                                   ,panel.background = element_rect(fill ="transparent") 
-                                                   ,axis.ticks = element_line(colour = "black")
-                                                   ,plot.margin=unit(c(0.3,0.7,0.3,0.3),"cm")
-                                                   ,text = element_text(size=14)
-                                                   ,axis.title = element_text(size=20)
-                                                   ,legend.key = element_rect(colour = "transparent", fill = "transparent")
-                                                   ,legend.background = element_rect(colour = "transparent", fill = "transparent")
-                                                   ,legend.position="none")
-                    
-                  ggsave(lin.relat.deltab1.plot, filename=paste0(dir.qs.delta_b1,"/Linear_qs_Deltab1.png"), 
-                                                  bg = "transparent", width = 7, height =7, dpi = 400)
-  # delta b2:
-                  write.table(df.linear.regress.deltab2, file=paste0(dir.config.linear,"/data.txt"), sep="\t", row.names=FALSE )
-                  setwd(dir.exe)
-                  #launch BaM :
-                  linear_app(model.type         = model.type, 
-                             Nmcmc              = Nmcmc, 
-                             Ncycles            = Ncycles, 
-                             xgrid              = xgrid,
-                             nobs               = length(df.linear.regress.deltab2$X), 
-                             simMCMC            = TRUE, 
-                             prediction         = TRUE, 
-                             prediction.t       = FALSE, 
-                             nobs.t             = 1,
-                             prior.param.propor = prior.param.propor,
-                             prior.gamma.linear = prior.gamma.linear) 
-                  #read results :
-                  env.linear.regress.b2       = read.table(file = paste0(dir.config.linear,"/Lin_TotalU.env"), header=TRUE)
-                  env.linear.regress.b2       = cbind(env.linear.regress.b2, xgrid)
-                  env.param.linear.regress.b2 = read.table(file = paste0(dir.config.linear,"/Lin_ParamU.env"), header=TRUE)
-                  env.param.linear.regress.b2 = cbind(env.param.linear.regress.b2, xgrid)
-                  maxpost.linear.regress.b2   = read.table(file = paste0(dir.config.linear,"/Lin_Maxpost.spag"), header=FALSE)
-                  maxpost.linear.regress.b2   = cbind(maxpost.linear.regress.b2, xgrid)
-                  #write and save results of this linear regression Deltab1,b2 vs qscum :
-                  list.of.files <- c(
-                                    paste0(dir.config.linear,"/Lin_maxpost.spag"),
-                                    paste0(dir.config.linear,"/Lin_ParamU.spag"), 
-                                    paste0(dir.config.linear,"/Lin_TotalU.spag"),
-                                    paste0(dir.config.linear,"/Lin_ParamU.env"),  
-                                    paste0(dir.config.linear,"/Lin_TotalU.env"),
-                                    paste0(dir.config.linear,"/Results_MCMC_Cooked.txt"), 
-                                    paste0(dir.config.linear,"/Results_Residuals.txt"),
-                                    paste0(dir.config.linear,"/Results_Summary.txt"), 
-                                    paste0(dir.config.linear,"/Config_Model.txt"),
-                                    paste0(dir.config.linear,"/xgrid.txt"),
-                                    paste0(dir.config.linear,"/data.txt")
-                                    )
-                  for (ll in 1:length(list.of.files)) {
-                      file.copy(list.of.files[ll], dir.qs.delta_b2, overwrite = TRUE)
-                  }
-                  #converg = Convergence.test(dir.seg = dir.qs.delta_b2, npar = 2, dir.plot = dir.qs.delta_b2)
-                  # plot.mcmc.seg(workspace = dir.qs.delta_b2,  
-                  #               seg.iter  = 1,
-                  #               nS        = 2)
-                  # plot results :
-                  lin.relat.deltab2.plot = ggplot(data=df.deltab.V) +
-                                           # annotate("rect", 
-                                           #          xmin = max(0, qsc.crit.stat[1]  - 2*qsc.crit.stat[2]), 
-                                           #          xmax =  qsc.crit.stat[1] + 2*qsc.crit.stat[2],
-                                           #          ymin=-Inf, ymax=Inf,
-                                           #          fill = "gray20", alpha = 0.1)+
-                                           # geom_vline(xintercept = qsc.crit.stat[1], color="gray60", size=1, linetype ="dashed") +
-                                           geom_ribbon(data = env.linear.regress.b2, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), 
-                                                       fill = "blue", alpha = 0.1)+
-                                           geom_ribbon(data = env.param.linear.regress.b2, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), 
-                                                       fill = "blue", alpha = 0.2)+
-                                           geom_errorbar(aes(ymin = deltab2 - 2*stdev_deltab2, 
-                                                             ymax = deltab2 + 2*stdev_deltab2,
-                                                             x = V),
-                                                             color = "blue",  size = 0.3, width=3000)+
-                                           # geom_errorbarh(aes(y = deltab2, 
-                                           #                    xmin = qsc.mean- 2*qsc.stdev,
-                                           #                    xmax = qsc.mean+ 2*qsc.stdev), 
-                                           #                    color = "blue",  size = 0.3, height=0.1)+     
-                                           geom_point(aes(y=deltab2, 
-                                                          x = V), 
-                                                          fill ="blue" , size=3, pch = 21)+
-                                           # annotate("text", 
-                                           #          x=df.deltab.V$V , 
-                                           #          y=df.deltab.V$deltab2 + 0.3,
-                                           #          label= df.deltab.V$Period, color = "black", size=3)+
-                                           geom_line(data = maxpost.linear.regress.b2, aes(x=xgrid, y =V1), color="blue", size=1)+
-                    geom_point(data =data.frame(x=df.deltab.V$V, 
-                                                y=df.deltab.V$deltab2 + df.deltab.V$stdev_deltab2+0.1),
-                               aes(x=x, y=y),  size = 10, color="black", pch=21, fill="white")+
-                    annotate("text", 
-                             x=df.deltab.V$V, 
-                             y=df.deltab.V$deltab2 + df.deltab.V$stdev_deltab2 + 0.1,
-                             label= df.deltab.V$Period, color = "black", size=7) +
-                    scale_x_continuous(name = TeX("$V \\; \\left[m^{3} \\right] $"), expand = c(0,0), 
-                                       limits=c(xgrid[1], tail(xgrid,1))) +
-                    scale_y_continuous(name = TeX("$\\Delta b_2 \\; \\left[m\\right]$"), expand = c(0,0)) +
-                    theme_bw()+
-                    coord_cartesian(clip = 'off')+
-                    theme(plot.background = element_rect(fill ="transparent", color = NA)
-                          #,panel.grid.major=element_line(size=0.4, linetype = "dashed")
-                          ,panel.grid.major=element_blank()
-                          ,panel.grid.minor=element_blank()
-                          ,panel.background = element_rect(fill ="transparent") 
-                          ,axis.ticks = element_line(colour = "black")
-                          ,plot.margin=unit(c(0.3,0.7,0.3,0.3),"cm")
-                          ,text = element_text(size=14)
-                          ,axis.title = element_text(size=20)
-                          ,legend.key = element_rect(colour = "transparent", fill = "transparent")
-                          ,legend.background = element_rect(colour = "transparent", fill = "transparent")
-                          ,legend.position="none")
-                  ggsave(lin.relat.deltab2.plot, filename=paste0(dir.qs.delta_b2,"/Linear_qs_Deltab2.png"), bg = "transparent",
-                         width = 7, height =7, dpi = 400)
-                  
-                  #both figures:
-                  both.plot = plot_grid( lin.relat.deltab1.plot, lin.relat.deltab2.plot,
-                             ncol = 2, nrow = 1, rel_widths = c(1,1), labels=c("a)", "b)"), label_size = 25)
-                  ggsave(both.plot, filename=paste0(dir.sed.transp.linear,"/Linear_V_Deltab.png"), bg = "transparent",
-                         width = 14, height =8, dpi = 400)
-                  
-                  
-   print("****************")
-   print("   All done!    ")
-   print("****************")           
-                  
-   return(list(df.linear.regress.deltab1 = df.linear.regress.deltab1, 
-               df.linear.regress.deltab2 = df.linear.regress.deltab2))
-}
-
-
-
-
-
-
-
-
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-#########################################################################################
-linear_app <- function(  model.type ,
-                         Nmcmc, Ncycles,  
-                         xgrid, nobs, simMCMC, 
-                         prediction , 
-                         prediction.t , 
-                         nobs.t, 
-                         prior.param.propor,
-                         prior.gamma.linear) {               # Linear Model regression
-#########################################################################################
-BaM.linear.config(model.type , Nmcmc, Ncycles, xgrid, nobs, simMCMC, 
-                      prediction, prediction.t, nobs.t, 
-                      prior.param.propor, prior.gamma.linear)
-    message("Applying Linear regression - BaM !!!  Wait ... "); flush.console()
-    #system2(paste(dir_code,"/BaM_exe/BaM_Segmentation.exe",sep=""),stdout =NULL, stderr = NULL);
-    system2(paste0(dir_code,"/BaM_exe/BaM_2exp_pool2.exe")) #, stdout =NULL, stderr = NULL); 
-}
-  
-  
-  
-  
-  
-  
-  
-# Linear Model regression
-###############################################################################
-BaM.linear.config <- function(model.type , 
-                                Nmcmc,Ncycles, xgrid, nobs, 
-                                simMCMC, prediction, prediction.t, nobs.t,
-                                prior.param.propor, prior.gamma.linear) {  
-###############################################################################
-    write.table(xgrid, file =paste(dir_code,"/BaM_exe/Linear/xgrid.txt",sep=""), 
-                col.names = FALSE, row.names = FALSE)
-    ngrid = length(xgrid)
-    
-    theta1 <- 1  ; St_theta1 <- 100
-    #----------------------------------------------------------------------
-    #creation of Config_BaM.txt
-    file.bam = paste(dir_code,"/BaM_exe/Config_BaM.txt",sep="")
-    cat('"Linear/"', file =file.bam , sep="\n", append = FALSE)
-    cat('"Config_RunOptions.txt"', file = file.bam , sep="\n", append = TRUE)    
-    cat('"Config_Model.txt"', file = file.bam , sep="\n", append = TRUE)
-    cat('""', file = file.bam , sep="\n", append = TRUE)
-    cat('"Config_Data.txt"', file = file.bam, sep="\n", append = TRUE)
-    cat('"Config_RemnantSigma.txt"', file = file.bam , sep="\n", append = TRUE)                                       
-    cat('"Config_MCMC.txt"', file = file.bam , sep="\n", append = TRUE)                                            
-    cat('"Config_Cooking.txt"', file = file.bam , sep="\n", append = TRUE)
-    cat('"Config_Summary.txt"', file = file.bam , sep="\n", append = TRUE)
-    cat('"Config_Residuals.txt"', file = file.bam, sep="\n", append = TRUE)
-    if( (prediction ==TRUE) | (prediction.t ==TRUE)) {
-      cat('"Config_Pred_Master.txt"', file = file.bam , sep="\n", append = TRUE)
-    } else {
-      cat('""', file = file.bam , sep="\n", append = TRUE)
-    }
-    #---------------------------------------------------------------------
-    file.name = paste0(dir_code,"/BaM_exe/Linear/Config_Model.txt")
-    cat('"Linear"', file =file.name,sep="\n")
-    cat(1, file = file.name, append = TRUE,sep="\n")
-    cat(1, file =file.name, append = TRUE,sep="\n")
-    cat(2, file =file.name, append = TRUE,sep="\n")        #One parameter
-    
-    if (model.type == "null"){
-      ###########################
-      cat('"a1"', file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[2], file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[3], file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[4], file =file.name, append = TRUE,sep=",")
-      cat(",", file =file.name, append = TRUE,sep=",")
-      cat(prior.param.propor[5], file =file.name, append = TRUE,sep="\n")
-      
-      cat('"a2"', file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[7], file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[8], file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[9], file =file.name, append = TRUE,sep=",")
-      cat(",", file =file.name, append = TRUE,sep=",")
-      cat(prior.param.propor[10], file =file.name, append = TRUE,sep="\n")
-      
-    } else if (model.type == "proportional"){
-      #########################################
-      cat('"a1"', file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[2], file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[3], file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[4], file =file.name, append = TRUE,sep=",")
-      cat(",", file =file.name, append = TRUE,sep=",")
-      cat(prior.param.propor[5], file =file.name, append = TRUE,sep="\n")
-      
-      cat('"a2"', file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[7], file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[8], file =file.name, append = TRUE,sep="\n")
-      cat(prior.param.propor[9], file =file.name, append = TRUE,sep=",")
-      cat(",", file =file.name, append = TRUE,sep=",")
-      cat(prior.param.propor[10], file =file.name, append = TRUE,sep="\n")
-    }
-    #--------------------------------------------------------------------  
-    file.name2 = paste0(dir_code,"/BaM_exe/Linear/Config_Data.txt")
-    name = "'Linear/data.txt'"
-    cat(name, file =file.name2,  sep="\n") 	               	# path to data file
-    cat(1, file =file.name2,sep="\n",append = TRUE)      	 	# number of header lines
-    cat(nobs, file =file.name2,sep="\n",append = TRUE)       # Nobs, number of rows in data file (excluding header lines)
-    cat(4, file =file.name2,sep="\n",append = TRUE)      		# number of columns in the data file
-    cat(1, file =file.name2,sep="\n",append = TRUE)        	# columns for X (observed inputs) in data file - comma-separated if several (order: t, h, T, T_smooth)
-    cat(0, file =file.name2,sep="\n",append = TRUE)          # 8,9,10,11,12 !!! columns for Xu (random uncertainty in X, EXPRESSED AS A STANDARD DEVIATION - use 0 for a no-error assumption)
-    cat(0, file =file.name2,sep="\n",append = TRUE)      	  # columns for Xb (systematic uncertainty in X, EXPRESSED AS A STANDARD DEVIATION - use 0 for a no-error assumption)
-    cat(0, file =file.name2,sep="\n",append = TRUE)          # columns for Xb_indx (index of systematic errors in X - use 0 for a no-error assumption)
-    cat(3, file =file.name2,sep="\n",append = TRUE)          # 16,18,20,21 columns for Y (observed outputs) in data file - comma-separated if several (order: Q, g0, cos(pi*g0), sin(pi*g0))
-    cat(4, file =file.name2,sep="\n",append = TRUE)          # 17,19,22,23 columns for Yu (uncertainty in Y, EXPRESSED AS A STANDARD DEVIATION - use 0 for a no-error assumption)
-    cat(0, file =file.name2,sep="\n",append = TRUE)      		# columns for Yb (systematic uncertainty in Y, EXPRESSED AS A STANDARD DEVIATION - use 0 for a no-error assumption)
-    cat(0, file =file.name2,sep="",append = TRUE)         		# columns for Yb_indx (index of systematic errors in Y - use 0 for a no-error assumption)
-    #-------------------------------------------------------------------
-    file.mcmc = paste0(dir_code,"/BaM_exe/Linear/Config_MCMC.txt")
-    cat('"Results_MCMC.txt"', file =file.mcmc,sep="\n")
-    cat(Nmcmc, file = file.mcmc, append = TRUE,sep="\n")   #Nadapt
-    cat(Ncycles, file = file.mcmc, append = TRUE,sep="\n")  #Ncycles
-    cat(0.1, file =file.mcmc, append = TRUE,sep="\n")    #minMoveRate
-    cat(0.5, file =file.mcmc, append = TRUE,sep="\n")    #maxMoveRate
-    cat(0.9, file =file.mcmc, append = TRUE,sep="\n")    #DownMult
-    cat(1.1, file =file.mcmc, append = TRUE,sep="\n")    #UpMult
-    cat(0, file =file.mcmc, append = TRUE,sep="\n")      #mode for init jump distr
-    cat("****", file =file.mcmc, append = TRUE,sep="\n") 
-    cat(0.1, file =file.mcmc, append = TRUE,sep="\n")    #MultFact
-    cat(0.1,file =file.mcmc, append = TRUE, sep=",")     #RC MultiFact
-    cat(0.1,file =file.mcmc, append = TRUE, sep=",")     
-    cat(0.1, file =file.mcmc, append = TRUE,sep="\n")
-    cat(0.1,file =file.mcmc, append = TRUE, sep=",")      #Remnant MultiFact
-    cat(0.1, file =file.mcmc, append = TRUE,sep="\n")
-    #--------------------------------------------------------------------------- 
-    if(prediction ==TRUE) {  
-      file.Pred1 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_Master.txt")
-      if(prediction.t ==TRUE) {      
-        cat(6, file =file.Pred1,sep="\n")
-      } else {
-        cat(3, file =file.Pred1,sep="\n")
-      }  
-      cat("'Config_Pred_Maxpost.txt'", file = file.Pred1, append = TRUE,sep="\n")
-      cat("'Config_Pred_ParamU.txt'", file =file.Pred1, append = TRUE,sep="\n")
-      cat("'Config_Pred_TotalU.txt'", file =file.Pred1, append = TRUE,sep="\n")
-      
-      #---------------------------------------------------------------------------- 
-      file.Pred3 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_Maxpost.txt")
-      cat("'Linear\\xgrid.txt'", file =file.Pred3, sep="\n")
-      cat(ngrid, file =file.Pred3,sep="\n", append = TRUE)
-      cat("1", file = file.Pred3, append = TRUE,sep="\n")   #n of spaghetti
-      cat(".false.", file = file.Pred3, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
-      cat(".false.", file = file.Pred3, append = TRUE,sep="\n")                             #!!! Propagate remnant uncertainty for each output variable? (size nY)
-      cat("-1", file = file.Pred3, append = TRUE,sep="\n")                                #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
-      cat("'Lin_Maxpost.spag'", file = file.Pred3, append = TRUE,sep="\n")                    # !!! Files containing spaghettis for each output variable (size nY)
-      cat(".true.", file = file.Pred3, append = TRUE,sep="\n")                              #!!! Post-processing: transpose spag file (so that each column is a spaghetti)? 
-      cat(".true.", file = file.Pred3, append = TRUE,sep="\n")                              #!!! Post-processing: create envelops? (size nY)
-      cat("'Lin_Maxpost.env'", file = file.Pred3, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
-      cat(".true.", file = file.Pred3, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
-      cat(".false." , file = file.Pred3, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
-      #---------------------------------------------------------------------- 
-      file.Pred4 = paste(dir_code,"/BaM_exe/Linear/Config_Pred_ParamU.txt",sep="")
-      cat("'Linear\\xgrid.txt'", file =file.Pred4, sep="\n")
-      cat(ngrid, file =file.Pred4,sep="\n", append = TRUE)
-      cat("1", file = file.Pred4, append = TRUE,sep="\n")   #n of spaghetti
-      cat(".true.", file = file.Pred4, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
-      cat(".false.", file = file.Pred4, append = TRUE,sep="\n")                             #!!! Propagate remnant uncertainty for each output variable? (size nY)
-      cat("-1", file = file.Pred4, append = TRUE,sep="\n")                                #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
-      cat("'Lin_ParamU.spag'", file = file.Pred4, append = TRUE,sep="\n")                    # !!! Files containing spaghettis for each output variable (size nY)
-      cat(".true.", file = file.Pred4, append = TRUE,sep="\n")                              #!!! Post-processing: transpose spag file (so that each column is a spaghetti)? 
-      cat(".true.", file = file.Pred4, append = TRUE,sep="\n")                              #!!! Post-processing: create envelops? (size nY)
-      cat("'Lin_ParamU.env'", file = file.Pred4, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
-      cat(".true.", file = file.Pred4, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
-      cat(".false." , file = file.Pred4, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
-      #---------------------------------------------------------------------- 
-      
-      file.Pred5 = paste(dir_code,"/BaM_exe/Linear/Config_Pred_TotalU.txt",sep="")
-      cat("'Linear\\xgrid.txt'", file =file.Pred5,sep="\n")
-      cat(ngrid, file =file.Pred5, append = TRUE, sep="\n")
-      cat("1", file = file.Pred5, append = TRUE,sep="\n")   #n of spaghetti
-      cat(".true.", file = file.Pred5, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
-      cat(".true.", file = file.Pred5, append = TRUE,sep="\n")                             #!!! Propagate remnant uncertainty for each output variable? (size nY)
-      cat("-1", file = file.Pred5, append = TRUE,sep="\n")                                #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
-      cat("'Lin_TotalU.spag'", file = file.Pred5, append = TRUE,sep="\n")                    # !!! Files containing spaghettis for each output variable (size nY)
-      cat(".true.", file = file.Pred5, append = TRUE,sep="\n")                              #!!! Post-processing: transpose spag file (so that each column is a spaghetti)? 
-      cat(".true.", file = file.Pred5, append = TRUE,sep="\n")                              #!!! Post-processing: create envelops? (size nY)
-      cat("'Lin_TotalU.env'", file = file.Pred5, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
-      cat(".true.", file = file.Pred5, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
-      cat(".false." , file = file.Pred5, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
-    }
-    #---------------------------------------------------------------------- 
-    if(prediction.t==TRUE) {
-      file.Pred1 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_Master.txt")
-      if(prediction==FALSE) {      
-        cat(3, file =file.Pred1,sep="\n")
-      }  
-      cat("'Config_Pred_qs_Maxpost.txt'", file =file.Pred1, append = TRUE,sep="\n")
-      cat("'Config_Pred_qs_ParamU.txt'", file =file.Pred1, append = TRUE,sep="\n")
-      cat("'Config_Pred_qs_TotalU.txt'", file =file.Pred1, append = TRUE,sep="\n")
-      ###################################################################
-      file.Pred6 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_qs_Maxpost.txt")
-      cat("'Linear\\qs_t.txt'", file =file.Pred6,sep="\n")
-      cat(nobs.t, file =file.Pred6, append = TRUE, sep="\n")
-      cat("1", file = file.Pred6, append = TRUE,sep="\n")   #n of spaghetti
-      cat(".false.", file = file.Pred6, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
-      cat(".false.", file = file.Pred6, append = TRUE,sep="\n")                             #!!! Propagate remnant uncertainty for each output variable? (size nY)
-      cat("-1", file = file.Pred6, append = TRUE,sep="\n")                                #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
-      cat("'qst_maxpost.spag'", file = file.Pred6, append = TRUE,sep="\n")                    # !!! Files containing spaghettis for each output variable (size nY)
-      cat(".true.", file = file.Pred6, append = TRUE,sep="\n")                              #!!! Post-processing: transpose spag file (so that each column is a spaghetti)? 
-      cat(".true.", file = file.Pred6, append = TRUE,sep="\n")                              #!!! Post-processing: create envelops? (size nY) 
-      cat("'qst_Maxpost.env'", file = file.Pred6, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
-      cat(".true.", file = file.Pred6, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
-      cat(".false." , file = file.Pred6, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
-      ###################################################################
-      file.Pred8 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_qs_ParamU.txt")
-      cat("'Linear\\qs_t.txt'", file =file.Pred8,sep="\n")
-      cat(nobs.t, file =file.Pred8, append = TRUE, sep="\n")
-      cat("1", file = file.Pred8, append = TRUE,sep="\n")   #n of spaghetti
-      cat(".true.", file = file.Pred8, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
-      cat(".false.", file = file.Pred8, append = TRUE,sep="\n")                             #!!! Propagate remnant uncertainty for each output variable? (size nY)
-      cat("-1", file = file.Pred8, append = TRUE,sep="\n")                                #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
-      cat("'qst_ParamU.spag'", file = file.Pred8, append = TRUE,sep="\n")                    # !!! Files containing spaghettis for each output variable (size nY)
-      cat(".true.", file = file.Pred8, append = TRUE,sep="\n")                              #!!! Post-processing: transpose spag file (so that each column is a spaghetti)? 
-      cat(".true.", file = file.Pred8, append = TRUE,sep="\n")                              #!!! Post-processing: create envelops? (size nY)
-      cat("'qst_ParamU.env'", file = file.Pred8, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
-      cat(".true.", file = file.Pred8, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
-      cat(".false." , file = file.Pred8, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
-      ###################################################################
-      file.Pred7 = paste0(dir_code,"/BaM_exe/Linear/Config_Pred_qs_TotalU.txt")
-      cat("'Linear\\qs_t.txt'", file =file.Pred7,sep="\n")
-      cat(nobs.t, file =file.Pred7, append = TRUE, sep="\n")
-      cat("1", file = file.Pred7, append = TRUE,sep="\n")   #n of spaghetti
-      cat(".true.", file = file.Pred7, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
-      cat(".true.", file = file.Pred7, append = TRUE,sep="\n")                             #!!! Propagate remnant uncertainty for each output variable? (size nY)
-      cat("-1", file = file.Pred7, append = TRUE,sep="\n")                                #!!! Nsim[prior]. If <=0: posterior sampling (nsim is given by mcmc sample); 
-      cat("'qst_TotalU.spag'", file = file.Pred7, append = TRUE,sep="\n")                    # !!! Files containing spaghettis for each output variable (size nY)
-      cat(".true.", file = file.Pred7, append = TRUE,sep="\n")                              #!!! Post-processing: transpose spag file (so that each column is a spaghetti)? 
-      cat(".true.", file = file.Pred7, append = TRUE,sep="\n")                              #!!! Post-processing: create envelops? (size nY)
-      cat("'qst_TotalU.env'", file = file.Pred7, append = TRUE,sep="\n")                     # !!! Post-processing: name of envelop files (size nY)
-      cat(".true.", file = file.Pred7, append = TRUE,sep="\n")                              #!!! Print progress in console during computations?
-      cat(".false." , file = file.Pred7, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
-    }
-    #-------------------------------------------------------------------------- 
-    file.remnant = paste0(dir_code,"/BaM_exe/Linear/Config_RemnantSigma.txt")
-    # cat("'Constant'", file = file.remnant, sep="\n")     #! Function f used in sdev=f(Qrc) 
-    # cat(1, file = file.remnant, append = TRUE, sep="\n")                    #! Number of parameters gamma for f
-    # cat("gamma1", file = file.remnant, append = TRUE, sep="\n")             #! Parameter Name
-    # cat(0.1, file = file.remnant, append = TRUE, sep="\n")                   #! Initial Guess
-    # cat("'Uniform'", file = file.remnant, append = TRUE, sep="\n")            #! Prior distribution
-    # cat(0,file =file.remnant, append = TRUE, sep=",")
-    # cat(",",file =file.remnant, append = TRUE, sep=",")
-    # cat(100,file =file.remnant, append = TRUE, sep="\n")
-    
-    cat(prior.gamma.linear[1], file = file.remnant, sep="\n")     #! Function f used in sdev=f(Qrc) 
-    if (prior.gamma.linear[1] == "'Linear'"){ 
-      cat(2, file = file.remnant, append = TRUE, sep="\n")                    #! Number of parameters gamma for f
-    } else if (prior.gamma.linear[1] == "'Constant'"){
-      cat(1, file = file.remnant, append = TRUE, sep="\n") 
-    }
-    cat(prior.gamma.linear[2], file = file.remnant, append = TRUE, sep="\n")             #! Parameter Name
-    cat(prior.gamma.linear[3], file = file.remnant, append = TRUE, sep="\n")                   #! Initial Guess
-    cat(prior.gamma.linear[4], file = file.remnant, append = TRUE, sep="\n")            #! Prior distribution
-    cat(prior.gamma.linear[5], file =file.remnant, append = TRUE, sep=",")
-    cat(","                  , file =file.remnant, append = TRUE, sep=",")
-    cat(prior.gamma.linear[6], file =file.remnant, append = TRUE, sep="\n")
-    
-    if (prior.gamma.linear[1] == "'Linear'"){ 
-      cat(prior.gamma.linear[7], file = file.remnant, append = TRUE, sep="\n")             #! Parameter Name
-      cat(prior.gamma.linear[8], file = file.remnant, append = TRUE, sep="\n")                   #! Initial Guess
-      cat(prior.gamma.linear[9], file = file.remnant, append = TRUE, sep="\n")            #! Prior distribution
-      cat(prior.gamma.linear[10], file =file.remnant, append = TRUE, sep=",")
-      cat(","                  , file =file.remnant, append = TRUE, sep=",")
-      cat(prior.gamma.linear[11], file =file.remnant, append = TRUE, sep="\n")
-    }
-    
-    ###################################################################   RUN OPTIONS
-    file.run = paste(dir_code,"/BaM_exe/Linear/Config_RunOptions.txt",sep="")
-    if (simMCMC == TRUE) {  
-      cat(".true.", file =file.run,sep="\n")                    #Do MCMC?
-    } else {
-      cat(".false.", file =file.run,sep="\n")                    #Do MCMC?    
-    }
-    cat(".true.", file =file.run, append = TRUE, sep="\n")    #Do MCMC summary?
-    cat(".true.", file =file.run, append = TRUE, sep="\n")    #Do Residual diagnostics?
-    if ((prediction == TRUE) | (prediction.t == TRUE)) {
-      cat(".true.", file =file.run, append = TRUE, sep="\n")    #Do Predictions?
-      
-      cat(".false.", file =file.run, append = TRUE, sep="\n")    #Do Predictions?
-    }
-    
-    ###################################################################   COOKING CONFIG
-    file.cooking = paste(dir_code,"/BaM_exe/Linear/Config_Cooking.txt",sep="")
-    cat("'Results_MCMC_Cooked.txt'" , file =file.cooking ,sep="\n")    #Result file
-    cat(0.5, file =file.cooking, append = TRUE, sep="\n")            #Burn factor
-    cat(10, file =file.cooking, append = TRUE, sep="\n")             #Nslim
-    ###################################################################   RESIDUALS CONFIG
-    file.residuals = paste(dir_code,"/BaM_exe/Linear/Config_Residuals.txt",sep="")
-    cat("'Results_Residuals.txt'" , file =file.residuals ,sep="\n")    #Result file
-    ###################################################################   SUMMARY CONFIG
-    file.summary = paste(dir_code,"/BaM_exe/Linear/Config_Summary.txt",sep="")
-    cat("'Results_Summary.txt'" , file =file.summary ,sep="\n")    #Result file
-}
-  
-  
-  
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 
-# ####################################################################################################################
-# sediment.transport <- function(dir.sed.transp, 
-#                                df.limni,  
-#                                nperiod=nperiods.TS, 
-#                                ts_ST, bt_ST, officialShiftsTime,
-#                                taucritic, d50.init, s.sed.transp, S0.sed.transp, alpha.sed.transp, beta.sed.transp,
-#                                gaugings_SPD, 
-#                                psi=0.1, 
-#                                times.uncert =TRUE, 
-#                                ylimits =grid_limni.ylim) {
-#   ####################################################################################################################
-#   # b evolution per period:
-#   message("**********************************************************"); flush.console()
-#   message("Computing the bed evolution (parameter b) in time !!!  Wait ... "); flush.console()
-#   d50 = d50.init
-#   # bt.MAP = as.numeric(read.table(paste0(dir.sed.transp,"/Results_Summary.txt"),row.names=1,dec=".",sep="")[16,1:nperiod])
-#   # bt.q10 = as.numeric(read.table(paste0(dir.sed.transp,"/Results_Summary.txt"),row.names=1,dec=".",sep="")[7,1:nperiod])
-#   # bt.q90 = as.numeric(read.table(paste0(dir.sed.transp,"/Results_Summary.txt"),row.names=1,dec=".",sep="")[10,1:nperiod])
-#   ts.before = sort(c(0,ts_ST$treal))
-#   ts.plus = sort(c(ts_ST$treal, tail(df.limni$t_limni,1)))
-#   #Defining hcr for each stable period:
-#   hcr = 0
-#   if (taucritic == "Brownlie")  {
-#     taucritic = 0.22 * d50^(-0.9) + 0.06* 10^(-7.7*d50^(-0.9))  
-#   } else if (taucritic == "Soulsby") {
-#     taucritic = 0.3 / (1 + 1.2* d50) + 0.055* (1 - exp(-0.02* d50))
-#   }
-#   ycritic = (s.sed.transp -1)*d50/S0.sed.transp * taucritic
-#   for (i in 1:length(bt_ST)) {
-#     hcr[i] = ycritic + bt_ST[i]
-#   }
-#   
-#   #********************************
-#   # Plot b(t) and hcrit per period
-#   bt_and_hcrit.plot = ggplot()
-#   if (times.uncert ==TRUE) {
-#     #geom_line(data = df.bt, aes(x=t.shifts.before, y =bt.MAP), color = "red", size = 1 )+
-#     bt_and_hcrit.plot = bt_and_hcrit.plot +
-#       geom_rect(mapping= aes(xmin= ts_ST$t2, xmax=ts_ST$t97 ,ymin=-Inf, ymax=Inf), fill="blue",alpha=0.2) +
-#       geom_vline(aes(xintercept = ts_ST$tMAP), color = "blue", lwd =0.7, linetype = "dashed") +
-#       geom_vline(aes(xintercept = ts_ST$treal), color = "blue", lwd =0.7, linetype = "solid")+
-#       geom_segment(mapping= aes(x =ts.before , y = unlist(bt_ST), xend = ts.plus, yend = unlist(bt_ST)), 
-#                    color = "red", size = 1) +
-#       geom_segment(mapping= aes(x =ts.before , y = unlist(hcr), xend = ts.plus, yend = unlist(hcr)), 
-#                    color = "green", size = 1) +
-#       # geom_rect(mapping = aes(xmin= t.shifts.before, xmax=t.shifts.plus, ymin=bt.q10,
-#       #                         ymax= bt.q90), fill="red", alpha=0.3) +
-#       geom_line(data = df.limni, aes(x = t_limni, y= h_limni), color="black", size =0.3)+
-#       geom_point(aes(x=gaugings_SPD$t, y = gaugings_SPD$h), color=gaugings_SPD$color, size=4)+
-#       annotate("text", x=500, y=hcr[[1]]+0.1, label="Critical stage hcritic", color = "green", size=5) +
-#       annotate("text", x=500, y=bt_ST[[1]]+0.1, label="RIverbed elevation b", color = "red", size=5) +
-#       scale_y_continuous(name = expression("Stage h [m]"), limits =c(ylimits[1], ylimits[2] )) + 
-#       scale_x_continuous(name = expression("Time [days]"), expand = c(0,0))+
-#       theme_bw(base_size=20)+
-#       theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-#             ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-#             ,legend.key.size=unit(1.5, "cm"),legend.position="none"
-#             ,panel.grid = element_blank())
-#   } else {
-#     bt_and_hcrit.plot = bt_and_hcrit.plot +
-#       geom_vline(aes(xintercept = shifts.all), color = "blue", lwd =0.7, linetype = "solid") +
-#       geom_segment(mapping= aes(x =t.shifts.before , y = bt.MAP, xend = t.shifts.plus, yend = bt.MAP), 
-#                    color = "red", size = 1) +
-#       geom_rect(mapping = aes(xmin= t.shifts.before, xmax=t.shifts.plus, ymin=bt.q10,
-#                               ymax= bt.q90), fill="red", alpha=0.3) +
-#       geom_line(data = df.limni, aes(x = t_limni, y= h_limni), color="black", size =0.3)+
-#       scale_y_continuous(name = expression("Stage h [m]"), limits =ylimits) + 
-#       scale_x_continuous(name = expression("Time [days]"), expand = c(0,0))+
-#       geom_point(aes(x=t_G, y = h_G), color=color_G, size=4)+
-#       theme_bw(base_size=20)+
-#       theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-#             ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-#             ,legend.key.size=unit(1.5, "cm"),legend.position="none"
-#             ,panel.grid = element_blank())
-#   }
-#   ggsave(bt_and_hcrit.plot, filename = paste0(dir.sed.transp,"/bt_and_hcrit.png"), width = 16, height =8, dpi = 400)
-#   
-#   
-#   
-#   #*******************
-#   # zoom for example :
-#   bt_and_hcrit_zoom.plot = ggplot() +
-#     geom_rect(mapping= aes(xmin= ts_ST$t2, xmax=ts_ST$t97 ,ymin=-Inf, ymax=Inf), fill="blue",alpha=0.2) +
-#     geom_vline(aes(xintercept = ts_ST$tMAP), color = "blue", lwd =0.7, linetype = "dashed") +
-#     geom_vline(aes(xintercept = ts_ST$treal), color = "blue", lwd =0.7, linetype = "solid")+
-#     geom_segment(mapping= aes(x =c(ts_ST$treal[1]-100,  ts_ST$treal[1]), y =c(bt_ST[[1]], bt_ST[[2]]), 
-#                               xend = c(ts_ST$treal[1], ts_ST$treal[1]+100), yend = c(bt_ST[[1]],bt_ST[[2]])), color = "red", size = 1) +
-#     geom_segment(mapping= aes(x =c(ts_ST$treal[1]-100,  ts_ST$treal[1]), y =c(hcr[[1]], hcr[[2]]), 
-#                               xend = c(ts_ST$treal[1], ts_ST$treal[1]+100), yend = c(hcr[[1]],hcr[[2]])), 
-#                  color = "green", size = 1) +
-#     #geom_rect(mapping= aes(xmin= ts_ST$t2[1], xmax=ts_ST$t97[1] ,ymin=-Inf, ymax=Inf), fill="blue",alpha=0.2) +
-#     geom_line(data = df.limni, aes(x = t_limni, y= h_limni), color="black", size =0.3)+
-#     geom_point(aes(x=gaugings_SPD$t, y = gaugings_SPD$h), color=gaugings_SPD$color, size=4)+
-#     annotate("text", x=500, y=hcr[[1]]+0.1, label="Critical stage hcritic", color = "green", size=5) +
-#     annotate("text", x=500, y=bt_ST[[1]]+0.1, label="RIverbed elevation b", color = "red", size=5) +
-#     scale_y_continuous(name = expression("Stage h [m]"), limits =c(ylimits[1], ylimits[2] )) + 
-#     scale_x_continuous(name = expression("Time [days]"), limits =c(ts_ST$treal[1]-100, ts_ST$treal[1]+100) , expand = c(0,0))+
-#     theme_bw(base_size=20)+
-#     theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-#           ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-#           ,legend.key.size=unit(1.5, "cm"),legend.position="none"
-#           ,panel.grid = element_blank())
-#   ggsave(bt_and_hcrit_zoom.plot, filename = paste0(dir.sed.transp,"/bt_and_hcrit_zoom.png"), width = 16, height =8, dpi = 400)
-#   
-#   
-#   
-#   #***************************
-#   # defining shifting period:
-#   t.shifts.limni = NULL
-#   t =1; j= NULL; i = 1;
-#   while (df.limni$t_limni[t] <= ts_ST$treal[length(ts_ST$treal)])  {
-#     #print(t)
-#     if ((df.limni$t_limni[t] <= ts_ST$treal[i]) & (df.limni$t_limni[t+1] >= ts_ST$treal[i])) {
-#       t.shifts.limni[i] = df.limni$t_limni[t]
-#       j[i] = t    #define the indexes of the time vector for peak t.shift
-#       i = i +1
-#     }
-#     t =t+1
-#   }
-#   #for each shift:  
-#   event.t = NULL; event.h =NULL; start.event.index=NULL; end.event.index =NULL;
-#   for (i in 1:length(ts_ST$treal)) {
-#     k =0 ; jj = j[i]
-#     event.left.t = NULL
-#     event.left.h = NULL
-#     #from the peak go to left in the stage record until h < hcrit[i]:
-#     while (df.limni$h_limni[jj] >= hcr[i]) {
-#       jj= jj-1
-#       k = k + 1
-#       event.left.t[k] = df.limni$t_limni[jj]
-#       event.left.h[k] = df.limni$h_limni[jj]
-#     }
-#     start.event.index[i]=jj
-#     #from the peak go to right in the stage record until h < hcrit[i+1]:
-#     k =0; jj = j[i]
-#     event.right.t = NULL
-#     event.right.h = NULL
-#     while (df.limni$h_limni[jj] >= hcr[i+1]) {
-#       jj = jj +1
-#       k = k + 1
-#       event.right.t[k] = df.limni$t_limni[jj]
-#       event.right.h[k] = df.limni$h_limni[jj]
-#     }
-#     end.event.index[i]=jj
-#     event.t[[i]] = c(sort(event.left.t), event.right.t)
-#     event.h[[i]] = c(sort(event.left.h), event.right.h)
-#   }
-#   #plot(event.t[[1]], event.h[[1]], type ="l")
-#   
-#   
-#   
-#   
-#   # Evolution of b in time  (Linear interpolation):
-#   #************************************************
-#   b = NULL; jj = 1; #k=1
-#   while (df.limni$t_limni[jj]< tail(df.limni$t_limni,1)) {
-#     if (df.limni$t_limni[jj]< event.t[[1]][1]) {
-#       b[jj] = bt_ST[[1]]
-#     } else if (df.limni$t_limni[jj]> tail(event.t[[length(event.t)]],1)) {
-#       b[jj] = bt_ST[[length(bt_ST)]]
-#     }
-#     if ((df.limni$t_limni[jj]>= event.t[[1]][1]) & (df.limni$t_limni[jj]<= tail(event.t[[1]],1))) {
-#       b[jj] = bt_ST[[1]]+ (df.limni$t_limni[jj]-event.t[[1]][1])/(tail(event.t[[1]],1)-event.t[[1]][1])*(bt_ST[[2]]-bt_ST[[1]]) 
-#     } 
-#     for (i in 2:length(event.t)) {
-#       if ((df.limni$t_limni[jj]>= event.t[[i]][1]) & (df.limni$t_limni[jj]<= tail(event.t[[i]],1))) {
-#         b[jj] = bt_ST[[i]]+ (df.limni$t_limni[jj]-event.t[[i]][1])/(tail(event.t[[i]],1)-event.t[[i]][1])*(bt_ST[[i+1]]- bt_ST[[i]]) 
-#         # event.b[[k]][] = 
-#         # k = k+1
-#         # j
-#       } else if ((df.limni$t_limni[jj]> tail(event.t[[i-1]],1)) &   (df.limni$t_limni[jj]< event.t[[i]][1])) {
-#         b[jj] =  bt_ST[[i]]
-#       }
-#     }
-#     jj= jj+1
-#   }
-#   b[jj] = bt_ST[[length(bt_ST)]]  #last value
-#   #plot(df.limni$t_limni, b, type ="l", ylim =c(-2,1), xlim=c(2550,2554))
-#   
-#   
-#   
-#   
-#   
-#   #****************** 
-#   #defining hcrit(t):
-#   hcritic = NULL
-#   hcritic =b+ycritic
-#   
-#   
-#   #********************************************************************************************
-#   # Plot the first morphogenic event with transient b(t) and transietn hcrit
-#   #********************************************************************************************
-#   bt_hcrit_interpol_zoom.plot = ggplot() +
-#     geom_rect(mapping= aes(xmin= ts_ST$t2, xmax=ts_ST$t97 ,ymin=-Inf, ymax=Inf), fill="blue",alpha=0.2) +
-#     geom_vline(aes(xintercept = ts_ST$tMAP), color = "blue", lwd =0.7, linetype = "dashed") +
-#     geom_vline(aes(xintercept = ts_ST$treal), color = "blue", lwd =0.7, linetype = "solid")+
-#     geom_line(aes(x=df.limni$t_limni, y = b), color="red", size = 1)+
-#     geom_line(aes(x=df.limni$t_limni, y = hcritic), color="green", size= 1)+
-#     # geom_segment(mapping= aes(x =c(ts_ST$treal[1]-100,  ts_ST$treal[1]), y =c(bt_ST[[1]], bt_ST[[2]]), 
-#     #                           xend = c(ts_ST$treal[1], ts_ST$treal[1]+100), yend = c(bt_ST[[1]],bt_ST[[2]])), color = "red", size = 1) +
-#     # geom_segment(mapping= aes(x =c(ts_ST$treal[1]-100,  ts_ST$treal[1]), y =c(hcr[[1]], hcr[[2]]), 
-#     #                           xend = c(ts_ST$treal[1], ts_ST$treal[1]+100), yend = c(hcr[[1]],hcr[[2]])), 
-#     #              color = "green", size = 1) +
-#     #geom_rect(mapping= aes(xmin= ts_ST$t2[1], xmax=ts_ST$t97[1] ,ymin=-Inf, ymax=Inf), fill="blue",alpha=0.2) +
-#     geom_line(data = df.limni, aes(x = t_limni, y= h_limni), color="black", size =0.3)+
-#     geom_point(aes(x=gaugings_SPD$t, y = gaugings_SPD$h), color=gaugings_SPD$color, size=4)+
-#     annotate("text", x=2470, y=hcr[[1]]+0.1, label="Critical stage hcritic", color = "green", size=5) +
-#     annotate("text", x=2470, y=bt_ST[[1]]+0.1, label="RIverbed elevation b", color = "red", size=5) +
-#     geom_point(aes(x=event.t[[1]], y=event.h[[1]]), color= "red", size=1)+
-#     scale_y_continuous(name = expression("Stage h [m]"), limits =c(ylimits[1], ylimits[2] )) + 
-#     scale_x_continuous(name = expression("Time [days]"), limits =c(ts_ST$treal[1]-100, ts_ST$treal[1]+100) , expand = c(0,0))+
-#     theme_bw(base_size=20)+
-#     theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-#           ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-#           ,legend.key.size=unit(1.5, "cm"),legend.position="none"
-#           ,panel.grid = element_blank())
-#   ggsave(bt_hcrit_interpol_zoom.plot, filename = paste0(dir.sed.transp,"/bt_and_hcrit_interpolat_zoom.png"), width = 16, height =8, dpi = 400)
-#   
-#   
-#   
-#   
-#   
-#   #********************************************* 
-#   #plot the water depth y time series (y =h-b) :
-#   y_limni = df.limni$h_limni-b
-#   y_limni.plot = ggplot()+
-#     geom_line(data=df.limni,aes(x=df.limni$t_limni, y=y_limni), color="blue")+
-#     geom_hline(aes(yintercept = ycritic), color="green", size = 1)+
-#     scale_y_continuous(name = expression("Water depth y [m]"), limits =c(0,5)) + 
-#     scale_x_continuous(name = expression("Time [days]"), expand = c(0,0))+
-#     #geom_point(aes(x=unlist(event.t), y=unlist(event.h)), color= "black", size=1)+
-#     annotate("text", x=500, y=ycritic+0.1, label=paste0("Critical ycr with d50=",d50), color = "green", size=5) +
-#     theme_bw(base_size=20)+
-#     theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-#           ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-#           ,legend.key.size=unit(1.5, "cm"),legend.position="none"
-#           ,panel.grid = element_blank())
-#   ggsave(y_limni.plot, filename = paste0(dir.sed.transp,"/ylimni_d",d50,".png"), width = 16, height =8, dpi = 400)
-#   
-#   
-#   
-#   
-#   
-#   
-#   #****************************************
-#   #Application of sediment transport model:
-#   qs = NULL
-#   for (i in 1:length(df.limni$t_limni)) {
-#     qs[i]=transp(s=s.sed.transp, d50, y_limni[i], ycritic,
-#                  beta=beta.sed.transp, alpha=alpha.sed.transp, 
-#                  S0.sed.transp)
-#   }
-#   qs.plot = ggplot()+
-#     geom_line(data=df.limni, aes(x=t_limni, y = y_limni), color="gray40", size=0.2)+
-#     geom_line(aes(x=t_limni, y=qs*100), color="blue", size=1.5)+
-#     geom_hline(yintercept = ycritic, color = "green", size=1)+
-#     geom_point(aes(x= ts_ST$treal, y = 0), color ="red", shape =4, size=7, stroke=2 )+
-#     coord_cartesian(clip = 'off')+
-#     # for (i in 1:length(event.h)) {
-#     # qs.plot = qs.plot + geom_point(aes(x=event.t[[i]], y= event.h[[i]]), color ="black", size=1)
-#     # }
-#     # qs.plot = qs.plot+
-#     annotate("text", x=1700, y=ycritic+0.3, label=paste0("Critical ycr with d50=",d50,"m"), 
-#              color = "green", size=15) +
-#     scale_y_continuous(name = expression("Water depth y [m]"), limits =c(0,5), 
-#                        sec.axis = sec_axis(~ . /100, name = "Sediment transport qs"), expand = c(0,0)) + 
-#     scale_x_continuous(name = expression("Time [days]"), expand = c(0,0))+
-#     theme_bw(base_size=20)+
-#     theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-#           ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-#           ,legend.key.size=unit(1.5, "cm"),legend.position="none"
-#           ,panel.grid = element_blank(),
-#           axis.line.y.right = element_line(color = "blue"), 
-#           axis.ticks.y.right = element_line(color = "blue"),
-#           axis.text.y.right = element_text(color = "blue"),
-#           axis.title.y.right  = element_text(color = "blue"))
-#   ggsave(qs.plot, filename = paste0(dir.sed.transp,"/qs_d",d50,".png"), width = 16, height =8, dpi = 400)
-#   
-#   
-#   
-#   
-#   
-#   
-#   
-#   
-#   #***************************************************************************************************************
-#   # Cumulative transport and          
-#   # identify among all the known shift events the one that has the lowest qs cumulative:
-#   #***************************************************************************************************************
-#   event.hcritic =NULL;
-#   b.event = NULL;
-#   y.event =NULL;
-#   t.event =NULL;
-#   qs.event.tot =NULL; cum.qs= NULL;
-#   for (i in 1:length(event.t)) {
-#     cumulat=0
-#     #event.hcritic[[i]] = ycritic + b[start.event.index[i] : (end.event.index[i]-1)]    
-#     b.event[[i]] = b[start.event.index[i] : (end.event.index[i]-1)]
-#     y.event[[i]] = y_limni[start.event.index[i] : (end.event.index[i]-1)]
-#     t.event[[i]] = df.limni$t_limni[start.event.index[i] : (end.event.index[i]-1)]
-#     qs.event =NULL; deltat=0;
-#     for (jjj in 2:length(y.event[[i]])) {
-#       qs = transp(s=s.sed.transp, d50, h=y.event[[i]][jjj], hcritic=ycritic,
-#                   beta=beta.sed.transp, alpha=alpha.sed.transp, S0.sed.transp)   #[m3/s]
-#       #print(qs)
-#       qs.event[jjj] = qs
-#       deltat = (t.event[[i]][jjj] - t.event[[i]][jjj-1])*86400   #to have the time step in seconds  ==> qs,cum [m3]
-#       #print(deltat)
-#       cumulat = cumulat + qs*deltat
-#     }
-#     #print("end******************************")
-#     qs.event.tot[[i]] = qs.event 
-#     cum.qs[[i]] = cumulat
-#   }
-#   qs.min = min(cum.qs)
-#   event.min = which.min(cum.qs)
-#   
-#   
-#   
-#   
-#   
-#   
-#   
-#   
-#   #*****************************************************************************************
-#   # Plot of cumulative transport
-#   #*****************************************************************************************
-#   qs.cum.plot = ggplot()+
-#     geom_line(data=df.limni, aes(x=t_limni, y = y_limni), color="gray20", size=0.3) 
-#   for (jjjj in 1:length(t.event)) { 
-#     df.event = data.frame(t=t.event[[jjjj]], y=y.event[[jjjj]])
-#     qs.cum.plot = qs.cum.plot + 
-#       geom_point(data= df.event, aes(x=t, y=y), color ="black")
-#   }
-#   qs.cum.plot = qs.cum.plot+
-#     geom_hline(yintercept = ycritic, color = "green", size=2, linetype="dashed")+
-#     annotate("text", x=1300, y=ycritic+0.3, label=paste0("Critical ycr with d50=",d50,"m"), 
-#              color = "green", size=10) +
-#     geom_segment(aes(x = ts_ST$treal, xend = ts_ST$treal , y=0, yend =cum.qs/1000), color="blue", size= 8, alpha = 0.4)+
-#     scale_y_continuous(name = expression("Water depth y [m]"), limits =c(0,5), 
-#                        sec.axis = sec_axis(~ . *1000 , name = "Cumulative sed. transp. [m3]"), expand = c(0,0)) + 
-#     scale_x_continuous(name = expression("Time [days]"), expand = c(0,0))+
-#     theme_bw(base_size=20)+
-#     theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-#           ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-#           ,legend.key.size=unit(1.5, "cm"),legend.position="none"
-#           ,panel.grid = element_blank(),
-#           axis.line.y.right = element_line(color = "blue"), 
-#           axis.ticks.y.right = element_line(color = "blue"),
-#           axis.text.y.right = element_text(color = "blue"),
-#           axis.title.y.right  = element_text(color = "blue")
-#     )
-#   ggsave(qs.cum.plot, filename = paste0(dir.sed.transp,"/qs_cum_d",d50,".png"), width = 16, height =8, dpi = 300)
-#   
-#   
-#   
-#   
-#   
-#   
-#   
-#   
-#   
-#   ##############################################################################################################
-#   #Start iterations on d50 
-#   ##############################################################################################################
-#   #Initialisation:
-#   ok =FALSE; it = 1
-#   plot.sed.trasp = ggplot()
-#   colfunction <- gray.colors(10, start = 0, end = 0.9, gamma = 2.2)
-#   d50 =d50.init
-#   #
-#   # Start loop:
-#   # Progressively Increase of d50 and computation of the cumulative sediment transport during the effective events,
-#   # first, and during all potential events, secondly. 
-#   while ((ok ==FALSE) & (d50 <= 0.19)) {
-#     print(c("d50=",d50))
-#     #Defining hcr for each stable period:
-#     hcr = 0
-#     if (taucritic == "Brownlie")  {
-#       taucritic = 0.22 * d50^(-0.9) + 0.06* 10^(-7.7*d50^(-0.9))  
-#     } else if (taucritic == "Soulsby") {
-#       taucritic = 0.3 / (1 + 1.2* d50) + 0.055* (1 - exp(-0.02* d50))
-#     }
-#     ycritic = (s.sed.transp-1)*d50/S0.sed.transp * taucritic
-#     for (i in 1:length(bt_ST)) {
-#       hcr[i] = ycritic + bt_ST[[i]]
-#     }
-#     #***************************
-#     # defining shifting period:
-#     t.shifts.limni = NULL
-#     t =1; j= NULL; i = 1;
-#     while (df.limni$t_limni[t] <= ts_ST$treal[length(ts_ST$treal)])  {
-#       #print(t)
-#       if ((df.limni$t_limni[t] <= ts_ST$treal[[i]]) & (df.limni$t_limni[t+1] >= ts_ST$treal[[i]])) {
-#         t.shifts.limni[i] = df.limni$t_limni[t]
-#         j[i] = t    #define the indexes of the time vector for peak t.shift
-#         i = i +1
-#       }
-#       t =t+1
-#     }
-#     #for each shift:  
-#     event.t = NULL; event.h =NULL; start.event.index=NULL; end.event.index =NULL;
-#     for (i in 1:length(ts_ST$treal)) {
-#       k =0 ; jj = j[i]
-#       event.left.t = NULL
-#       event.left.h = NULL
-#       #from the peak go to left in the stage record until h < hcrit[i]:
-#       while (df.limni$h_limni[jj] >= hcr[[i]]) {
-#         jj= jj-1
-#         k = k + 1
-#         event.left.t[k] = df.limni$t_limni[jj]
-#         event.left.h[k] = df.limni$h_limni[jj]
-#       }
-#       start.event.index[i]=jj
-#       #from the peak go to right in the stage record until h < hcrit[i+1]:
-#       k =0; jj = j[i]
-#       event.right.t = NULL
-#       event.right.h = NULL
-#       while (df.limni$h_limni[jj] >= hcr[[i+1]]) {
-#         jj = jj +1
-#         k = k + 1
-#         event.right.t[k] = df.limni$t_limni[jj]
-#         event.right.h[k] = df.limni$h_limni[jj]
-#       }
-#       end.event.index[i]=jj
-#       event.t[[i]] = c(sort(event.left.t), event.right.t)
-#       event.h[[i]] = c(sort(event.left.h), event.right.h)
-#     }
-#     #plot(event.t[[1]], event.h[[1]], type ="l")
-#     
-#     
-#     #*****************************
-#     # b(t) (Linear interpolation):
-#     b = NULL; jj = 1; #k=1
-#     while (df.limni$t_limni[jj]< tail(df.limni$t_limni,1)) {
-#       if (df.limni$t_limni[jj]< event.t[[1]][1]) {
-#         b[jj] = bt_ST[[1]]
-#       } else if (df.limni$t_limni[jj] > tail(event.t[[length(event.t)]],1)) {
-#         b[jj] = bt_ST[[length(bt_ST)]]
-#       } else if ((df.limni$t_limni[jj]>= event.t[[1]][1]) & (df.limni$t_limni[jj]<= tail(event.t[[1]],1))) {
-#         b[jj] = bt_ST[[1]] + (df.limni$t_limni[jj]-event.t[[1]][1])/(tail(event.t[[1]],1)-event.t[[1]][1])*(bt_ST[[2]] - bt_ST[[1]]) 
-#       } else {
-#         for (i in 2:length(event.t)) {
-#           if ((df.limni$t_limni[jj]>= event.t[[i]][1]) & (df.limni$t_limni[jj]<= tail(event.t[[i]],1))) {
-#             b[jj] = bt_ST[[i]]+ (df.limni$t_limni[jj]-event.t[[i]][1])/(tail(event.t[[i]],1)-event.t[[i]][1])*(bt_ST[[i+1]] - bt_ST[[i]]) 
-#             # event.b[[k]][] = 
-#             # k = k+1
-#             # j
-#           } else if ((df.limni$t_limni[jj]> tail(event.t[[i-1]],1)) &   (df.limni$t_limni[jj]< event.t[[i]][1])) {
-#             b[jj] =  bt_ST[[i]]
-#           }
-#         }
-#       }
-#       jj= jj+1
-#     }
-#     b[jj] = bt_ST[[length(bt_ST)]]  #last value
-#     #plot(df.limni$t_limni, b, type ="l", ylim =c(-2,1), xlim=c(2550,2554))
-#     
-#     
-#     #y =h-b :
-#     #********
-#     y_limni = df.limni$h_limni - b
-#     plot(df.limni$t_limni, y_limni, type="l")
-#     hcritic = NULL
-#     hcritic =b+ycritic
-#     
-#     
-#     #****************************************
-#     #Application of sediment transport model:
-#     message("Application of sediment transport model !!!  Wait ... "); flush.console()
-#     qs = NULL
-#     for (i in 1:length(df.limni$t_limni)) {
-#       qs[i]=transp(s=s.sed.transp, d50, y_limni[i], ycritic,
-#                    beta=beta.sed.transp, alpha=alpha.sed.transp, 
-#                    S0.sed.transp)
-#     }
-#     
-#     
-#     
-#     #****************************
-#     #Plot sedimtent transport qs
-#     qs.plot = ggplot()+
-#       geom_line(data=df.limni, aes(x=t_limni, y = y_limni), color="gray40", size=0.2)+
-#       geom_line(aes(x=t_limni, y=qs*1000), color="blue", size=1.5)+
-#       geom_hline(yintercept = ycritic, color = "green", size=1)+
-#       geom_point(aes(x= ts_ST$treal, y = 0), color ="red", shape =4, size=7, stroke=2 )+
-#       coord_cartesian(clip = 'off')+
-#       annotate("text", x=1700, y=ycritic+0.3, label=paste0("Critical ycr with d50=",d50,"m"), 
-#                color = "green", size=15) +
-#       scale_y_continuous(name = expression("Stage h [m]"), limits =c(0,5), 
-#                          sec.axis = sec_axis(~ . /1000, name = "Sediment transport qs"), expand = c(0,0)) + 
-#       scale_x_continuous(name = expression("Time [days]"), expand = c(0,0))+
-#       theme_bw(base_size=20)+
-#       theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-#             ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-#             ,legend.key.size=unit(1.5, "cm"),legend.position="none"
-#             ,panel.grid = element_blank(),
-#             axis.line.y.right = element_line(color = "blue"), 
-#             axis.ticks.y.right = element_line(color = "blue"),
-#             axis.text.y.right = element_text(color = "blue"),
-#             axis.title.y.right  = element_text(color = "blue"))
-#     ggsave(qs.plot, filename = paste0(dir.sed.transp,"/qs_d",d50,".png"), width = 16, height =8, dpi = 400)
-#     
-#     
-#     
-#     #*************************************************************************
-#     #identify among all the known shift events the one that has the lowest qs:
-#     event.hcritic =NULL;
-#     b.event = NULL;
-#     y.event =NULL;
-#     t.event =NULL;
-#     qs.event.tot =NULL; cum.qs= NULL; cumulat=0
-#     for (i in 1:length(event.t)) {
-#       cumulat=0
-#       #event.hcritic[[i]] = ycritic + b[start.event.index[i] : (end.event.index[i]-1)]    
-#       b.event[[i]] = b[start.event.index[i] : (end.event.index[i]-1)]
-#       y.event[[i]] = y_limni[start.event.index[i] : (end.event.index[i]-1)]
-#       t.event[[i]] = df.limni$t_limni[start.event.index[i] : (end.event.index[i]-1)]
-#       qs.event =NULL; deltat=0;
-#       for (jjj in 2:length(y.event[[i]])) {
-#         qs = transp(s=s.sed.transp, d50, h=y.event[[i]][jjj], hcritic=ycritic,
-#                     beta=beta.sed.transp, alpha=alpha.sed.transp, S0.sed.transp)  
-#         #print(qs)
-#         qs.event[jjj] = qs
-#         deltat = (t.event[[i]][jjj] - t.event[[i]][jjj-1])*86400   #to have the time step in seconds
-#         #print(deltat)
-#         cumulat = cumulat + qs*deltat
-#       }
-#       qs.event.tot[[i]] = qs.event 
-#       cum.qs[[i]] = cumulat
-#     }
-#     qs.min = min(cum.qs)
-#     event.min = which.min(cum.qs)
-#     
-#     
-#     
-#     
-#     
-#     #********************************************************************************************
-#     # STEP2: Application of sediment transport model:
-#     message("Application of sediment transport model to all events!!!  Wait ... "); flush.console()
-#     qst <- NULL
-#     event.qs =NULL
-#     cumqs = 0
-#     for (i in 1:length(df.limni$t_limni)) {
-#       qst[i] =transp(s=s.sed.transp, d50, y_limni[i], ycritic,
-#                      beta=beta.sed.transp, alpha=alpha.sed.transp, 
-#                      S0.sed.transp)
-#     }
-#     
-#     write.csv2(qst, file=paste0(dir.sed.transp,"/qst.csv"))
-#     #plot(df.limni$t_limni, qst, type ="l")
-#     #lines(df.limni$t_limni, y_limni, col="green")
-#     eve=0; cumqs=0; qs.cum=NULL; start.event.indexes =NULL; end.event.indexes =NULL;
-#     qs.cum[1]=0; dtt =0;
-#     for (i in 2:(length(df.limni$t_limni)-1)) {
-#       dtt[i] = (df.limni$t_limni[i] - df.limni$t_limni[i-1])*86400
-#       if (qst[i+1]>0 & qst[i]==0) {
-#         eve = eve+1
-#         start.event.indexes[eve] =i
-#         cumqs =       qst[i]*dtt[i] + cumqs
-#       } else if (qst[i]>0 & qst[i+1]>0) {
-#         cumqs =       qst[i]*dtt[i] + cumqs 
-#       } else if (qst[i]>0 & qst[i+1]==0) {
-#         qs.cum[eve] = qst[i]*dtt[i] + cumqs
-#         end.event.indexes[eve] =i
-#         cumqs = 0
-#       } else {
-#         cumqs = 0
-#       }
-#     }
-#     
-#     #print(start.event.indexes)
-#     finalqs.cum=NULL; eve1 =1; kkk=2      
-#     finalqs.cum[1] = qs.cum[1]
-#     start.event.new=NULL; end.event.new=NULL;
-#     start.event.new[1] =start.event.indexes[1]
-#     end.event.new[1]=end.event.indexes[1]
-#     while (kkk <= length(start.event.indexes)) {
-#       if ((df.limni$t_limni[start.event.indexes[kkk]] - df.limni$t_limni[start.event.indexes[kkk-1]]) <= 2) { 
-#         # distance between two events < 2 days ==> sum the events !!!!!!!!!!!!!!!!! IMPORTANT !!!!
-#         
-#         finalqs.cum[eve1] = finalqs.cum[eve1]+qs.cum[kkk]
-#         #print(eve1)
-#         start.event.new[eve1] = start.event.new[eve1]
-#         end.event.new[eve1] = end.event.new[eve1]
-#       } else {
-#         eve1 = eve1+1 
-#         finalqs.cum[eve1] = qs.cum[kkk]
-#         start.event.new[eve1] = start.event.indexes[kkk]
-#         end.event.new[eve1] = end.event.indexes[kkk]
-#       }
-#       kkk=kkk+1
-#     }
-#     
-#     
-#     
-#     #***********************************************
-#     # Plot of cumulative transport of all new events
-#     qs.cum.plot = ggplot()+
-#       geom_line(data=df.limni, aes(x=t_limni, y = y_limni), color="gray20", size=0.3) 
-#     for (jjjj in 1:length(start.event.new)) {
-#       df.event = data.frame(t=df.limni$t_limni[start.event.new[[jjjj]] : end.event.new[[jjjj]]],
-#                             y=y_limni[start.event.new[[jjjj]] : end.event.new[[jjjj]]])
-#       qs.cum.plot = qs.cum.plot +
-#         geom_point(data= df.event, aes(x=t, y=y), color ="black", size = 0.5)
-#     }
-#     qs.cum.plot = qs.cum.plot +
-#       geom_hline(yintercept = ycritic, color = "green", size=2, linetype="dashed")+
-#       annotate("text", x=1300, y=ycritic+0.3, label=paste0("Critical ycr with d50=",d50,"m"), 
-#                color = "green", size=7)+
-#       geom_point(aes(x=t_Gaug, y = h_Gaug), color="black", size=1)
-#     # for (ev in 1:length(start.event.new)) {
-#     # qs.cum.plot = qs.cum.plot +
-#     #                geom_point(aes(x=df.limni$t_limni[start.event.new[ev]:end.event.new[ev]],
-#     #                y=y_limni[start.event.new[ev]:end.event.new[ev]] ), color="black", size = 0.3)
-#     # }
-#     qs.cum.plot = qs.cum.plot+
-#       geom_segment(aes(x = df.limni$t_limni[start.event.new], xend =df.limni$t_limni[start.event.new] , 
-#                        y=0, yend =finalqs.cum), color="blue", size= 8, alpha = 0.5)+
-#       
-#       scale_y_continuous(name = expression("Water depth y [m]"), limits =c(0,5), 
-#                          sec.axis = sec_axis(~ . *1000 , name = "Cumulative sed. transp. [m3]"), expand = c(0,0)) + 
-#       scale_x_continuous(name = expression("Time [days]"), expand = c(0,0))+
-#       coord_cartesian(clip = 'off')+
-#       theme_bw(base_size=20)+
-#       geom_point(aes(x=officialShiftsTime, y =0), shape = 0, size = 4, stroke = 2, color="red")+
-#       geom_point(aes(x=ts_ST$treal, y =0), shape = 4, size = 4, stroke = 2, color="black")+
-#       theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-#             ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-#             ,legend.key.size=unit(1.5, "cm"),legend.position="none"
-#             ,panel.grid = element_blank(),
-#             axis.line.y.right = element_line(color = "blue"), 
-#             axis.ticks.y.right = element_line(color = "blue"),
-#             axis.text.y.right = element_text(color = "blue"),
-#             axis.title.y.right  = element_text(color = "blue"))
-#     ggsave(qs.cum.plot, filename = paste0(dir.sed.transp,"/qs_cum_d",d50,".png"), width = 16, height =8, dpi = 300)
-#     
-#     
-#     #********************
-#     if (qs.min > psi) {   #Psi =0.01 ==> parameter threshold. Minimum qs to have bed change. 
-#       ok=FALSE
-#       d50 = d50 + 0.01
-#       it = it +1
-#     } else {
-#       ok=TRUE
-#     }
-#   }    
-#   #*****************************************************************************************
-#   
-#   
-#   
-#   
-#   
-#   
-#   
-#   
-#   #####################################################################################################
-#   # Analyze results of the sediment transport detection
-#   #####################################################################################################  
-#   # In this section we analyse the results of the sediment transport proxy model. 
-#   # Define the new set of shift times obtained with the sediment transport proxy model.
-#   # Define the gaugings dataset per periods with the new set of shift times.
-#   # be careful!!! some periods may contain no gaugings, thus some NA values (-999) are added to the gaugings
-#   # dataset for those periods.
-#   # Then Apply the SPD estimation of the RCs for each period.
-#   # with the results of the SPD estimation , estimate a relation between Delta(b1,b2) and qs,cum
-#   # Use a linear regression with BaM.
-#   
-#   shift.times = NULL
-#   #new shift times are the the times corresponding to the Ypeak: 
-#   for (event.final in 1:length(start.event.new)) {
-#     max.event = which.max(y_limni[start.event.new[[event.final]] : end.event.new[[event.final]]])
-#     shift.times[event.final] = df.limni$t_limni[start.event.new[[event.final]]+max.event]
-#   } 
-#   #shift.times = df.limni$t_limni[start.event.new]
-#   write.table(shift.times, paste0(dir.sed.transp,"/real_shift_times.txt"), sep ="\t", row.names=FALSE) 
-#   
-#   
-#   #Define the new periods and the gaugings per period (assign colors):
-#   # colo <- c("red","blue","green","orange","grey","black","pink","lightblue", "yellow","chartreuse", "brown", "violet", "blue4",
-#   #           "cyan", "blueviolet","brown3", "cyan4", "darkgreen")
-#   # color = 0; Period.s.t. = 0; t.shift.for.b =0 ; index.ts.without.gaugings=0; kkk=0
-#   # gtime = 0;
-#   # gaugings=data.frame(time=numeric(),
-#   #                     h=numeric(),
-#   #                     Q=numeric(),
-#   #                     period=integer())
-#   # 
-#   # if (!is.null(shift.times[1])) {
-#   #   for (i in 1:length(t_Gaug)) { 
-#   #     if(t_Gaug[i] <= shift.times[1]) {
-#   #       #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
-#   #       color[i] = colo[1]
-#   #       Period.s.t.[i] = 1
-#   #       t.shift.for.b[1] = shift.times[1]
-#   #       gaugings=rbind(gaugings,
-#   #                      data.frame(time=t_Gaug[i], h=h_Gaug[i], Q=Q_Gaug[i], uQ=uQ_Gaug[i], period=Period.s.t.[i]))
-#   #     }
-#   #   }
-#   #   kk=1; jj = 1; 
-#   #   while (kk < (length(shift.times))) {
-#   #     kk=kk+1
-#   #     jj= jj +1
-#   #     for (i in 1:(length(t_Gaug)-1)) { 
-#   #       if ((t_Gaug[i] <= shift.times[kk-1]) & (t_Gaug[i+1] > shift.times[kk])) {
-#   #         #jj = jj -1
-#   #         kkk =kkk+1
-#   #         index.ts.without.gaugings[kkk] = kk
-#   #         gaugings=rbind(gaugings,
-#   #                        data.frame(time=-999, h=-999, Q=-999, uQ=-999, period=jj))
-#   #         #print(c("period=",jj,"kk=",kk,"kk-1=",kk-1, "ts=",shift.times[kk] ))
-#   #       }
-#   #     }
-#   #     for (i in 1:length(t_Gaug)) {   
-#   #       if ((t_Gaug[i] > shift.times[kk-1]) & (t_Gaug[i] <= shift.times[kk])) {
-#   #         #points(x=hP[i], y=QP[i], log ="y", col = colo[j],pch=1,lwd=4)
-#   #         color[i] = colo[jj]
-#   #         Period.s.t.[i] = jj
-#   #         t.shift.for.b[jj] = shift.times[kk] 
-#   #         gaugings=rbind(gaugings,
-#   #                        data.frame(time=t_Gaug[i], h=h_Gaug[i], Q=Q_Gaug[i], uQ=uQ_Gaug[i], period=Period.s.t.[i]))
-#   #         #print(i)
-#   #         #print(c("period=",jj,"kk=",kk,"kk-1=",kk-1, "ts=",shift.times[kk] ))
-#   #       }
-#   #     }
-#   #   }
-#   #   for (i in 1:length(t_Gaug)) {   
-#   #     if ((t_Gaug[i] > tail(shift.times,1)) & (t_Gaug[i] <= tail(df.limni$t_limni,1))){
-#   #        
-#   #        color[i] = colo[jj]
-#   #        Period.s.t.[i] = jj
-#   #        print(i)
-#   #        #print(c("period=",jj,"kk=",kk,"kk-1=",kk-1, "ts=",shift.times[kk] ))
-#   #     }
-#   #   }
-#   #   if (tail(t_Gaug,1) <= tail(shift.times,1)) {
-#   #     kkk =kkk+1
-#   #     index.ts.without.gaugings[kkk] = length(shift.times)
-#   #   }
-#   #   for (f in 1:length(which(shift.times > tail(t_Gaug,1)))) {
-#   #     jjjjj=jj+f
-#   #     gaugings=rbind(gaugings,
-#   #                    data.frame(time=-999, h=-999, Q=-999, uQ=-999, period=jjjjj))
-#   #   }
-#   # } else {
-#   #   for (i in 1:length(t_Gaug)) { 
-#   #     #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
-#   #     color[i] = colo[1]
-#   #     Period.s.t.[i] = 1
-#   #   }
-#   # }
-#   
-#   #*******************************************************************
-#   #Define the new periods and the gaugings per period (assign colors):
-#   colo <- c("red","blue","green","orange","grey","black","pink","lightblue", "yellow","chartreuse", "brown", "violet", "blue4",
-#             "cyan", "blueviolet","brown3", "cyan4", "darkgreen")
-#   color = 0; Period.s.t. = 0; t.shift.for.b =0; index.ts.without.gaugings=0; kkk=0
-#   if (!is.null(shift.times[1])) {
-#     for (i in 1:length(t_Gaug)) { 
-#       if(t_Gaug[i] <= shift.times[1]) {
-#         #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
-#         color[i] = colo[1]
-#         Period.s.t.[i] = 1
-#         t.shift.for.b[1] = shift.times[1]
-#       }
-#     }
-#     kk=1; jj = 1
-#     while (kk < (length(shift.times))) {
-#       kk=kk+1
-#       jj= jj +1
-#       #     for (i in 1:(length(t_Gaug)-1)) { 
-#       #       if ((t_Gaug[i] <= shift.times[kk-1]) & (t_Gaug[i+1] > shift.times[kk])) {
-#       #         #jj = jj -1
-#       #         kkk =kkk+1
-#       #         index.ts.without.gaugings[kkk] = kk
-#       #         gaugings=rbind(gaugings,
-#       #                        data.frame(time=-999, h=-999, Q=-999, uQ=-999, period=jj))
-#       #         #print(c("period=",jj,"kk=",kk,"kk-1=",kk-1, "ts=",shift.times[kk] ))
-#       #       }
-#       #     }
-#       for (i in 1:(length(t_Gaug)-1)) { 
-#         if ((t_Gaug[i] <= shift.times[kk-1]) & (t_Gaug[i+1] > shift.times[kk])) {
-#           jj = jj -1
-#           kkk =kkk+1
-#           index.ts.without.gaugings[kkk] = kk
-#           #print(c("period=",jj,"kk=",kk,"kk-1=",kk-1, "ts=",shift.times[kk] ))
-#         }
-#       }
-#       for (i in 1:length(t_Gaug)) {   
-#         if ((t_Gaug[i] > shift.times[kk-1]) & (t_Gaug[i] <= shift.times[kk])) {
-#           #points(x=hP[i], y=QP[i], log ="y", col = colo[j],pch=1,lwd=4)
-#           color[i] = colo[jj]
-#           Period.s.t.[i] = jj
-#           t.shift.for.b[jj] = shift.times[kk] 
-#           #print(i)
-#           #print(c("period=",jj,"kk=",kk,"kk-1=",kk-1, "ts=",shift.times[kk] ))
-#         }
-#       }
-#     }
-#     for (i in 1:length(t_Gaug)) {   
-#       if ((t_Gaug[i] > tail(shift.times,1)) & (t_Gaug[i] <= tail(df.limni$t_limni,1))){
-#         
-#         color[i] = colo[jj]
-#         Period.s.t.[i] = jj
-#         print(i)
-#         #print(c("period=",jj,"kk=",kk,"kk-1=",kk-1, "ts=",shift.times[kk] ))
-#       }
-#     }
-#     if (tail(t_Gaug,1) <= tail(shift.times,1)) {
-#       kkk =kkk+1
-#       index.ts.without.gaugings[kkk] = length(shift.times)
-#     }
-#   } else {
-#     for (i in 1:length(t_Gaug)) { 
-#       #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
-#       color[i] = colo[1]
-#       Period.s.t.[i] = 1
-#     }
-#   }
-#   
-#   # or maybe :
-#   ################################
-#   # gtime = 0;
-#   # gaugings=data.frame(time=numeric(),
-#   #                     h=numeric(),
-#   #                     Q=numeric(),
-#   #                     period=integer())
-#   # for (i in 1:length(t_Gaug)){
-#   #   gtime = t_Gaug[i]
-#   #   period=1
-#   #   for(j in 1:length(shift.times)){
-#   #     if(gtime <= shift.times[j]){
-#   #       break
-#   #     } else {
-#   #       period=period+1
-#   #     }
-#   #   }
-#   #   gaugings=rbind(gaugings,
-#   #                  data.frame(time=gtime, h=h_Gaug[i], Q=Q_Gaug[i], uQ=uQ_Gaug[i], period=period))
-#   # }
-#   # period = period + length(which(shift.times > tail(t_Gaug,1)))
-#   
-#   
-#   
-#   
-#   #****************************************************
-#   #Plot shift times detected by sed transport analysis:
-#   data.annotate.off <- data.frame(x = officialShiftsTime)
-#   shift.plot = ggplot()+    
-#     geom_vline(xintercept = shift.times, color="blue",lwd =0.3, linetype = "solid")+
-#     geom_line(aes(x=df.limni$t_limni, y=df.limni$h_limni) , color="black", lwd =0.2)+
-#     geom_point(aes(x=t_Gaug, y = h_Gaug), color=color, size=1)+
-#     scale_y_continuous(name = "Stage record with gaugings [m]") + 
-#     scale_x_continuous(name = "time [days]", expand = c(0,0))
-#   #    theme_bw(base_size = 10)
-#   if (exists("data.annotate.off")==TRUE)  {
-#     if (is.null("data.annotate.off")==FALSE) {
-#       shift.plot <- shift.plot + geom_point(data = data.annotate.off, aes(x = x, y = -1),
-#                                             color= "black", size = 1.8, shape =4, stroke=0.8)
-#     }
-#   }
-#   ggsave(shift.plot, filename=paste0(dir.sed.transp,"/shift_times_sedtransp.png"), bg = "transparent",
-#          width = 7, height =3.5, dpi = 400)
-#   #***********************************************************************************************************
-#   #save results of gaugings new segmentation ( /!\  periods of gaugings are not the same of sed transport !!)
-#   Gaug.sed.transp =data.frame(t=t_Gaug, h=h_Gaug, Q=Q_Gaug, uQ=uQ_Gaug, Period= Period.s.t.)
-#   nperiod.ST.gaug = tail(Gaug.sed.transp$Period,1)
-#   nperiod.ST.gaug.NA = tail(gaugings$period,1)  
-#   
-#   
-#   #***********************************************************************************************************
-#   #plot h-Q RC with all gaugings by colors:
-#   df.RC.sed.trasnp <- data.frame(t_Gaug, h_Gaug,Q_Gaug,uQ_Gaug, color, Period.s.t.)
-#   plot.RC.sed.transp <- ggplot(data= df.RC.sed.trasnp)+
-#     geom_point(aes(x=h_Gaug, y=Q_Gaug), color=color, size= 2)+
-#     scale_y_log10(na.value=-10, name = expression(paste("Discharge Q [",m^3,".",s^-1,"]",sep=""))) +
-#     scale_x_continuous(name = expression(paste("Stage h [",m,"]",sep=""))) +
-#     theme_bw(base_size = 10)
-#   ggsave(plot.RC.sed.transp, filename=paste0(dir.sed.transp,"/RC_sedtransp.png"), bg = "transparent",
-#          width = 7, height =3.5, dpi = 400)
-#   
-#   
-#   
-#   
-#   
-#   #Application of BaRatin-SPD:
-#   #****************************
-#   dir.create(paste0(dir.sed.transp,"/SPD"))
-#   dir.SPD.exe <- paste0(dir_code,"/BaM_exe/BaRatin_SPD")
-#   dir.SPD.Sed.Transp.results <- paste0(dir.sed.transp,"/SPD")
-#   # write.table(Gaug.sed.transp[2:5], paste0(dir.SPD.Sed.Transp.results,"/Gaugings_data_SPD.txt"),
-#   #             sep="\t", row.names=FALSE , col.names = c("h","Q", "uQ", "Period"))  
-#   #gaugings = rbind(gaugings,c(time=-999, h=-999, Q=-999, uQ=-999, Period=10))
-#   
-#   write.table(Gaug.sed.transp[2:5], paste0(dir.SPD.Sed.Transp.results,"/Gaugings_data_SPD.txt"),
-#               sep="\t", row.names=FALSE , col.names = c("h","Q", "uQ", "Period"))  
-#   
-#   BaRatin_SPD.bac_app(dir_code, dir.BaM = dir.exe, dir.SPD.config=dir.SPD.exe, 
-#                       dir.SPD.results=dir.SPD.Sed.Transp.results, 
-#                       nperiod = nperiod.ST.gaug, #nperiod.ST.gaug,
-#                       a.prior, st_a.prior, c.prior, st_c.prior, b.prior= c(0, 0, 1.2), st_b.prior= c(0.2, 0.5, 0.2),  #priors on RC model parameters (b,a,c)
-#                       Bw.prior, Cr.prior, g.prior, Bc.prior, KS.prior, S0.prior,
-#                       st_Bw.prior, st_Cr.prior, st_g.prior, st_Bc.prior, st_KS.prior, st_S0.prior,
-#                       ncontrol, M, #hydraulic configuration matrix and controls
-#                       dg.prior, st_dg.prior, dl.prior, st_dl.prior,   #global and local changes priors
-#                       d.Bc1.prior, st_dBc1.prior, #width changes priors
-#                       g1.prior, g2.prior, g1.distr.type, g2.distr.type, remnant = "Linear" ,#remnant error model parameters
-#                       isVar,  # determined the parameter that are varying over time
-#                       margins.bac=c('Gaussian','LogNormal','Gaussian'), 
-#                       pred = FALSE,    # prediction experiment TRUE or FALSE
-#                       nsim,           #number of MC samples for prior progation
-#                       Ncycles = 100,  # number of MCMC cycles for Metropolis-Hastings
-#                       changes.method = "cumsum",
-#                       ncolumns=8, rowmax=20, FinalColors =colo,
-#                       global.change = TRUE,
-#                       local.change = TRUE,
-#                       width.change = FALSE,
-#                       n.parvar = 2,
-#                       case_study_name)
-#   
-#   #plotting results of BaRatin-SPD in terms of rating curves :
-#   plot.SPD(dir.SPD.exe, dir.SPD.results=dir.SPD.Sed.Transp.results, dir.SPD.config = dir.SPD.exe,
-#            nperiod =nperiod.ST.gaug, #period, # nperiod.ST.gaug, 
-#            df.limni,
-#            FinalColors =colo,
-#            ylim.wind =grid_RC.ylim, xlim.wind =grid_RC.xlim, breaks.lin.x = seq(grid_RC.xlim[1],grid_RC.xlim[2],grid_RC.xstep), 
-#            labels.lin.x = seq(grid_RC.xlim[1],grid_RC.xlim[2],grid_RC.xstep), 
-#            breaks.lin.y = seq(grid_RC.ylim[1], grid_RC.ylim[2], grid_RC.ystep), 
-#            labels.lin.y = seq(grid_RC.ylim[1], grid_RC.ylim[2], grid_RC.ystep),
-#            ylim.log.wind =c(0.1, grid_RC.ylim.log[2]),   breaks.log= ticks_RC.y.log,   labels.log=ticks_RC.y.log,
-#            case_study_name) 
-#   
-#   
-#   #compute the delta b2:
-#   #*********************
-#   summary.SPD <- read.table(paste0(dir.SPD.Sed.Transp.results,"/Results_Summary.txt"), header= TRUE) 
-#   bt1.SPD = rbind(summary.SPD[16, 1:nperiod.ST.gaug],
-#                   summary.SPD[7, 1:nperiod.ST.gaug], 
-#                   summary.SPD[10, 1:nperiod.ST.gaug],
-#                   summary.SPD[11, 1:nperiod.ST.gaug],
-#                   summary.SPD[5, 1:nperiod.ST.gaug])
-#   bt2.SPD=  rbind(summary.SPD[16, (nperiod.ST.gaug+3):(2*nperiod.ST.gaug+2)], 
-#                   summary.SPD[7,(nperiod.ST.gaug+3):(2*nperiod.ST.gaug+2)], 
-#                   summary.SPD[10, (nperiod.ST.gaug+3):(2*nperiod.ST.gaug+2)],
-#                   summary.SPD[11, (nperiod.ST.gaug+3):(2*nperiod.ST.gaug+2)],
-#                   summary.SPD[5, (nperiod.ST.gaug+3):(2*nperiod.ST.gaug+2)]
-#   )
-#   delta.b1.MAP =NULL; delta.b1.stdev = NULL; delta.b1.mean =NULL;
-#   for (evento in 1:(nperiod.ST.gaug.NA-1)) {
-#     delta.b1.MAP[evento] = (bt1.SPD[[evento+1]][1] - bt1.SPD[[evento]][1])
-#     delta.b1.mean[evento] = (bt1.SPD[[evento+1]][5] - bt1.SPD[[evento]][5])
-#     delta.b1.stdev[evento] = (bt1.SPD[[evento+1]][4]^2 + bt1.SPD[[evento]][4]^2)^0.5
-#   }
-#   delta.b2.MAP =NULL; delta.b2.stdev = NULL; delta.b2.mean =NULL;
-#   for (evento in 1:(nperiod.ST.gaug.NA-1)) {
-#     delta.b2.MAP[evento] = (bt2.SPD[[evento+1]][1] - bt2.SPD[[evento]][1])
-#     delta.b2.mean[evento] = (bt2.SPD[[evento+1]][5] - bt2.SPD[[evento]][5]) 
-#     delta.b2.stdev[evento] = (bt2.SPD[[evento+1]][4]^2 + bt2.SPD[[evento]][4]^2)^0.5
-#   }
-#   
-#   
-#   # if you want to cumulate the events because no enough gaugings:
-#   #  ***************************************************************
-#   realqs.cum = 0
-#   jkl = 0
-#   for ( real in 1:length(finalqs.cum)) {
-#     if(any(index.ts.without.gaugings == real)) {
-#       realqs.cum[jkl] = realqs.cum[jkl] + finalqs.cum[real]
-#     } else {
-#       jkl=jkl+1
-#       realqs.cum[jkl] = finalqs.cum[real]
-#     }
-#   }
-#   df.rel.deltab.qscum = data.frame(deltab1 = delta.b1.mean, deltab1.stdev = delta.b1.stdev,
-#                                    deltab2 = delta.b2.mean, deltab2.stdev = delta.b2.stdev,
-#                                    realqs.cum = realqs.cum,
-#                                    event.index = seq(1,length(delta.b1.mean),1))
-#   
-#   # df.rel.deltab.qscum = data.frame(deltab1 = delta.b1.mean, deltab1.stdev = delta.b1.stdev,
-#   #                                  deltab2 = delta.b2.mean, deltab2.stdev = delta.b2.stdev,
-#   #                                  realqs.cum = finalqs.cum,
-#   #                                  event.index = seq(1,length(delta.b1.mean),1))
-#   ggplot(data=df.rel.deltab.qscum) +
-#     geom_point(aes(y=deltab1, x= realqs.cum), color ="red" , size=3)+
-#     geom_errorbar(aes(ymin= deltab1 - 2*deltab1.stdev, ymax=deltab1 + 2*deltab1.stdev,
-#                       x= realqs.cum), color = "red",  size = 0.1, width=0.01)+
-#     geom_point(aes(y=deltab2, x = realqs.cum), color ="blue" , size=3)+
-#     geom_errorbar(aes(ymin=deltab2 - 2*deltab2.stdev, ymax=deltab2 + 2*deltab2.stdev,
-#                       x= realqs.cum), color = "blue",  size = 0.1, width=0.01)+
-#     annotate("text", x=df.rel.deltab.qscum$realqs.cum, y=0.5, label= df.rel.deltab.qscum$event.index, color = "green", size=7)
-#   
-#   
-#   
-#   #***********************
-#   # BaM Linear Regression:
-#   #***********************
-#   df.linear.regress.deltab1 = data.frame(X= df.rel.deltab.qscum$realqs.cum, 
-#                                          uX = rep(0,length(df.rel.deltab.qscum$realqs.cum)), 
-#                                          y = delta.b1.mean, 
-#                                          uY = delta.b1.stdev)
-#   df.linear.regress.deltab2 = data.frame(X= df.rel.deltab.qscum$realqs.cum, 
-#                                          uX = rep(0,length(df.rel.deltab.qscum$realqs.cum)), 
-#                                          y = delta.b2.mean, 
-#                                          uY = delta.b2.stdev)
-#   dir.config.linear = paste0(dir_code,"/BaM_exe/Linear")
-#   dir.create(paste0(dir.sed.transp, "/linear_rel"))
-#   dir.results.qs.deltab = paste0(dir.sed.transp, "/linear_rel")
-#   dir.create(paste0(dir.results.qs.deltab, "/delta_b1"))
-#   dir.qs.delta_b1 = paste0(dir.results.qs.deltab, "/delta_b1")
-#   dir.create(paste0(dir.results.qs.deltab, "/delta_b2"))
-#   
-#   dir.qs.delta_b2 = paste0(dir.results.qs.deltab, "/delta_b2")
-#   # #linear regression without uncertainties (not a good idea!!)
-#   # plot(df.rel.deltab.qscum$realqs.cum, df.rel.deltab.qscum$deltab1)
-#   # linea <- lm(df.rel.deltab.qscum$deltab1 ~ df.rel.deltab.qscum$realqs.cum ) 
-#   # abline(linea)
-#   #**********************************************************************************
-#   #linear regression with BaM (with uncertainties):
-#   # .
-#   # .
-#   # .
-#   # delta b1:
-#   #launch BaM :
-#   xgrid=seq(0,500, 1)
-#   write.table(df.linear.regress.deltab1, file=paste0(dir.config.linear,"/data.txt"), sep="\t", row.names=FALSE )
-#   setwd(dir.exe)
-#   linear_app(Ncycles=100,  xgrid=xgrid, nobs= length(df.linear.regress.deltab1$X), simMCMC = TRUE, 
-#              prediction = TRUE, prediction.t=FALSE, nobs.t=1) 
-#   #read results :
-#   env.linear.regress = read.table(file = paste0(dir.config.linear,"/Lin_TotalU.env"), header=TRUE)
-#   env.linear.regress = cbind(env.linear.regress, xgrid)
-#   env.param.linear.regress = read.table(file = paste0(dir.config.linear,"/Lin_ParamU.env"), header=TRUE)
-#   env.param.linear.regress = cbind(env.param.linear.regress, xgrid)
-#   maxpost.linear.regress =read.table(file = paste0(dir.config.linear,"/Lin_Maxpost.spag"), header=FALSE)
-#   maxpost.linear.regress =cbind(maxpost.linear.regress, xgrid)
-#   #write and save results of this linear regression Deltab1,b2 vs qscum :
-#   list.of.files <- c(
-#     paste0(dir.config.linear,"/Lin_maxpost.spag"),
-#     paste0(dir.config.linear,"/Lin_ParamU.spag"), paste0(dir.config.linear,"/Lin_TotalU.spag"),
-#     paste0(dir.config.linear,"/Lin_ParamU.env"),  paste0(dir.config.linear,"/Lin_TotalU.env"),
-#     paste0(dir.config.linear,"/Results_MCMC_Cooked.txt"), paste0(dir.config.linear,"/Results_Residuals.txt"),
-#     paste0(dir.config.linear,"/Results_Summary.txt"), paste0(dir.config.linear,"/Config_Model.txt"),
-#     paste0(dir.config.linear,"/xgrid.txt"), paste0(dir.config.linear,"/data.txt")
-#   )
-#   for (ll in 1:length(list.of.files)) {
-#     file.copy(list.of.files[ll], dir.qs.delta_b1, overwrite = TRUE)
-#   }
-#   converg = Convergence.test(dir.seg = dir.qs.delta_b1, npar = 2, dir.plot = dir.qs.delta_b1)
-#   plot.mcmc.seg(workspace=dir.qs.delta_b1, seg.iter=1, nS=2)
-#   # plot results :
-#   lin.relat.deltab1.plot = ggplot(data=df.rel.deltab.qscum) +
-#     geom_ribbon(data = env.linear.regress, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.3)+
-#     geom_ribbon(data = env.param.linear.regress, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.4)+
-#     geom_errorbar(aes(ymin= deltab1 - 2*deltab1.stdev, ymax=deltab1 + 2*deltab1.stdev,
-#                       x= realqs.cum), color = "black",  size = 0.3, width=0.01)+
-#     geom_point(aes(y=deltab1, x= realqs.cum), fill ="red" , size=2, pch = 21)+
-#     annotate("text", x=df.rel.deltab.qscum$realqs.cum, y=df.rel.deltab.qscum$deltab1+0.3,
-#              label= df.rel.deltab.qscum$event.index, color = "black", size=3)+
-#     geom_line(data = maxpost.linear.regress, aes(x=xgrid, y =V1), color="black", size=1)+
-#     geom_hline(yintercept = 0, linetype = "dashed" , color="gray", size = 0.2)+
-#     scale_x_continuous(name = TeX("$q_{s,cum}$"), expand = c(0,0)) +
-#     scale_y_continuous(name = TeX("$\\Delta b_1$"), expand = c(0,0)) +
-#     theme_bw()+
-#     theme( 
-#       plot.background = element_rect(fill ="transparent", color = NA),
-#       panel.grid.major=element_line(size=0.4, linetype = "dashed"), 
-#       panel.grid.minor=element_blank(),
-#       panel.background = element_rect(fill ="transparent"), 
-#       axis.ticks = element_line(colour = "black"),
-#       plot.margin=unit(c(0.3,0.3,0.3,0.3),"cm"),
-#       text = element_text(size=14),
-#       legend.key = element_rect(colour = "transparent", fill = "transparent"),
-#       legend.background = element_rect(colour = "transparent", fill = "transparent"),
-#       legend.position="none")
-#   ggsave(lin.relat.deltab1.plot, filename=paste0(dir.qs.delta_b1,"/Linear_qs_Deltab1.png"), bg = "transparent",
-#          width = 7, height =3.5, dpi = 400)
-#   #**********************************************************************************
-#   # .
-#   # .
-#   # .
-#   # delta b2:
-#   #launch BaM :
-#   xgrid=seq(0,500, 1)
-#   write.table(df.linear.regress.deltab2, file=paste0(dir.config.linear,"/data.txt"), sep="\t", row.names=FALSE )
-#   setwd(dir.exe)
-#   linear_app(Ncycles=100,  xgrid=xgrid, nobs= length(df.linear.regress.deltab2$X), simMCMC = TRUE, prediction=TRUE, 
-#              prediction.t=FALSE, nobs.t=1) 
-#   #read results :
-#   env.linear.regress = read.table(file = paste0(dir.config.linear,"/Lin_TotalU.env"), header=TRUE)
-#   env.linear.regress = cbind(env.linear.regress, xgrid)
-#   env.param.linear.regress = read.table(file = paste0(dir.config.linear,"/Lin_ParamU.env"), header=TRUE)
-#   env.param.linear.regress = cbind(env.param.linear.regress, xgrid)
-#   maxpost.linear.regress =read.table(file = paste0(dir.config.linear,"/Lin_Maxpost.spag"), header=FALSE)
-#   maxpost.linear.regress =cbind(maxpost.linear.regress, xgrid)
-#   #write and save results of this linear regression Deltab1,b2 vs qscum :
-#   list.of.files <- c(
-#     paste0(dir.config.linear,"/Lin_maxpost.spag"),
-#     paste0(dir.config.linear,"/Lin_ParamU.spag"), paste0(dir.config.linear,"/Lin_TotalU.spag"),
-#     paste0(dir.config.linear,"/Lin_ParamU.env"),  paste0(dir.config.linear,"/Lin_TotalU.env"),
-#     paste0(dir.config.linear,"/Results_MCMC_Cooked.txt"), paste0(dir.config.linear,"/Results_Residuals.txt"),
-#     paste0(dir.config.linear,"/Results_Summary.txt"), paste0(dir.config.linear,"/Config_Model.txt"),
-#     paste0(dir.config.linear,"/xgrid.txt"), paste0(dir.config.linear,"/data.txt")
-#   )
-#   for (ll in 1:length(list.of.files)) {
-#     file.copy(list.of.files[ll], dir.qs.delta_b2, overwrite = TRUE)
-#   }
-#   converg = Convergence.test(dir.seg = dir.qs.delta_b2, npar = 2, dir.plot = dir.qs.delta_b2)
-#   plot.mcmc.seg(workspace=dir.qs.delta_b2, seg.iter=1, nS=2)
-#   # plot results :
-#   lin.relat.deltab2.plot = ggplot(data=df.rel.deltab.qscum) +
-#     geom_ribbon(data = env.linear.regress, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.3)+
-#     geom_ribbon(data = env.param.linear.regress, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.4)+
-#     geom_errorbar(aes(ymin= deltab2 - 2*deltab2.stdev, ymax=deltab2 + 2*deltab2.stdev,
-#                       x= realqs.cum), color = "black",  size = 0.3, width=0.01)+
-#     geom_point(aes(y=deltab2, x= realqs.cum), fill ="green" , size=2, pch = 21)+
-#     annotate("text", x=df.rel.deltab.qscum$realqs.cum, y=df.rel.deltab.qscum$deltab2+0.3,
-#              label= df.rel.deltab.qscum$event.index, color = "black", size=3)+
-#     geom_line(data = maxpost.linear.regress, aes(x=xgrid, y =V1), color="blue", size=1)+
-#     geom_hline(yintercept = 0, linetype = "dashed" , color="gray", size = 0.2)+
-#     scale_x_continuous(name = TeX("$q_{s,cum}$"), expand = c(0,0)) +
-#     scale_y_continuous(name = TeX("$\\Delta b_2$"), expand = c(0,0)) +
-#     theme_bw()+
-#     theme( 
-#       plot.background = element_rect(fill ="transparent", color = NA),
-#       panel.grid.major=element_line(size=0.4, linetype = "dashed"), 
-#       panel.grid.minor=element_blank(),
-#       panel.background = element_rect(fill ="transparent"), 
-#       axis.ticks = element_line(colour = "black"),
-#       plot.margin=unit(c(0.3,0.3,0.3,0.3),"cm"),
-#       text = element_text(size=14),
-#       legend.key = element_rect(colour = "transparent", fill = "transparent"),
-#       legend.background = element_rect(colour = "transparent", fill = "transparent"),
-#       legend.position="none")
-#   ggsave(lin.relat.deltab2.plot, filename=paste0(dir.qs.delta_b2,"/Linear_qs_Deltab2.png"), bg = "transparent",
-#          width = 7, height =3.5, dpi = 400)
-#   
-#   #================================================================================================
-#   # delta b1:
-#   #launch BaM :
-#   xgrid=seq(0,500, 1)
-#   write.table(df.linear.regress.deltab1, file=paste0(dir.BaRatin.config,"/data.txt"), sep="\t", row.names=FALSE )
-#   setwd(dir.exe)
-#   linear_app(Ncycles=1000,  xgrid=xgrid, nobs= length(df.linear.regress.deltab1$X), simMCMC = TRUE, 
-#              prediction = TRUE, prediction.t=FALSE, nobs.t=1) 
-#   BaRatin_app(dir = dir.BaRatin.config,
-#               t_Gaug=NULL, Q_Gaug=NULL, uQ_Gaug=NULL, h_Gaug=NULL,
-#               nobs.gaug= length(df.linear.regress.deltab1$X), 
-#               nlimni=length(xgrid),
-#               propagat=FALSE, b.distr="FIX" , a.distr="FlatPrior", c.distr="FIX", 
-#               a.prior=10, st_a.prior=10, 
-#               c.prior=1, st_c.prior=0.1, 
-#               b.prior=1, st_b.prior=10,  #priors
-#               Bw.prior, Cr.prior, g.prior, Bc.prior, KS.prior, S0.prior,
-#               st_Bw.prior, st_Cr.prior, st_g.prior, st_Bc.prior, st_KS.prior, st_S0.prior,
-#               ncontrol=1, M=list(1) ,
-#               remnant.err.model, g1.prior =c(0,1,0.1), g2.prior=c(0,1,0.1),
-#               g1.distr.type="Uniform", g2.distr.type="Uniform",                       # remnant error model priors
-#               predictionRC = TRUE, predictionQt = FALSE,   simMCMC=TRUE,                         # predictions choice fro BaM
-#               Ncycles = 500,                                                        # mcmc oprtions: n.cycles
-#               Hmin=0, Hmax=500,                                                  # grid limits for plots
-#               iter=1)   
-#   
-#   #read results :
-#   env.linear.regress = read.table(file = paste0(dir.BaRatin.config,"/Qrc_TotalU.env"), header=TRUE)
-#   env.linear.regress = cbind(env.linear.regress, xgrid)
-#   env.param.linear.regress = read.table(file = paste0(dir.BaRatin.config,"/Qrc_ParamU.env"), header=TRUE)
-#   env.param.linear.regress = cbind(env.param.linear.regress, xgrid)
-#   maxpost.linear.regress =read.table(file = paste0(dir.BaRatin.config,"/Qrc_Maxpost.spag"), header=FALSE)
-#   maxpost.linear.regress =cbind(maxpost.linear.regress, xgrid)
-#   #write and save results of this linear regression Deltab1,b2 vs qscum :
-#   list.of.files <- c(
-#     paste0(dir.BaRatin.config,"/Qrc_Maxpost.spag"),
-#     paste0(dir.BaRatin.config,"/Qrc_ParamU.spag"), paste0(dir.BaRatin.config,"/Qrc_TotalU.spag"),
-#     paste0(dir.BaRatin.config,"/Qrc_ParamU.env"),  paste0(dir.BaRatin.config,"/Qrc_TotalU.env"),
-#     paste0(dir.BaRatin.config,"/Results_MCMC_Cooked.txt"), paste0(dir.BaRatin.config,"/Results_Residuals.txt"),
-#     paste0(dir.BaRatin.config,"/Results_Summary.txt"), paste0(dir.BaRatin.config,"/Config_Model.txt"),
-#     paste0(dir.BaRatin.config,"/Hgrid.txt"), paste0(dir.BaRatin.config,"/data.txt")
-#   )
-#   for (ll in 1:length(list.of.files)) {
-#     file.copy(list.of.files[ll], dir.qs.delta_b1, overwrite = TRUE)
-#   }
-#   converg = Convergence.test(dir.seg = dir.qs.delta_b1, npar = 2, dir.plot = dir.qs.delta_b1)
-#   plot.mcmc.seg(workspace=dir.qs.delta_b1, seg.iter=1, nS=2)
-#   # plot results :
-#   lin.relat.deltab1.plot = ggplot(data=df.rel.deltab.qscum) +
-#     geom_ribbon(data = env.linear.regress, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.3)+
-#     geom_ribbon(data = env.param.linear.regress, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.4)+
-#     geom_errorbar(aes(ymin= deltab1 - 2*deltab1.stdev, ymax=deltab1 + 2*deltab1.stdev,
-#                       x= realqs.cum), color = "black",  size = 0.3, width=0.01)+
-#     geom_point(aes(y=deltab1, x= realqs.cum), fill ="red" , size=2, pch = 21)+
-#     annotate("text", x=df.rel.deltab.qscum$realqs.cum, y=df.rel.deltab.qscum$deltab1+0.3,
-#              label= df.rel.deltab.qscum$event.index, color = "black", size=3)+
-#     geom_line(data = maxpost.linear.regress, aes(x=xgrid, y =V1), color="black", size=1)+
-#     geom_hline(yintercept = 0, linetype = "dashed" , color="gray", size = 0.2)+
-#     scale_x_continuous(name = TeX("$q_{s,cum}$"), expand = c(0,0)) +
-#     scale_y_continuous(name = TeX("$\\Delta b_1$"), expand = c(0,0)) +
-#     theme_bw()+
-#     theme( 
-#       plot.background = element_rect(fill ="transparent", color = NA),
-#       panel.grid.major=element_line(size=0.4, linetype = "dashed"), 
-#       panel.grid.minor=element_blank(),
-#       panel.background = element_rect(fill ="transparent"), 
-#       axis.ticks = element_line(colour = "black"),
-#       plot.margin=unit(c(0.3,0.3,0.3,0.3),"cm"),
-#       text = element_text(size=14),
-#       legend.key = element_rect(colour = "transparent", fill = "transparent"),
-#       legend.background = element_rect(colour = "transparent", fill = "transparent"),
-#       legend.position="none")
-#   ggsave(lin.relat.deltab1.plot, filename=paste0(dir.qs.delta_b1,"/Linear_qs_Deltab1.png"), bg = "transparent",
-#          width = 7, height =3.5, dpi = 400)
-#   #**********************************************************************************
-#   # .
-#   # .
-#   # .
-#   # delta b2:
-#   #launch BaM :
-#   xgrid=seq(0,500, 1)
-#   write.table(df.linear.regress.deltab2, file=paste0(dir.config.linear,"/data.txt"), sep="\t", row.names=FALSE )
-#   setwd(dir.exe)
-#   linear_app(Ncycles=1000,  xgrid=xgrid, nobs= length(df.linear.regress.deltab2$X), simMCMC = TRUE, prediction=TRUE, 
-#              prediction.t=FALSE, nobs.t=1) 
-#   #read results :
-#   env.linear.regress = read.table(file = paste0(dir.config.linear,"/Lin_TotalU.env"), header=TRUE)
-#   env.linear.regress = cbind(env.linear.regress, xgrid)
-#   env.param.linear.regress = read.table(file = paste0(dir.config.linear,"/Lin_ParamU.env"), header=TRUE)
-#   env.param.linear.regress = cbind(env.param.linear.regress, xgrid)
-#   maxpost.linear.regress =read.table(file = paste0(dir.config.linear,"/Lin_Maxpost.spag"), header=FALSE)
-#   maxpost.linear.regress =cbind(maxpost.linear.regress, xgrid)
-#   #write and save results of this linear regression Deltab1,b2 vs qscum :
-#   list.of.files <- c(
-#     paste0(dir.config.linear,"/Lin_maxpost.spag"),
-#     paste0(dir.config.linear,"/Lin_ParamU.spag"), paste0(dir.config.linear,"/Lin_TotalU.spag"),
-#     paste0(dir.config.linear,"/Lin_ParamU.env"),  paste0(dir.config.linear,"/Lin_TotalU.env"),
-#     paste0(dir.config.linear,"/Results_MCMC_Cooked.txt"), paste0(dir.config.linear,"/Results_Residuals.txt"),
-#     paste0(dir.config.linear,"/Results_Summary.txt"), paste0(dir.config.linear,"/Config_Model.txt"),
-#     paste0(dir.config.linear,"/xgrid.txt"), paste0(dir.config.linear,"/data.txt")
-#   )
-#   for (ll in 1:length(list.of.files)) {
-#     file.copy(list.of.files[ll], dir.qs.delta_b2, overwrite = TRUE)
-#   }
-#   converg = Convergence.test(dir.seg = dir.qs.delta_b2, npar = 2, dir.plot = dir.qs.delta_b2)
-#   plot.mcmc.seg(workspace=dir.qs.delta_b2, seg.iter=1, nS=2)
-#   # plot results :
-#   lin.relat.deltab2.plot = ggplot(data=df.rel.deltab.qscum) +
-#     geom_ribbon(data = env.linear.regress, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.3)+
-#     geom_ribbon(data = env.param.linear.regress, aes(x = xgrid, ymin =Q_q2.5, ymax = Q_q97.5), fill = "blue", alpha = 0.4)+
-#     geom_errorbar(aes(ymin= deltab2 - 2*deltab2.stdev, ymax=deltab2 + 2*deltab2.stdev,
-#                       x= realqs.cum), color = "black",  size = 0.3, width=0.01)+
-#     geom_point(aes(y=deltab2, x= realqs.cum), fill ="green" , size=2, pch = 21)+
-#     annotate("text", x=df.rel.deltab.qscum$realqs.cum, y=df.rel.deltab.qscum$deltab2+0.3,
-#              label= df.rel.deltab.qscum$event.index, color = "black", size=3)+
-#     geom_line(data = maxpost.linear.regress, aes(x=xgrid, y =V1), color="blue", size=1)+
-#     geom_hline(yintercept = 0, linetype = "dashed" , color="gray", size = 0.2)+
-#     scale_x_continuous(name = TeX("$q_{s,cum}$"), expand = c(0,0)) +
-#     scale_y_continuous(name = TeX("$\\Delta b_2$"), expand = c(0,0)) +
-#     theme_bw()+
-#     theme( 
-#       plot.background = element_rect(fill ="transparent", color = NA),
-#       panel.grid.major=element_line(size=0.4, linetype = "dashed"), 
-#       panel.grid.minor=element_blank(),
-#       panel.background = element_rect(fill ="transparent"), 
-#       axis.ticks = element_line(colour = "black"),
-#       plot.margin=unit(c(0.3,0.3,0.3,0.3),"cm"),
-#       text = element_text(size=14),
-#       legend.key = element_rect(colour = "transparent", fill = "transparent"),
-#       legend.background = element_rect(colour = "transparent", fill = "transparent"),
-#       legend.position="none")
-#   ggsave(lin.relat.deltab2.plot, filename=paste0(dir.qs.delta_b2,"/Linear_qs_Deltab2.png"), bg = "transparent",
-#          width = 7, height =3.5, dpi = 400)
-#   
-#   
-#   
-#   
-#   #=========================================================================================
-#   write.table(ycritic, file=paste0(dir.results.qs.deltab,"/ycritic.txt"), sep="\t", row.names=FALSE , col.names = "ycritic [m]")
-#   # return(list(shift.times = shift.times, start.event.new =start.event.new , d50=d50, 
-#   #             Gaug.sed.transp = Gaug.sed.transp, df.RC.sed.trasnp=df.RC.sed.trasnp,
-#   #             t.shift.for.b= t.shift.for.b))
-#   
-#   # return(list(shift.times = shift.times, start.event.new =start.event.new , d50=d50))
-# }  
-# ########################################################################################################
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# #main: Launch ST function
-# sed.transp = sediment.transport(dir.sed.transp, df.limni, 
-#                                 nperiod = nperiods.TS, 
-#                                 ts_ST, bt_ST, officialShiftsTime,
-#                                 taucritic, d50.init, s.sed.transp, S0.sed.transp, alpha.sed.transp, beta.sed.transp,
-#                                 gaugings_SPD, 
-#                                 psi=0.1, 
-#                                 times.uncert =TRUE, 
-#                                 ylimits=grid_limni.ylim)
-# #Application of BaRatin-SPD:
-# dir.create(paste(dir.case_study,"/Results/segmentation_sed_transp/SPD", sep=""))
-# dir.SPD.sed.transp.results <- paste(dir.case_study,"/Results/segmentation_sed_transp/SPD", sep="")
-# BaRatin_SPD.bac_app(dir_code, dir.BaM = dir.exe, dir.SPD.config=dir.SPD.exe, dir.SPD.results=dir.SPD.sed.transp.results, 
-#                     nperiod = nperiod.sed.transp,
-#                     a.prior, st_a.prior, c.prior, st_c.prior, b.prior, st_b.prior,  #priors on RC model parameters (b,a,c)
-#                     Bw.prior, Cr.prior, g.prior, Bc.prior, KS.prior, S0.prior,
-#                     st_Bw.prior, st_Cr.prior, st_g.prior, st_Bc.prior, st_KS.prior, st_S0.prior,
-#                     ncontrol, M, #hydraulic configuration matrix and controls
-#                     dg.prior, st_dg.prior, dl.prior, st_dl.prior,   #global and local changes priors
-#                     g1.prior, g2.prior, g1.distr.type, g2.distr.type, remnant = "Linear" ,#remnant error model parameters
-#                     isVar,  # determined the parameter that are varying over time
-#                     margins.bac=c('Gaussian','LogNormal','Gaussian'), 
-#                     pred = FALSE,    # prediction experiment TRUE or FALSE
-#                     nsim,           #number of MC samples for prior progation
-#                     Ncycles = 100,  # number of MCMC cycles for Metropolis-Hastings
-#                     changes.method = "cumsum")
-# #plotting results of BaRatin-SPD in terms of rating curves :
-# plot.SPD(dir.SPD.exe, dir.SPD.results=dir.SPD.sed.transp.results, nperiod = nperiod.sed.transp, df.limni) 
-# # bt.SPD(dir.SPD.exe, nperiod=nperiod.sed.transp , df.limni, dir.SPD.results=dir.SPD.sed.transp.results,
-# #        shift.times = sed.transp$shift.times, start.event.new=sed.transp$start.event.new, 
-# #        t.shift.for.b = sed.transp$t.shift.for.b,
-# #        Gaug.sed.transp = sed.transp$Gaug.sed.transp, 
-# #        df.RC.sed.trasnp =sed.transp$df.RC.sed.trasnp,
-# #        times.uncert =FALSE)
-# 
-# 
-# 

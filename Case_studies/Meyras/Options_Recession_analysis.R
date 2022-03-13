@@ -4,15 +4,15 @@
 #####################################
 # 1) Recession extraction:
 #####################################
-name.folder.results.recession = "Test_1"                 # string with the name of the folder with results.
+name.folder.results.recession = "tburn0_grad-10_chi50_tgood20_dtmax10"      # string with the name of the folder with results.
 uh.rec                 = 0                               # assign a stdev to the stage obs error [in cm], by default is 0.
 tburn.rec              = 0                             # discard the first n days of recession, by default is 0.
 Nmin.rec               = 5                               # min number of data in a recession curve
-tgood                  = 10                              # min length of the recession in days
-delta.t.min            = 0                               # min days between two recess data
-delta.t.max            = 30                              # max days between two recess data
+tgood                  = 20                              # min length of the recession in days
+delta.t.min            = 0.1                               # min days between two recess data
+delta.t.max            = 10                              # max days between two recess data
 chi                    = 50                              # max stage rise between two recess data
-gradient.max           = -4                              # max gradient dh/dt for the recession 
+gradient.max           = -10                              # max gradient dh/dt for the recession 
 
 
 
@@ -26,6 +26,24 @@ gradient.max           = -4                              # max gradient dh/dt fo
 estim.plot.results.only  = FALSE                         # [TRUE/FALSE] put TRUE if you only to plot results previously obtained.
 prior.param.rec          = NULL                          # [NULL] initialise Priors for the recession model: e.g., h = a1*e^(-b1) + a2*e^(-b2) + a3*e^(-b3) + a4
 
+
+rec.model                = c("2expWithAsympt")           # Select stage-recession models (also more than one) (see the list at the bottom):
+prior.param.rec[[1]]  = c(  0,                            500,       "'Uniform'",     100,                      "var",
+                            -log((1))+log(log(2)) ,        0.5,      "'LogNormal'",   exp(-log(1)+log(log(2))), "static",
+                            0,                            50,       "'Uniform'",     10,                         "static",
+                            -log(100)+log(log(2)) ,        0.2,      "'LogNormal'",   exp(-log(100)+log(log(2))),  "static",
+                            -150                       ,  50 ,      "'Uniform'",      0 ,                         "var")
+
+
+# rec.model                = c("2expWithAsympt_bis")           # Select stage-recession models (also more than one) (see the list at the bottom):
+# prior.param.rec[[1]]  = c(  0,                            1000,       "'Uniform'",     200,                      "var",
+#                             -log((0.5))+log(log(2)) ,     1,      "'LogNormal'",   exp(-log(0.5)+log(log(2))), "static",
+#                             0,                            200,       "'Uniform'",     50,                         "var",
+#                             -log(80)+log(log(2)) ,        0.2,      "'LogNormal'",   exp(-log(80)+log(log(2))),  "static",
+#                             -150                       ,  50 ,      "'Uniform'",     0 ,                         "var")
+
+
+
 # rec.model                = c("3expWithAsympt")           # Select stage-recession models (also more than one) (see the list at the bottom):
 # prior.param.rec[[1]]  =c( 0,                            1000,       "'Uniform'",     100,                      "var",  # prior: [in cm for param a and days-1 for param b]
 #                           -log((0.5))+log(log(2)) ,     1,      "'LogNormal'",   exp(-log(0.5)+log(log(2))), "static", # min or mean, max or stdev, distribution, starting value, "static"/"var";
@@ -35,17 +53,11 @@ prior.param.rec          = NULL                          # [NULL] initialise Pri
 #                           -log(80)+log(log(2)) ,        0.2,       "'LogNormal'",  exp(-log(80)+log(log(2))),  "static",
 #                           -150                 ,        50 ,      "'Uniform'",     0 ,                         "var")  #  this last line (asymptote prior) is specific to your case study !!!!
 
-rec.model                = c("2expWithAsympt")           # Select stage-recession models (also more than one) (see the list at the bottom):
-prior.param.rec[[1]]  = c(  0,                            1000,       "'Uniform'",     200,                      "var",
-                            -log((0.5))+log(log(2)) ,     1,      "'LogNormal'",   exp(-log(0.5)+log(log(2))), "static",
-                            0,                            200,       "'Uniform'",     50,                         "static",
-                            -log(80)+log(log(2)) ,        0.2,      "'LogNormal'",   exp(-log(80)+log(log(2))),  "static",
-                            -150                       ,  50 ,      "'Uniform'",     0 ,                         "var")
 
-
-prior.gamma.rec          = c(0, 10,    "'Uniform'",  1,   # Structural error prior gamma1:  min or mean, max or stdev, distribution, starting value
-                             0, 1000,  "'Uniform'", 1)    # Structural error prior gamma2:  min or mean, max or stdev, distribution, starting value
-Ncycles.mcmc.rec         = 100                            # number of mcmc cycles during the bayesian inference for recessions estimation
+# remnant error model --> err = gamma1 + gamma2*h
+prior.gamma.rec          = c(0, 10,   "'Uniform'",  1,    # Structural error prior gamma1:  min or mean, max or stdev, distribution, starting value
+                             0, 10,  "'Uniform'", 1)      # Structural error prior gamma2:  min or mean, max or stdev, distribution, starting value
+Ncycles.mcmc.rec         = 200                            # number of mcmc cycles during the bayesian inference for recessions estimation
 nmcmc.rec                = 100                            # number of mcmc per cycle
 nslim.rec                = 50                             # number of slimmed mcmc for the summary statistics
 jump.pos.rec             = 1.1                            # parameter positive jump rate
@@ -66,8 +78,8 @@ nburn.rec                = 0.5                            # fraction of initial 
 # 3) Recession segmentation:
 #####################################
 prior.mu.rec.segment           = c("Uniform", -150, 50, 0)        # c(distribution,  min or mean,  max or stdev, stanrting value)
-gamma.prior.rec                = c("Uniform", 0, 5, 1)         # c(distribution,  min or mean,  max or stdev,  starting value)
-nSmax.rec                      = 8                                # Maximum number of change points that can be detected 
+gamma.prior.rec                = c("Uniform", 0, 10, 1)         # c(distribution,  min or mean,  max or stdev,  starting value)
+nSmax.rec                      = 6                                # Maximum number of change points that can be detected 
 criterion.rec                  = "BIC"                            # crtierion for the selection of optimal number of change points ("DIC", "BIC")
 seg.plot.results.only          = FALSE                            # [FALSE/TRUE] if TRUE no computation is performed. only results are plotted.
 Ncycle.rec.segment             = 1500                             # number of cycles mcmc.

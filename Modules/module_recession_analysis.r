@@ -232,7 +232,7 @@ recession.selection <- function(  dir.exe,
   tmax.rec               = 150                                 # max recession time (for plot) NOT USED !
   hmax.rec               = 100                                 # max recession stage (for plot) NOT USED !
   #limits.x.recess        = c(0, 150, 30)                       # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
-  stage.scale.shift      = 10000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
+  stage.scale.shift      = 1000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
   BayesianOption         = 2
   toll                   = 0.1   # [cm] tolerance for the recession extraction. 
   #############################
@@ -545,9 +545,9 @@ recession.selection <- function(  dir.exe,
        err1 = print("******* ERROR: extracted recessions dataframe is NULL ! please change settings.")
        return(err1)
     } else {
-    write.table(df.curves,file=paste0(dir.BaM.rec.pool, "/Curves_Data.txt"), sep = "\t", eol = "\n",
+       write.table(df.curves,file=paste0(dir.BaM.rec.pool, "/Curves_Data.txt"), sep = "\t", eol = "\n",
                 na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh", "Period"))
-   
+
     
     
     ############################
@@ -583,6 +583,30 @@ recession.selection <- function(  dir.exe,
     print(rec.plot.test$plot4paper.extraction)
     dev.off()
     Ncurves = length(d.h.selected)
+    
+    
+    min_rec = data.frame(time_stage_min = double(),  stage_min = double())
+    for (rec in 1:length(d.h.selected.with.true.time)) {
+      min_rec = rbind(min_rec, data.frame(time_stage_min = tail(d.h.selected.with.true.time[[rec]]$treal, 1),
+                                          stage_min =      tail(d.h.selected.with.true.time[[rec]]$h, 1)))
+    }
+    # Plot extracted curves against recession time t*:
+    #*************************************************
+    rec.minimum.plot <- ggplot(data =min_rec, aes(x = time_stage_min, y = stage_min - stage.scale.shift)) + 
+                        #geom_line(data = stage.record, aes(t_limni, h_limni*100), size =0.1, color = "Gray80") +
+                        geom_point(size = 2.5) +
+                        coord_cartesian(clip = "off")+
+                        scale_x_continuous(name = "Time [days]",  expand = c(0,0)) +
+                        scale_y_continuous(name = "Minimum Recession Stage H [cm]", expand = c(0,0)) +
+                        theme_bw(base_size = 15) +
+                        theme( axis.text             = element_text(size=15)
+                              ,axis.title           = element_text(size=15)
+                              ,plot.margin          = unit(c(0.5,0.5, 0.5, 2),"cm"))   
+    path.plot.minimum.rec = paste0(dir.extraction,"/Figure_recession_minimum_stages.pdf")
+    pdf(path.plot.minimum.rec, 10, 5 ,useDingbats=F)
+    print(rec.minimum.plot)
+    dev.off()
+    
     print("****************")
     print("   All done!    ")
     print("****************")
@@ -666,7 +690,7 @@ recession.regression   <-  function(dir.exe,
   save.all.results       = TRUE                          # TRUE = save all segmentation computations
   plot.gamma.uncertainty = TRUE                          # plot structural uncertainty on the segmentation.
   segm_all_parameters    = FALSE
-  stage.scale.shift      = 10000                         # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
+  stage.scale.shift      = 1000                         # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
   stage.limits           = c(-150, 50, 50)               # limits for recession stage is in "cm" !!!
   limits.y               = stage.limits
   limits.x.recess        = c(0, 150, 30)                 # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
@@ -685,21 +709,23 @@ recession.regression   <-  function(dir.exe,
   dir.BaM.recession.pool  = paste0(dir.exe,"/Recession_h_pooling") 
   dir.estim.recessions    = paste0(dir.segment.rec.test1,"/2_curves_estimation")
   dir.segm.recessions     = paste0(dir.segment.rec.test1,"/3_curves_segmentation")
+  
   dir.create( paste0(dir.segment.rec,"/", name.folder.results.recession))
   dir.create( paste0(dir.segment.rec.test1,"/2_curves_estimation"))
   dir.create( paste0(dir.segment.rec.test1,"/3_curves_segmentation"))
+  dir.create( paste0(dir.estim.recessions,"/Pooling"))
+
   message("Recessions exponential regression - using BaM !!!"); flush.console()
   Ncurves       = length(data.recess[[1]])
   colfunc       = colorRampPalette(c("red","orange","yellow","green","blue","grey","purple"))   
   output_file_h = paste0(dir.estim.recessions,"/Param_rec_h.csv")
-  dir.create(paste0(dir.estim.recessions,"/Pooling"))
   dir.rec.pool  = paste0(dir.estim.recessions,"/Pooling")
   Ncurves.pool  = length(which.recession)
   d.h           = data.frame(cbind(data.recess[[1]][[which.recession[1]]], 
                                    Period = rep(which.recession[1], length(data.recess[[1]][[which.recession[1]]]$t))))
   for (icurve in which.recession[-1]) { 
     if (is.null(data.recess[[1]][[icurve]])){
-      print("error in input dataset: please check the period column")
+         print("error in input dataset: please check the period column")
     }
     d.h = rbind(d.h,  cbind(data.recess[[1]][[icurve]],  Period = rep(icurve, length(data.recess[[1]][[icurve]]$t))))
   }   
@@ -723,8 +749,8 @@ recession.regression   <-  function(dir.exe,
   ###################################
   for (irec in 1:length(rec.model)) {
   ###################################
-            rec.mod            = rec.model[[irec]]
-            prior.rec          = prior.param.rec[[irec]]
+            rec.mod    = rec.model[[irec]]
+            prior.rec  = prior.param.rec[[irec]]
             #shift the pprior of asymptotic parameter:
             prior.rec[length(prior.rec)-4] =  as.numeric(prior.rec[length(prior.rec)-4])  + stage.scale.shift
             prior.rec[length(prior.rec)-3] =  as.numeric(prior.rec[length(prior.rec)-3])  + stage.scale.shift  
@@ -5051,14 +5077,6 @@ moving.average.h = function(stage.h, time.h , Period.h, length.avg) {
 
 
 
-
-
-
-
-
-
-
-
 ##########################################################################################################################
 # SEGMENTATION Of RECESSIONS (IN PARTICULAR OF THE ASYMPTOTIC STAGE PARAMETER):
 recession.segmentation <- function(dir.exe,
@@ -5081,7 +5099,7 @@ recession.segmentation <- function(dir.exe,
   save.all.results       = TRUE                                # TRUE = save all segmentation computations
   plot.gamma.uncertainty = TRUE                                # plot structural uncertainty on the segmentation.
   segm_all_parameters    = FALSE
-  stage.scale.shift      = 10000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
+  stage.scale.shift      = 1000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
   plot.recession.uncert  = TRUE                           # plot the total uncertainty ribbons of the recession curves.
   plot.dates             = FALSE                             # plot tha shift times in date format
 
@@ -5830,6 +5848,21 @@ A few information:
   return(results.segment)
 ####################################################################
 }   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -34,7 +34,6 @@ bt_and_hcrit.plot = function(dir.sed.transp,
     #                           yend = bt2.df$mean[1:(length(bt2.df$mean)-1)],
     #                           linetype = shape.tshift),  
     #                           color = "blue", lwd =0.7) +
-    
     geom_segment(mapping= aes(x     = ts.before , 
                               y     = bt2.df$mean, 
                               xend  = ts.plus, 
@@ -907,11 +906,11 @@ qsc.t.plot = function(dir.sed.transp.d50, df.limni, y_limni,
 
 
 #version with only one choice:
-########################################################################################################
+######################################################################################################################
 qsc.t.plot.one.choice = function(dir.sed.transp.d50,
                                  df.limni.ST, 
                                  y_limni, 
-                                 ylimits.st, hlimits.st, tlimits.st, 
+                                 ylimits.st, hlimits.st, 
                                  gaugings_SPD,
                                  t.event1, y.event1, h.event1,
                                  phi1, hcr1, ycr1, qsc_crit1, qs1,
@@ -925,7 +924,7 @@ qsc.t.plot.one.choice = function(dir.sed.transp.d50,
                                  plot.event.index,
                                  V.limits,
                                  V.for.text) {
-########################################################################################################
+  ######################################################################################################################
 # Initialisation:
   df.event.effect  = NULL; 
   df.event.potent1 = NULL; 
@@ -939,11 +938,12 @@ qsc.t.plot.one.choice = function(dir.sed.transp.d50,
   
   qs.cum.plot = ggplot() + 
                   geom_line( aes(x=df.limni.ST$t_limni,   y = df.limni.ST$h_limni),     color="gray80", size=0.3)+
-                  geom_point(aes(x=gaugings_SPD$t,        y = gaugings_SPD$h,           color = col.gaug.1), pch=21, fill="gray30", size=3)+
+                  geom_point(aes(x=gaugings_SPD$t,        y = gaugings_SPD$h,           color = col.gaug.1), pch=21, 
+                             fill="gray30", size=3)+
                   geom_line( aes(x= df.limni.ST$t_limni,  y = hcr1, color = col.hcr.1), size =1.5, linetype ="solid")+
                   coord_cartesian(clip = 'off') +
-                  scale_y_continuous(name = "Stage h [m]", limits = c(min.stage, hlimits.st[2]),      expand = c(0,0))+ 
-                  scale_x_continuous(name = "Time (days)", limits = c(tlimits.st[1], tlimits.st[2]),  expand = c(0,0))+
+                  scale_y_continuous(name = "Stage h [m]", limits = c(min.stage, hlimits.st[2]), expand = c(0,0))+ 
+                  scale_x_continuous(name = "Time (days)", limits = c(df.limni.ST$t_limni[1], tail(df.limni.ST$t_limni,1)), expand = c(0,0))+
                   theme_bw(base_size=20)+ 
                   theme( axis.text         = element_text(size=20)
                          ,axis.text.x      = element_blank()
@@ -955,17 +955,16 @@ qsc.t.plot.one.choice = function(dir.sed.transp.d50,
                          ,legend.direction ="horizontal"
                          ,panel.grid       = element_blank()
                          ,plot.margin      = unit(c(0, 2.5, 0.5, 0.5),"cm")
-                         ,axis.title.y     = element_text(margin = margin(t = 0, r = 60, b = 0, l = 0))
+                         ,axis.title.y     = element_text(margin = margin(t = 0, r = 80, b = 0, l = 0))
                          ,axis.title.x     = element_blank())
    
 
-  #**************************************************************************************
-  # plot with continuous cumulative sed transport:
-  #**************************************************************************************
+  # plot the cumulative sed transport V(t):
+  ##################################################################################################################################
   nevents.st           = length(start.event.index1)
   #start.event.new111   = start.event.new111[-1]
   #start.new111         = start.new111[-1]
-  
+  # plot the time series of V (cumulative sed transport of each event):
   qs.cum.plot1 = ggplot() +
                  geom_segment(aes(x     = df.limni.ST$t_limni[start.event.new111],
                                   xend  = df.limni.ST$t_limni[start.event.new111],
@@ -988,8 +987,7 @@ qsc.t.plot.one.choice = function(dir.sed.transp.d50,
                             color = "red", size=7) +
                    scale_y_continuous(name = TeX("$V \\; for \\; each \\; event \\; \\left[ m^3 \\right]$"),
                                       expand = c(0,0), limits= c(V.limits[1],V.limits[2])) +
-                   scale_x_continuous(name = "",limits = c(tlimits.st[1], tlimits.st[2]) ,
-                                      expand = c(0,0)) +
+                   scale_x_continuous(name = "", limits = c(df.limni.ST$t_limni[1], tail(df.limni.ST$t_limni,1)), expand = c(0,0))+       
                    coord_cartesian(clip = 'off')+
                    theme_bw(base_size=20)+
                    theme( axis.text=element_text(size=20)
@@ -1001,33 +999,18 @@ qsc.t.plot.one.choice = function(dir.sed.transp.d50,
                           ,panel.grid    = element_blank()
                           ,plot.margin   = unit(c(0, 2.5, 0.5, 0.5),"cm")
                           ,axis.ticks.y  = element_line(color = "blue")
-                          ,axis.title.y  = element_text(color = "blue", margin = margin(t = 0, r = 15, b = 0, l = 0))
+                          ,axis.title.y  = element_text(color = "blue", margin = margin(t = 0, r = 25, b = 0, l = 0))
                           ,axis.text.y   = element_text(size=16, color="blue")
                           ,axis.line.y   = element_line(color = "blue"))
-                          # ,axis.title.y.right  = element_text(color = "blue", size=25, 
-                          #                                     margin = margin(t = 0, r = 0, b = 0, l = 30)))
-                          # geom_segment(aes(x = df.limni$t_limni[start.event.index1],
-                          #                  xend =df.limni$t_limni[start.event.index1],
-                          #                  y=0,
-                          #                  yend = cum.qs1),
-                          #              color="red", size= 5, alpha = 0.3) +
-                          # annotate("rect",
-                          #          xmin = df.limni$t_limni[start.event.new1],
-                          #          xmax =  df.limni$t_limni[end.event.new1],
-                          #          ymin =  0,
-                          #          ymax =  finalqs.cum1,
-                          #          fill = "blue", alpha =1)
-    
   
   
-  
-  #*******************************************************************************
+  ######################################################################################################################
   # annotation plot:
+  # will plots the detected shift times (the reference times and the potential ones).
   qs.cum.plot2 =  ggplot()+
                   scale_y_continuous(name = "", expand = c(0,0), limits = c(-4,0))+
-                    scale_x_continuous(name ="Time [days]", expand = c(0,0), 
-                                       limits = c(tlimits.st[1], tlimits.st[2])) +  #c(0,tail(df.limni$t_limni,1))) +
-                    coord_cartesian(clip = 'off')+
+                  scale_x_continuous(name = "Time (days)", limits = c(df.limni.ST$t_limni[1], tail(df.limni.ST$t_limni,1)), expand = c(0,0))+          
+                  coord_cartesian(clip = 'off')+
                     #theme_bw(base_size = 20)+
                     theme_set(theme_gray(base_size = 20))+
                     theme( 
@@ -1040,23 +1023,16 @@ qsc.t.plot.one.choice = function(dir.sed.transp.d50,
                       ,legend.key.size  = unit(1.5, "cm")
                       ,legend.position  = "none"
                       ,plot.margin      = unit(c(1, 2.5, 0.5, 2.5),"cm")
-                      #,axis.text.x     = element_blank()
-                      ,axis.title.x    = element_text(size=25, margin = margin(t = 2, r = 30, b = 0, l = 0))
+                      ,axis.title.x    = element_text(size=25, margin = margin(t = 2, r = 10, b = 0, l = 0))
                       ,axis.text.y      = element_blank()
                       ,axis.ticks.y     = element_blank())+
-                      #,axis.ticks.x    = element_blank())+
                     annotate("text", x= 10, y= -0.5, 
                              label  = paste0("Reference shift times (e.g. from gaugings and stage-recessions): ")
                              ,color = "red", size=6, hjust = 0) +
-                    # annotate("text", x=10, y= - 2.5, label=paste0("Selected reference morphogenic events:")
-                    #          ,color = "red", size=7, hjust=0) +
-                    # annotate("text", x=0, y= - 4.5, label="All potential morphogenic events (y > ycr):"
-                    #          ,color = "blue", size=7, hjust=0)
                     annotate("text", x=0, y= - 2.5, label=paste0("All potential morphogenic events:"), color = "blue", size=6, hjust=0)
     
 
-  
-  #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ######################################################################################################################
   for (jjjj in 1:length(t.event1)) {        # SELECTED EFFECTIVE EVENTS from step 1 of the retro analysis
     df.event.effect[[jjjj]] = data.frame(t=t.event1[[jjjj]], 
                                          y=y.event1[[jjjj]],
@@ -1068,40 +1044,24 @@ qsc.t.plot.one.choice = function(dir.sed.transp.d50,
     # update plot with reference events on stage record with circles:
     qs.cum.plot = qs.cum.plot+
                   geom_point(data= df.event.effect[[jjjj]], aes(x=t[1], y =max(h)),size = 10, color="red", pch=21, fill="NA")
-    # qs.cum.plot1 = qs.cum.plot1+
-    #   geom_point(data= df.event.effect[[jjjj]] , 
-    #              aes(x=t[1], 
-    #                  y =max(y)),
-    #              size = 5, color="red", alpha= 0.5, pch=21, fill="NA")
   }
   
-  #**************************
+
   # ADD ALL POTENTIAL EVENTS:
-  #**************************
+  ######################################################################################################################
   for (kkkk in 1:length(start.new111)) {        
     #print(paste0("Potent. Event n. ", kkkk))
     df.event.potent1[[kkkk]] = data.frame(t = df.limni.ST$t_limni[start.new111[[kkkk]] : end.new111[[kkkk]]],
                                           y = y_limni[start.new111[[kkkk]] : end.new111[[kkkk]]],
                                           h = h_limni[start.new111[[kkkk]] : end.new111[[kkkk]]])
-    # qs.cum.plot = qs.cum.plot +
-    #    geom_point(data= df.event.potent[[kkkk]], aes(x=t, y=y, color= col.event), pch =19, fill ="black", size = 0.5)
-    # qs.cum.plot = qs.cum.plot +
-    #    geom_point(data= df.event.potent[[kkkk]], aes(x=t, y=h, color= col.event), pch =19, fill ="black", size = 0.5)
-    # 
-    # if (plot.event.index == TRUE) {
-    #     qs.cum.plot = qs.cum.plot + 
-    #     annotate("text", x= df.limni$t_limni[start.event.new[[kkkk]]], 
-    #                      y= y_limni[start.event.new[[kkkk]]], 
-    #                      label=kkkk , color = "blue", size=3, hjust=0)
-    # }
-    
+
     # update annotation plot with the potential shift events:
     qs.cum.plot2 = qs.cum.plot2 + 
                    geom_segment(data= df.event.potent1[[kkkk]],  aes(x=t[1], y =-4, yend =-3, xend=t[1]), 
                                 size = 1, color="blue")
   }
   
-  #******************************************************************
+  ######################################################################################################################
   # add the legend scale to plot 'qs.cum.plot' with the stage record:
   qs.cum.plot = qs.cum.plot +
                 scale_colour_manual(name   = element_blank(),
@@ -1113,44 +1073,37 @@ qsc.t.plot.one.choice = function(dir.sed.transp.d50,
                                  linetype = c("solid", "blank"),
                                  shape = c(NA,  19), size =c(1.5,  3), fill = c(NA,  "gray50"))))
   
-  #**********************************************
+  ######################################################################################################################
   # Update annotation plot with separation lines:
   qs.cum.plot2 = qs.cum.plot2 +
                  geom_hline(yintercept = c(-4,-3,-2,-1, 0),
                  color="darkgray", linetype="dashed", size = 0.3)
   
-  #****************************************************************************************************
+  ######################################################################################################################
   # Combine plots 'qs.cum.plot' (stage record with reference events + gaugings) and  qsc (all events):
   qs.cum.plot1.bis = plot_grid( qs.cum.plot,
                                 qs.cum.plot1, 
                                 ncol = 1, nrow = 2,
                                 rel_heights = c(1, 1))
   # save:
-  pdf(paste0(dir.sed.transp.d50,"/plot_V_events.pdf"), 12, 9 ,useDingbats=F)
+  pdf(paste0(dir.sed.transp.d50,"/plot_V_events.pdf"), 18, 8 ,useDingbats=F)
   print(qs.cum.plot1.bis)
   dev.off()
   
   
   
-  #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  # qs.cum.plot3 = plot_grid( qs.cum.plot,
-  #                           qs.cum.plot1,
-  #                           qs.cum.plot2, 
-  #                           ncol = 1, nrow = 3, rel_heights = c(1, 0.5, 0.5))
-  qs.cum.plotbis = qs.cum.plot + theme(axis.title.y = element_text(size=25, margin = margin(t = 0, r = 20, b = 0, l = 0)))
+  
+  
+  # second plot:
+  ######################################################################################################################
+  qs.cum.plotbis = qs.cum.plot + theme(axis.title.y = element_text(size=25, margin = margin(t = 0, r = 45, b = 0, l = 0)))
   qs.cum.plot4 = plot_grid( qs.cum.plotbis,
                             qs.cum.plot2,
                             ncol = 1, nrow = 2, rel_heights = c(1, 0.6))
-  pdf(paste0(dir.sed.transp.d50,"/ts_potential_all.pdf"), 16, 8 ,useDingbats=F)
+  pdf(paste0(dir.sed.transp.d50,"/ts_potential_all.pdf"), 18, 8 ,useDingbats=F)
   print(qs.cum.plot4)
   dev.off()
-  ###################################################################################
-  #save:
-  # ggsave(qs.cum.plot3, filename = paste0(dir.sed.transp.d50,"/qs_cum_d",d50,".png"),
-  #        width = 16, height =16, dpi = 400)
-  
-
-  ###########################################
+  ######################################################################################################################
 }
 
 

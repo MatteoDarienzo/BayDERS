@@ -440,6 +440,8 @@ plot.extracted.recessions.paper <- function(Data_rec,
                                      rec.curves.plot,
                                      label_fontface = "plain",
                                      ncol = 2, nrow=1)  
+  
+  
   #***********************************************************
   return(list(rec.time.plot         = rec.time.plot,
               rec.curves.plot       = rec.curves.plot,

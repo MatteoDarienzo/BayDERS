@@ -297,6 +297,7 @@ if ((file_gaugings != FALSE)) {
         gaug.date = t_gaug.date
     
     
+        
   #####################################
   } else if (tGaug.format =="numeric"){
   #####################################
@@ -323,6 +324,7 @@ if ((file_gaugings != FALSE)) {
         gaug.date = as.Date(floor(Gaug.time), origin = date_origin)
         gaug.date = as.POSIXct(as.POSIXlt(gaug.date))
         gaug.date = gaug.date  + (Gaug.time - floor(Gaug.time)) * 24 * 3600 #seconds
+        t_gaug.date = gaug.date
         
   ########
   } else {
@@ -593,16 +595,19 @@ if (!is.null(df.limni)) {
       if (cc ==1){
         message("Period with missing data --> adding NA values:")
       }
-      print(paste0("missing ", dt_limni[tt], " days at ", as.Date(dates[tt],      tryFormats = all_formats_dates)))
-      dates = c(limni.NA$date[1: (ghost-1)],    
-                format(mean(c(as.Date(dates[tt],   tryFormats = all_formats_dates), as.Date(dates[tt-1], tryFormats = all_formats_dates))), format = tLimni.format),
-                dates[ghost:length(dates)])
-      tnum  = c(limni.NA$t_limni[1: (ghost-1)],     
-                (tnum[tt] + tnum[tt-1])/2 , 
-                tnum[ghost:length(tnum)])
-      stage = c(stage[1: (ghost-1)],        
-                NA,                        
-                stage[ghost:length(stage)])
+      print(paste0("missing ", round(dt_limni[tt], digits = 2), " days at ", as.Date(dates[tt],  tryFormats = all_formats_dates)))
+      if (tLimni.format !='numeric'){
+         dates = c(limni.NA$date[1: (ghost-1)],    
+                format(mean(c(as.Date(dates[tt],   tryFormats = all_formats_dates), 
+                              as.Date(dates[tt-1], tryFormats = all_formats_dates))), format = tLimni.format), dates[ghost:length(dates)])
+      } else{
+         dates = c(limni.NA$date[1: (ghost-1)],   mean(c(as.Date(dates[tt],   tryFormats = all_formats_dates), 
+                                as.Date(dates[tt-1], tryFormats = all_formats_dates))), dates[ghost:length(dates)])
+      }
+      
+      tnum  = c(limni.NA$t_limni[1: (ghost-1)], (tnum[tt] + tnum[tt-1])/2, tnum[ghost:length(tnum)])
+      stage = c(stage[1: (ghost-1)],  NA, stage[ghost:length(stage)])
+      
       # update counter:
       tt    = tt+1
     }
@@ -613,7 +618,7 @@ if (!is.null(df.limni)) {
   
   # plotting stage record with gaugings (if any):
   limni.plot <- ggplot() +
-                geom_line(aes(x=df.limni_filtered$t_limni, y=df.limni_filtered$h_limni), color = "lightblue",    size =0.3)+
+                geom_line(aes(x=df.limni_filtered$t_limni, y=df.limni_filtered$h_limni), color = "lightblue",    size =0.5)+
                 #scale_x_continuous(expand=c(0,0))+
                 #scale_x_date(expand=c(0,0))+
                 labs()+
@@ -656,11 +661,11 @@ if (!is.null(df.limni)) {
   
   
   limni.dates.plot <- ggplot() +
-                      geom_line(aes(x= as.Date(df.limni_filtered$t_limni.date, format = tLimni.format), y=df.limni_filtered$h_limni), color = "lightblue",  size =0.3)+
+                      geom_line(aes(x= as.Date(df.limni_filtered$t_limni.date, format = tLimni.format), y=df.limni_filtered$h_limni), color = "lightblue",  size =0.5)+
                       #scale_x_date(expand=c(0,0)) +
                       scale_x_date(breaks= function(x) seq.Date(from = min(x), to = max(x), by = paste0("", ticks.date, " years"))) +
                       labs()+
-                      xlab(limni.labels[1]) +
+                      xlab("Date") + #limni.labels[1]) +
                       ylab(limni.labels[2])
                       if (!is.null(gaug.date)){
                          limni.dates.plot = limni.dates.plot +

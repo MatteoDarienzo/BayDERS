@@ -6,34 +6,54 @@
 #*********
 name.folder.results.ST = "Test_1"
 file_name_ref_shift_times = "shift_times.txt"  # filename with the reference morphogenic shift times (***put FALSE if none***)
-Bc.st                = Bc.prior[2] # average with of the river stretch characterized by sediment transport.
-taucritic            = 0.047  # by default 0.047 
-d50.st               = 0.03   # sediment characteristic diameter
-S0.st                = 0.002  # average longitudinal slope of the river stretch characterized by sediment transport.
-s.st                 = 2.65
-alpha.sed.transp     = 8   # coefficient  MPM model
-beta.sed.transp      = 1.5  # coefficient MPM model
-tmax_between_events  = 1000  # max days between two peaks (to be considered part of the same morphogenic event)
+control.main.channel = 2                       # [index] indicate which hydraulic control represents the main channel on which the average river bed is computed. 
+Bc.st                = Bc.prior[2]             # average width of the river stretch characterized by sediment transport.
+taucritic            = 0.047                   # by default 0.047 
+d50.st               = 0.03                    # sediment characteristic diameter
+S0.st                = 0.002                   # average longitudinal slope of the river stretch characterized by sediment transport.
+s.st                 = 2.65                    # s = rho_s (density of sediments= 2650 kg/m3)/rho_w (density of water =1000 kg/m3)
+alpha.sed.transp     = 8                       # first coefficient of the MPM model  (8, taken from literature )
+beta.sed.transp      = 1.5                     # coefficient exponent in the MPM model (1.5, taken from literature )
+tmax_between_events  = 100                     # max days between two peaks (to be considered part of the same morphogenic event)
+deltat_peaks         = 100                     # max days between two peaks to chose the reference peaks
 
 
-# options for plots:
+
+
+
+# Options for plots:
 #*******************
-ylimits              = c(-3, 9, 3)  # grid_limni.ylim,
-tlimits              = c(0, 57000)
-V.limits             = c(0, 500000, 1000)
-V.for.text           = 500000
+ylimits              = c(-1,4,1)              # [min, max, step]  limits for stage record h(t)  y-axis (grid_limni.ylim). 
+V.limits             = c(0, 20000, 5000)      # [mn, max, step]   limits for V(t) y-axis  , cumulative sediment volume [m^3]
+
+
+
+
+
+
 
 
 
 # Options for linear estimation of relation V-deltab:
 #****************************************************
-Nmcmc.st             = 100
-Ncycles.st           = 1500
-prior.param.propor    = c("'a1'", 0, "'Uniform'", -0.000000000001, 0.000000000001,
-                          "'a2'", 0, "'Uniform'", -0.000000000001, 0.000000000001)  # deltab = 0 + gamma2*V
+model.type           = "null"    # options: "null" (if you want the mean =0) or "proportional" (if you want the mean != 0),
+Nmcmc.st             = 100       # number of mcmc per cycle in BaM
+Ncycles.st           = 1500      # number of mcmc cycles (tot number of mcmc = Nmcmc.st *Ncycles.st)  
+# model V-deltab ==> deltab = a1 + a2*V = 0 
+# in BaM
+# DO NOT CHANGE !!!!
+prior.param.propor    = c("'a1'", 0, "'Uniform'", -1e-13, 1e-13,    # param, start value, distribut, min, max (or mean, stdev) for a1 and a2
+                          "'a2'", 0, "'Uniform'", -1e-13, 1e-13)    # priors for model 'null' -> deltab = 0 , thus a1~~0, a2~0.
+#priors for error model proportional -> err= gamma1 + gamma2*V
 prior.gamma.linear = c("'Linear'",
-                       "'gamma1'", 0.00000000001, "'Uniform'", 0, 0.000000001,
-                       "'gamma2'", 100, "'Uniform'", 0, 1000000)     # deltab = 0 + gamma2*V
+                       "'gamma1'", 1e-13, "'Uniform'", 0, 1e-13,      # intercept!     ~0 !!
+                       "'gamma2'", 1e+8,  "'Uniform'", 0, 1e+13)      # slope!         
+
+
+
+
+
+
 
 
 
@@ -52,6 +72,8 @@ prior.gamma.linear = c("'Linear'",
 # prior.gamma.linear = c("'Linear'",
 #                        "'gamma1'", 0.000000001, "'Uniform'", 0, 0.0000001, 
 #                        "'gamma2'", 1, "'Uniform'", 0, 100000))
+
+
 
 
 
