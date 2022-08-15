@@ -240,7 +240,7 @@ if ((file_gaugings != FALSE)) {
   }
   Gaugings = Gaugings.raw[first.gaug:last,]
   
-
+  
   # check if stage timings are in date format or numeric:
   #********************************************
   if (any(all_formats_dates == tGaug.format)) {
@@ -267,19 +267,25 @@ if ((file_gaugings != FALSE)) {
         # Add from Mathieu Lucas:
         # if gaugings data have equal timing we can shift the timings.
         # change dt_increase if you need to increase the delay [day]: 
-        dt_increase = 0.01
+        dt_increase = 0.1
         while ((length(which(duplicated(t_gaug.numeric2)==T))) > 0) {
           t_gaug.numeric2[which(duplicated(t_gaug.numeric2) == T)] =  t_gaug.numeric2[which(duplicated(t_gaug.numeric2) == T)] + dt_increase 
         }
+
+        t_gaug.numeric2 = sort(t_gaug.numeric2)        
+        Gaugings$t_gaug.numeric2 = t_gaug.numeric2
+        Gaugings        = Gaugings[order(Gaugings$t_gaug.numeric2),]
+        t_gaug.date     = sort(t_gaug.date)
         t_gaug          = t_gaug.numeric2
         t_gaug.true     = t_gaug.numeric2
+        
         
         # Now define which one between stage record and gaugings record defines
         # the initialization time. For example, if stage record exists and 
         # start before gaugings then t=0 will be the first stage time.
         if (file_limni != FALSE) {
             if (t_gaug.numeric2[1] <= t_limni.numeric2[1]) {
-               t_gaug       = t_gaug.numeric2  - t_gaug.numeric2[1]
+               t_Gaug       = t_gaug.numeric2  - t_gaug.numeric2[1]
                t_limni      = t_limni.numeric2 - t_gaug.numeric2[1]
                initial.time = t_gaug.numeric2[1]
             } else {
@@ -294,6 +300,8 @@ if ((file_gaugings != FALSE)) {
             t_Gaug         = t_gaug.numeric2  - t_gaug.numeric2[1]
             initial.time   = t_gaug.numeric2[1]
         }
+        
+        #########################################  ????????????????????? ordre date
         gaug.date = t_gaug.date
     
     
@@ -390,7 +398,7 @@ if ((file_gaugings != FALSE)) {
                   ylab(bquote(.(RC.y.labels) ~ .("[") ~ m^3*s^-1 ~ .("]"))) +  
                   xlab(bquote(.(RC.x.labels) ~ .("[") ~ m ~ .("]")))+
                   geom_point(aes(x = h , y= Q), fill ="blue", pch=21, size = 1.5)+
-                  geom_errorbar(aes(x = h,  ymin =Q-2*uQ , ymax =Q +2*uQ), color= "blue", width=.05, size = 0.3) +
+                  geom_errorbar(aes(x = h,  ymin =Q-2*uQ , ymax =Q +2*uQ), color= "blue", width=0.02*(grid_RC.xlim[2] - grid_RC.xlim[1]), size = 0.3) +
                   theme_bw(base_size=10)+
                   theme( axis.text        = element_text(size=15)
                         ,axis.title       = element_text(size=15, face="bold")
@@ -723,35 +731,35 @@ if (!is.null(df.limni)) {
 print("4) Preparing grids for plots. Please wait ...")
 grid.RC  = "Manual"  
 
+
+
 # grid for x axis:
-if (is.null(h_limni) == FALSE) {
-  Hmin = min(c(min(h_limni, na.rm= TRUE), min(h_Gaug, na.rm= TRUE)),  na.rm= TRUE)
-  Hmax = max(c(max(h_limni, na.rm= TRUE), max(h_Gaug, na.rm= TRUE)),  na.rm= TRUE)
-} else {
-  Hmin = min(h_Gaug,  na.rm= TRUE)
-  Hmax = max(h_Gaug,  na.rm= TRUE)
-}
-generic.grid = seq(-1000000,1000000, 0.25)
+if (grid.RC == "Manual") {
+  Hmin_grid = grid_RC.xlim[1]
+  Hmax_grid = grid_RC.xlim[2]
+  
+} else { 
+  #automatic assignment of grid limits:
+  if (is.null(h_limni) == FALSE) {
+    Hmin = min(c(min(h_limni, na.rm= TRUE), min(h_Gaug, na.rm= TRUE)),  na.rm= TRUE)
+    Hmax = max(c(max(h_limni, na.rm= TRUE), max(h_Gaug, na.rm= TRUE)),  na.rm= TRUE)
+  } else {
+    Hmin = min(h_Gaug,  na.rm= TRUE)
+    Hmax = max(h_Gaug,  na.rm= TRUE)
+  }
+  generic.grid = seq(-1000000,1000000, 0.25)
 
-for (i in 1:length(generic.grid)) {
-  if((Hmin >= generic.grid[i]) & (Hmin <= generic.grid[i+1])) {
-    if (grid.RC == "Manual") {
-      Hmin_grid = grid_RC.xlim[1]
-    } else { 
-      Hmin_grid = generic.grid[i]
+  for (i in 1:length(generic.grid)) {
+    if((Hmin >= generic.grid[i]) & (Hmin <= generic.grid[i+1])) {
+        Hmin_grid = generic.grid[i]
     }
   }
-}
-for (i in 1:length(generic.grid)) {
-  if((Hmax >= generic.grid[i]) & (Hmax <= generic.grid[i+1])) {
-    if (grid.RC == "Manual") {
-      Hmax_grid = grid_RC.xlim[2]
-    } else { 
-      Hmax_grid = generic.grid[i+1]
+  for (i in 1:length(generic.grid)) {
+    if((Hmax >= generic.grid[i]) & (Hmax <= generic.grid[i+1])) {
+        Hmax_grid = generic.grid[i+1]
     }
-  }
-}  
-
+  }  
+}
 
 
 

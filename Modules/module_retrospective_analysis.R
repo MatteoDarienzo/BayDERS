@@ -69,6 +69,7 @@ read_all_results_shift_detection = function(dir.segment.g, dir.segment.rec, dir.
        pdf.ts.results.1             = NULL
        nperiod.from.segm.gaugings.1 = NULL
        shift.times.gaugings.1       = NULL
+       data.annotate.gaug.1         = NULL
        data.annotate.gaug.1.sort    = NULL
        pdf.ts.results.1.sort        = NULL
     }
@@ -121,10 +122,12 @@ read_all_results_shift_detection = function(dir.segment.g, dir.segment.rec, dir.
       print(list_selected_results_rec)
       if (length(list_selected_results_rec)>0) {
          dir.segment.rec = folder
+         print(paste0("Reading recession results"))         
          read.res.rec = read.results.segment.recess(dir.segm.recessions = dir.segment.rec, 
                                                     officialShiftsTime  = officialShiftsTime, 
                                                     Gaugings            = Gaugings,
                                                     plot.dates          = FALSE)
+         
          data.annotate.recess <- data.frame(q2    = read.res.rec$Q2.ts, 
                                             q10   = read.res.rec$Q10.ts, 
                                             MAP   = read.res.rec$data.annotate.recess$t,
@@ -183,7 +186,7 @@ read_all_results_shift_detection = function(dir.segment.g, dir.segment.rec, dir.
           pdf.ts.combined.sort                = read.res.rec$pdf.ts.rec
        } else {
           data.combined.gaug.recess.sort = NULL
-          pdf.ts.combined.sort                = NULL
+          pdf.ts.combined.sort           = NULL
        }  
     }
 

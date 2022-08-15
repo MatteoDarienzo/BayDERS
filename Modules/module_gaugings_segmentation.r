@@ -98,6 +98,11 @@ gaugings.segmentation <- function(dir_code,
    
    
    
+   
+   
+   
+   
+   
    # The following "if" is to decide if you want to perform the entire computation for segmentation of gaugings
    # or instead if you already performed previously and now you want just to read and plot results.
    # Thus, if plot.results.only = TRUE it goes directly at the end of the segmentation procedure, to read 
@@ -198,9 +203,11 @@ A few information:
 
 
 
-
+   ###################
    # start iterations:
+   ###################
    while(end.end == FALSE) {
+      
       #folder creation for the current iteration:
       dir.create(paste0(dir.segment.gaug,"/it",seg.iter))
       dir.create(paste0(dir.segment.gaug,"/it",seg.iter,"/BaRatin"))
@@ -825,10 +832,47 @@ A few information:
             pks <- unlist(pks)
             pks
          }
+
+         
+         
+         # find_peaks <-  function (x, thresh=0.05, span=0.25, lspan=0.05, noisey=TRUE){
+         #       n <- length(x)
+         #       y <- x
+         #       mu.y.loc <- y
+         #       if(noisey)
+         #       {
+         #          mu.y.loc <- (x[1:(n-2)] + x[2:(n-1)] + x[3:n])/3
+         #          mu.y.loc <- c(mu.y.loc[1], mu.y.loc, mu.y.loc[n-2])
+         #       }
+         #       y.loess <- loess(x~I(1:n), span=span)
+         #       y <- y.loess[[2]]
+         #       sig.y <- var(y.loess$resid, na.rm=TRUE)^0.5
+         #       DX.1 <- sign(diff(mu.y.loc, na.pad = FALSE))
+         #       pks <- which(diff(DX.1, na.pad = FALSE) < 0 & DX.1[-(n-1)] > 0) + 1
+         #       out <- pks
+         #       if(noisey)
+         #       {
+         #          n.w <- floor(lspan*n/2)
+         #          out <- NULL
+         #          for(pk in pks)
+         #          {
+         #             inner <- (pk-n.w):(pk+n.w)
+         #             outer <- c((pk-2*n.w):(pk-n.w),(pk+2*n.w):(pk+n.w))
+         #             mu.y.outer <- mean(y[outer])
+         #             if(!is.na(mu.y.outer)) 
+         #                if (mean(y[inner])-mu.y.outer > thresh*sig.y) out <- c(out, pk)
+         #          }
+         #       }
+         #       out
+         #    }
+         
+         
+         
+         
+         
+         
+         
          h_peaks = NULL
-         
-         
-         
          # Next analysis and plots are only if at least 
          # 1 change point has been found !!!
          #############
@@ -846,10 +890,10 @@ A few information:
                                                         tau.results.df[[seg.iter]]$tau.q97[i])))
                   # maximum stage value (if known):
                   if (length(interval[[i]]) != 0){
+                     m = deltat_peaks/mean(diff(t_limni[interval[[i]]]))
                      # find all major peaks in the series (call of "find_peaks()" function):
-                     h_peaks[[i]] = data.frame(hmax   = round(h_limni[interval[[i]]][find_peaks(x = h_limni[interval[[i]]], m=deltat_peaks)], digits =2),
-                                               t_hmax = round(t_limni[interval[[i]]][find_peaks(x = h_limni[interval[[i]]], m=deltat_peaks)], digits =2))
-
+                     h_peaks[[i]] = data.frame(hmax   = round(h_limni[interval[[i]]][find_peaks(x = h_limni[interval[[i]]], m=m)], digits =2),
+                                               t_hmax = round(t_limni[interval[[i]]][find_peaks(x = h_limni[interval[[i]]], m=m)], digits =2))
                      # select the flood peak closest to t MAP (maximum a posteriori shift time):
                      if (nrow(h_peaks[[i]]) ==0){
                         hflood[i]     = max(h_limni[interval[[i]]])   

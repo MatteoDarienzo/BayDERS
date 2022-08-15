@@ -832,7 +832,7 @@ plot.segmentation.results.rec = function(dir.results,
                                                  xend = ts.res.plus,
                                                  yend = mu.res), col="red") +
       coord_cartesian(clip = 'off')+
-      geom_vline( xintercept = df.shift2$ts.res,  col="blue",  lwd =0.2, linetype= "dashed")+
+      geom_vline( xintercept = df.shift2$ts.res,  col="blue", lwd =0.2, linetype= "dashed")+
       geom_vline( xintercept = df.shift2$ts.real, col="blue", lwd =0.5, linetype= "solid") +
       # annotate("rect",xmin= ts.res.before, xmax=ts.res.plus, ymin=(mu.res),
       #         ymax=(mu.res+10), fill="red", alpha=1) +
@@ -854,13 +854,10 @@ plot.segmentation.results.rec = function(dir.results,
     ############
     df.shift = data.frame( mu.res = mu.res )
     p = ggplot(data =df)+
-      geom_point(data =df, aes(x = t, y = h), size = points.size, color = "black") +
-      # geom_line(data = df, aes(x = t, y = Y), size = 0.3, color = "blue")+
-      geom_segment(data =df.shift, mapping=aes(x =df$t[1] , y = mu.res, xend = tail(df$t,1),
-                                               yend = mu.res[1]), col="red") +
-      scale_x_continuous(name = x.name, 
-                         expand = c(0,0),  
-                         limits =c(limits.X[1], limits.X[2]))
+        geom_point(data =df, aes(x = t, y = h), size = points.size, color = "black") +
+        # geom_line(data = df, aes(x = t, y = Y), size = 0.3, color = "blue")+
+        geom_segment(data =df.shift, mapping=aes(x =df$t[1] , y = mu.res, xend = tail(df$t,1), yend = mu.res[1]), col="red") +
+        scale_x_continuous(name = x.name, expand = c(0,0),limits =c(limits.X[1], limits.X[2]))
     if (limits.Y[1] =="automatic"){
       p = p+ 
         scale_y_continuous(name = y.name,   expand = c(0,0))
@@ -2402,20 +2399,19 @@ initial.ts.plot.rec <- function(CdT.P ,
                                 grid_limni.ylim,
                                 dir.seg.gaug,
                                 seg.iter, 
-                                t_Gaug, h_Gaug, 
                                 mcmc.segment, 
                                 nS) {
 #######################################################################################
   # reading data:
   Utot.times = "90% total uncertainty of change point times"
-  MAPtimes ="Change point times (MAP)"
-  col.tflood ="Time of flood"
+  MAPtimes   = "Change point times (MAP)"
+  col.tflood = "Time of flood"
   color.segm = c("90% total uncertainty of change point times"="blue")
-  col.segm = c("Change point times (MAP)"="blue", "Time of flood"="red")
+  col.segm   = c("Change point times (MAP)"="blue", "Time of flood"="red")
 
   ts.res = tshift$tau.MAP;
   tflood = tshift$tflood;
-  Q2.ts = tshift$tau.q2;
+  Q2.ts  = tshift$tau.q2;
   Q97.ts = tshift$tau.q97;
   
   col.ts.distrib <- rainbow((nS-1)) 
@@ -2423,103 +2419,125 @@ initial.ts.plot.rec <- function(CdT.P ,
   X1=mcmc.segment
   X2=X1[,(nS+1):(2*nS-1)]
   if (nS ==2) {
-    X = X2
+      X = X2
   } else {
-    X =data.frame(time= X2[,1], ord = rep(1, length(X2[,1])) , colorrr = rep(col.ts.distrib[1], length(X2[,1])))
-    for (orderr in 2:(nS-1)) {
-      X =rbind(X,    data.frame(time= X2[,orderr], ord = rep(orderr, length(X2[,1])),  colorrr = rep(col.ts.distrib[orderr], length(X2[,1]))) )
-    }
+      X =data.frame(time= X2[,1], ord = rep(1, length(X2[,1])) , colorrr = rep(col.ts.distrib[1], length(X2[,1])))
+      for (orderr in 2:(nS-1)) {
+          X = rbind(X,    data.frame(time= X2[,orderr], 
+                                     ord = rep(orderr, length(X2[,1])), 
+                                     colorrr = rep(col.ts.distrib[orderr], length(X2[,1]))) )
+      }
   }
+  Xfake = X
+  Xfake$time = -9999
+  Xfake$colorrr = "gray60"
   
   
   # plot 1:
   ###############################
   initial.ts.plot <- ggplot() 
-  if (is.null(df.limni)==FALSE) {
+  if (!is.null(df.limni)){
     initial.ts.plot= initial.ts.plot + 
-      geom_line(data = df.limni, aes(x = t_limni, y = h_limni), color = "darkgray",size = 0.2)+
-      scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(df.limni$t_limni,1))) +
-      scale_y_continuous(name=limni.labels[2], limits = grid_limni.ylim[1:2], expand = c(0,0))+
-      coord_cartesian(clip = 'off')
+                     geom_line(data = df.limni, aes(x = t_limni, y = h_limni), color = "darkgray",size = 0.2)+
+                     scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(df.limni$t_limni,1))) +
+                     scale_y_continuous(name=limni.labels[2], limits = grid_limni.ylim[1:2], expand = c(0,0))+
+                     coord_cartesian(clip = 'off')
   } else {
-    initial.ts.plot= initial.ts.plot + 
-      scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(t_Gaug,1))) +
-      scale_y_continuous(name=limni.labels[2], limits = c(min(h_Gaug), max(h_Gaug)), expand = c(0,0))+
-      coord_cartesian(clip = 'off')
+    if (!is.null(CdT.P)){
+        initial.ts.plot = initial.ts.plot + 
+                          scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(CdT.P$t,1))) +
+                          scale_y_continuous(name=limni.labels[2], limits = c(min(CdT.P$h), max(CdT.P$h)), expand = c(0,0))+
+                          coord_cartesian(clip = 'off') +
+                          #geom_point(aes(x = t_Gaug, y =h_Gaug), fill = "gray60", size = 1.5, pch =21) +
+                          geom_point(data = CdT.P, aes(x = t, y = h), fill = "black", size = 1.5, pch=21)
+    } else {
+        message(" ERROR: no input data (gaugings or stage record) is provided ! please check!")
+        initial.ts.plot = initial.ts.plot + 
+                          scale_x_continuous(name=element_blank(), expand = c(0,0)) +
+                          scale_y_continuous(name=limni.labels[2], expand = c(0,0))+
+                          coord_cartesian(clip = 'off') 
+    }
   }
-  initial.ts.plot= initial.ts.plot +
-    geom_point(aes(x = t_Gaug, y =h_Gaug), fill = "gray60", size = 1.5, pch =21) +
-    geom_point(data = CdT.P, aes(x = tP, y = hP), fill = "black", size = 1.5, pch=21) +
-    theme_classic(base_size = 15) +
-    ylab(limni.labels[2]) +
-    geom_rect(mapping= aes(xmin= Q2.ts, xmax=Q97.ts ,ymin=-Inf, ymax=Inf), fill=col.ts.distrib, alpha=0.2 ) +
-    geom_vline(aes(xintercept = ts.res), col=col.ts.distrib, lwd =0.5, linetype = "solid") +
-    scale_fill_manual(name=element_blank(), values=color.segm) +
-    scale_colour_manual(name = element_blank(), values=col.segm, breaks=c(MAPtimes),labels = c(MAPtimes),
-                        guide = guide_legend(override.aes = list(linetype = c("solid","longdash"),shape = c(NA, NA)))) +
-    theme(text = element_text(size=10),
-          plot.title = element_text(hjust = 0.5),
-          plot.background = element_rect(fill = "transparent", color = NA),
-          panel.background = element_rect(fill = "transparent"),
-          plot.margin=unit(c(0.3,0.3,0,0.5),"cm"),
-          axis.title.y = element_text(margin = margin(t = 0, r = 0, b = 0, l = 0.3)),
-          axis.text.x=element_blank(),
-          axis.line = element_line(colour = "black", 
-                                   size = 0.4, linetype = "solid"),
-          axis.ticks.x = element_line(colour = "black", 
-                                      size = 0.4, linetype = "solid"),
-          axis.ticks.y = element_line(colour = "black", 
-                                      size = 0.4, linetype = "solid"),
-          panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(),
-          legend.position ="none",
-          legend.key = element_rect(colour = "transparent", fill = "transparent"),
-          legend.background = element_rect(colour = "transparent", fill = "transparent"))
+  initial.ts.plot = initial.ts.plot +
+                    theme_classic(base_size = 15) +
+                    ylab(limni.labels[2]) +
+                    geom_rect(mapping= aes(xmin= Q2.ts, xmax=Q97.ts ,ymin=-Inf, ymax=Inf), fill=col.ts.distrib, alpha=0.2 ) +
+                    geom_vline(aes(xintercept = ts.res), col=col.ts.distrib, lwd =0.5, linetype = "solid") +
+                    scale_fill_manual(name=element_blank(), values=color.segm) +
+                    scale_colour_manual(name = element_blank(), values=col.segm, breaks=c(MAPtimes), labels = c(MAPtimes),
+                                        guide = guide_legend(override.aes = list(linetype = c("solid","longdash"), shape = c(NA, NA)))) +
+                    theme(text              = element_text(size=10),
+                          plot.title        = element_text(hjust = 0.5),
+                          plot.background   = element_rect(fill = "transparent", color = NA),
+                          panel.background  = element_rect(fill = "transparent"),
+                          plot.margin       = unit(c(0.3,0.3,0,0.5),"cm"),
+                          axis.title.y      = element_text(margin = margin(t = 0, r = 0, b = 0, l = 0.3)),
+                          axis.text.x       = element_blank(),
+                          axis.line         = element_line(colour = "black", size = 0.4, linetype = "solid"),
+                          axis.ticks.x      = element_line(colour = "black", size = 0.4, linetype = "solid"),
+                          axis.ticks.y      = element_line(colour = "black", size = 0.4, linetype = "solid"),
+                          panel.grid.major  = element_blank(), 
+                          panel.grid.minor  = element_blank(),
+                          legend.position   = "none",
+                          legend.key        = element_rect(colour = "transparent", fill = "transparent"),
+                          legend.background = element_rect(colour = "transparent", fill = "transparent"))
+    
   if (is.null(tflood)==FALSE) {
-    initial.ts.plot= initial.ts.plot +
-      geom_vline(aes(xintercept = tflood, col=col.tflood), linetype="longdash", lwd =0.4)
+    initial.ts.plot = initial.ts.plot +
+                      geom_vline(aes(xintercept = tflood, col=col.tflood), linetype="longdash", lwd =0.4)
   }
   
+  
+  
+  
+  #########
   # plot 2:
-  #####################################
+  #########
+  # (pdf of shift times to to put below plot 1)
   init.ts.dens = ggplot()
-  if (is.null(df.limni)==FALSE) {
+  if (!is.null(df.limni)){
     init.ts.dens= init.ts.dens + 
-      scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(df.limni$t_limni,1)))
+                  scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0, tail(df.limni$t_limni,1)))
   } else {
-    init.ts.dens= init.ts.dens + 
-      scale_x_continuous(name=limni.labels[1], expand = c(0,0), limits = c(0, tail(t_Gaug,1)))
+    if (!is.null(CdT.P)){
+      init.ts.dens= init.ts.dens + 
+                    scale_x_continuous(name=limni.labels[1], expand = c(0,0), limits = c(0, tail(CdT.P$t,1)))
+    } else {
+      message(" ERROR: no input data (gaugings or stage record) is provided ! please check!")
+      init.ts.dens= init.ts.dens + 
+                    scale_x_continuous(name=limni.labels[1], expand = c(0,0))
+    }
   }
   init.ts.dens= init.ts.dens +  
     ylab("Scaled pdf")+
     theme_classic(base_size = 15)+ theme(text = element_text(size=10),
-                                         plot.title = element_text(hjust = 0.5),
+                                         plot.title        = element_text(hjust = 0.5),
                                          #panel.grid.major=element_line(size=0.4, linetype = "dashed"), panel.grid.minor=element_blank(),
-                                         plot.background = element_rect(fill = "transparent", color = NA),
-                                         panel.background = element_rect(fill = "transparent"),
-                                         plot.margin=unit(c(0.3,0.3,0,0.05),"cm"),
-                                         axis.title.y = element_text(margin = margin(t = 0, r = 0, b = 0, l = 0.5)),
-                                         axis.line = element_line(colour = "black", 
-                                                                  size = 0.4, linetype = "solid"),
-                                         axis.ticks.x = element_line(colour = "black", 
-                                                                     size = 0.4, linetype = "solid"),
-                                         axis.ticks.y = element_line(colour = "black", 
-                                                                     size = 0.4, linetype = "solid"),
-                                         panel.grid.major = element_blank(), 
-                                         panel.grid.minor = element_blank(),
-                                         legend.position ="none",
-                                         legend.key = element_rect(colour = "transparent", fill = "transparent"),
+                                         plot.background   = element_rect(fill = "transparent", color = NA),
+                                         panel.background  = element_rect(fill = "transparent"),
+                                         plot.margin       = unit(c(0.3,0.3,0,0.05),"cm"),
+                                         axis.title.y      = element_text(margin = margin(t = 0, r = 0, b = 0, l = 0.5)),
+                                         axis.line         = element_line(colour = "black", size = 0.4, linetype = "solid"),
+                                         axis.ticks.x      = element_line(colour = "black",size = 0.4, linetype = "solid"),
+                                         axis.ticks.y      = element_line(colour = "black",size = 0.4, linetype = "solid"),
+                                         panel.grid.major  = element_blank(), 
+                                         panel.grid.minor  = element_blank(),
+                                         legend.position   = "none",
+                                         legend.key        = element_rect(colour = "transparent", fill = "transparent"),
                                          legend.background = element_rect(colour = "transparent", fill = "transparent"))
   
   if (nS == 2) {
     init.ts.dens= init.ts.dens + geom_density(aes(x= X, ..scaled..),
                                               fill=col.ts.distrib[1], 
-                                              colour=NA, alpha=0.3)
+                                              colour=NA, alpha=0.3) +
+                                 scale_fill_manual(name   = element_blank(), values = col.ts.distrib[1] )
   } else {
     
     init.ts.dens= init.ts.dens + geom_density(aes(x= X$time, ..scaled.., group =X$ord,  
-                                                  fill= X$colorrr, colour=X$colorrr), 
-                                              alpha=0.3)
+                                                  fill= X$colorrr, colour=X$colorrr), alpha=0.3) +
+                                 scale_fill_manual(name   = element_blank(),
+                                                   values = col.ts.distrib,
+                                                   breaks = col.ts.distrib)
   }
   # combined plot:
   ######################
@@ -6204,8 +6222,6 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
       
       
 
-      # gaugings to plot in the stage record with the periods derived from segmentation:
-      gaugings.df.recess[[param]] = read.table(file =paste0(dir.rec.segm.test.param[[param]],  "/data_with_periods.txt"), header = TRUE)
       # Quantiles for tot uncertainty for each parameter:
       Ysim[[param]]       = list();
       data.tmp.2[[param]] = list()
@@ -6574,6 +6590,9 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
     ###########################################################################################
     #PLot of stage record with the shifts:
     print("plot 3")
+      
+    # limni:
+    #######
     message("- Plotting stage record with gaugings and the river bed estimates with uncertainty")
     # filter the time series of stage record removing the long periods with missing data (putting a NA instead):
     dt_limni         = 0 
@@ -6595,6 +6614,23 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
         }
     } 
     df.limni_filtered = data.frame(t_limni = t_limni_filtered, h_limni = h_limni_filtered)
+    
+    
+    # gaugings:
+    ###########
+    # gaugings to plot in the stage record with the periods derived from segmentation:
+    trygauging =tryCatch( expr = {read.table(file =paste0(dir.rec.segm.test.param[[param]],  "/data_with_periods.txt"), header = TRUE)},
+                          error = function(e){          # Specifying error message
+                            message("File with gaugings is empty !!!")
+                          }
+    )
+    if (!is.null(trygauging)){
+      gaugings.df.recess[[param]] = read.table(file =paste0(dir.rec.segm.test.param[[param]],  "/data_with_periods.txt"), header = TRUE)
+    } else {
+      message("No gauging is provided!")
+      gaugings.df.recess = NULL
+    }
+    
       
     # stage record plot:
     t.plot <- ggplot()
@@ -6615,9 +6651,13 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
                         # breaks = seq(grid_limni.ylim[1], grid_limni.ylim[2], grid_limni.ylim[3])) +
       ylab(limni.labels[2]) +
       coord_cartesian(clip = 'off') +
-      geom_line(data = df.limni_filtered, aes(x = t_limni, y = h_limni), color = "gray60",size = 0.2) + # LIMNI !
-      geom_point(data=gaugings.df.recess[[length(parameters)]],                 # gaugings
-                 aes(x = t , y= h), size = 3, color = gaugings.df.recess[[length(parameters)]]$color) +
+      geom_line(data = df.limni_filtered, aes(x = t_limni, y = h_limni), color = "gray60",size = 0.2) # LIMNI !
+    
+      if (!is.null(gaugings.df.recess)){
+        t.plot = t.plot + geom_point(data=gaugings.df.recess[[length(parameters)]],                 # gaugings
+                                     aes(x = t , y= h), size = 3, color = gaugings.df.recess[[length(parameters)]]$color)
+      }
+      t.plot = t.plot + 
       theme_light(base_size=20) +
       theme(axis.text.x.top   = element_blank()
             ,axis.title       = element_text(size=20,face="plain")
@@ -6871,6 +6911,7 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
 ############################################################################################################
 plot.all.recessions = function(dir.rec.pool.test,  
                                rec.model,
+                               rec.model.gamma,
                                stage.limits,
                                limits.x.recess,
                                stage.scale.shift,
@@ -6890,61 +6931,123 @@ plot.all.recessions = function(dir.rec.pool.test,
   
   # recess model with tot uncertainty:
   #********************************************************************************
-  Recession.model = function(theta, model, t){ 
-    #******************************************************************************
-    h=0*t
+  Recession.model = function(theta, model, model.gamma, t){ 
+  #******************************************************************************
+  #*initialiaze stage array with zeros:
+    h = 0*t  
+    
     if ((model =="3expWithAsympt")|(model =="3expWithAsympt_bis")){
-      h = theta[1]*exp(-theta[2]*t) +
-        theta[3]*exp(-theta[4]*t) + 
-        theta[5]*exp(-theta[6]*t) +
-        theta[7] 
-      res.h = sapply(h, 
-                     function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
-                     theta=c(theta[8],theta[9]))
+      h = theta[1]*exp(-theta[2]*t) + theta[3]*exp(-theta[4]*t) + theta[5]*exp(-theta[6]*t) + theta[7] 
+      if (model.gamma == "constant"){ # structural error model
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1])}, theta=c(theta[8]))
+      } else if (model.gamma == 'linear'){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)},  theta=c(theta[8],theta[9]))
+      }
+      
+      
+      
     } else if (model =="2expWithAsympt"){
-      h = theta[1]*exp(-theta[2]*t) +
-        theta[3]*exp(-theta[4]*t) + 
-        theta[5] 
-      res.h = sapply(h, 
-                     function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
-                     theta=c(theta[6],theta[7]))
+      h = theta[1]*exp(-theta[2]*t) + theta[3]*exp(-theta[4]*t) + theta[5] 
+      if (model.gamma == "constant"){
+          res.h = sapply(h, 
+                         function(h, theta){h + rnorm(1, mean=0, sd=theta[1])}, theta=c(theta[6]))
+      } else if (model.gamma == 'linear'){
+          res.h = sapply(h, 
+                         function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)},  theta=c(theta[6],theta[7]))
+      }
+      
+      
+      
     } else if (model =="2expWithAsympt_bis"){
-      h = theta[1]*exp(-theta[2]*t) +
-        theta[3]*exp(-theta[4]*t) + 
-        theta[5] 
-      res.h = sapply(h, 
-                     function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
-                     theta=c(theta[6],theta[7]))
+      h = theta[1]*exp(-theta[2]*t) +  theta[3]*exp(-theta[4]*t) + theta[5] 
+      if (model.gamma == "constant"){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1])}, theta=c(theta[6]))
+      } else if (model.gamma == 'linear'){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, theta=c(theta[6],theta[7]))
+      }
+
+      
+      
     } else if (model =="2expWithAsympt_rel"){
-      h = theta[1]*(exp(-theta[2]*t) +  theta[3]*exp(-theta[4]*t)) + 
-        theta[5] 
-      res.h = sapply(h, 
-                     function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
-                     theta=c(theta[6],theta[7]))
+      h = theta[1]*(exp(-theta[2]*t) +  theta[3]*exp(-theta[4]*t)) + theta[5]
+      if (model.gamma == "constant"){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1])}, 
+                       theta=c(theta[6]))
+      } else if (model.gamma == 'linear'){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
+                       theta=c(theta[6],theta[7]))
+      }
+
+      
+      
+      
     } else if (model =="1expWithAsympt"){
-      h = theta[1]*exp(-theta[2]*t) +
-        theta[3] 
-      res.h = sapply(h, 
-                     function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
-                     theta=c(theta[4],theta[5]))
+      h = theta[1]*exp(-theta[2]*t) + theta[3] 
+      if (model.gamma == "constant"){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1])}, 
+                       theta=c(theta[4]))
+      } else if (model.gamma == 'linear'){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
+                       theta=c(theta[4],theta[5]))
+      }
+
+      
+      
+      
     } else if ((model =="expexp")|(model =="expexp_bis")){
       h = theta[1]*exp(-theta[2]*t^theta[3]) + theta[4] 
-      res.h = sapply(h, 
-                     function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
-                     theta=c(theta[5],theta[6]))
+      if (model.gamma == "constant"){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1])}, 
+                       theta=c(theta[5]))
+      } else if (model.gamma == 'linear'){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
+                       theta=c(theta[5],theta[6]))
+      }
+
+      
+      
+      
     } else if ((model =="hyperb")|(model =="hyperb_bis")){
       h = theta[1]/((1 + theta[2]*t)^theta[3]) + theta[4] 
-      res.h = sapply(h, 
-                     function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
-                     theta=c(theta[5],theta[6]))
+      if (model.gamma == "constant"){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1])},  theta=c(theta[5]))
+      } else if (model.gamma == 'linear'){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)},  theta=c(theta[5],theta[6]))
+      }
+
+      
+      
+      
     } else if ((model =="Coutagne")|(model =="Coutagne_bis")){
       h = theta[1]*(1 + (theta[3]-1)*theta[2]*t)^(theta[3]*(1 - theta[3])) + theta[4] 
-      res.h = sapply(h, 
-                     function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)}, 
-                     theta=c(theta[5],theta[6]))
+      if (model.gamma == "constant"){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1])}, theta=c(theta[5]))
+      } else if (model.gamma == 'linear'){
+        res.h = sapply(h, 
+                       function(h, theta){h + rnorm(1, mean=0, sd=theta[1] + theta[2]*h)},  theta=c(theta[5],theta[6]))
+      }
+
     } 
+    
     return(res.h)
   }
+  
+  
+  
+  
   
   # recess model for maxpost:
   #*************************************************************************************
@@ -6952,45 +7055,50 @@ plot.all.recessions = function(dir.rec.pool.test,
   #*************************************************************************************
     h=0*t
     if ((model =="3expWithAsympt")|(model =="3expWithAsympt_bis")){
-      h = theta[1]*exp(-theta[2]*t) +
-        theta[3]*exp(-theta[4]*t) + 
-        theta[5]*exp(-theta[6]*t) +
-        theta[7] 
+      h = theta[1]*exp(-theta[2]*t) + theta[3]*exp(-theta[4]*t) +  theta[5]*exp(-theta[6]*t) + theta[7] 
+      
     }  else if (model =="2expWithAsympt"){
-      h = theta[1]*exp(-theta[2]*t) +
-        theta[3]*exp(-theta[4]*t) + 
-        theta[5] 
+      h = theta[1]*exp(-theta[2]*t) + theta[3]*exp(-theta[4]*t) +  theta[5] 
+      
     }  else if (model =="2expWithAsympt_bis"){
-      h = theta[1]*exp(-theta[2]*t) +
-        theta[3]*exp(-theta[4]*t) + 
-        theta[5] 
+      h = theta[1]*exp(-theta[2]*t) + theta[3]*exp(-theta[4]*t) +  theta[5] 
+      
     }  else if (model =="2expWithAsympt_rel"){
-      h = theta[1]*(exp(-theta[2]*t) +  theta[3]*exp(-theta[4]*t)) + 
-        theta[5] 
+      h = theta[1]*(exp(-theta[2]*t) +  theta[3]*exp(-theta[4]*t)) + theta[5] 
+      
     } else if ((model =="1expWithAsympt")|(model =="1expWithAsympt_bis")){
       h = theta[1]*exp(-theta[2]*t) + theta[3] 
+      
     } else if ((model =="expexp")|(model =="expexp_bis")){
       h = theta[1]*exp(-theta[2]*t^theta[3]) + theta[4] 
+      
     } else if ((model =="hyperb")|(model =="hyperb_bis")){
       h = theta[1]/((1 + theta[2]*t)^theta[3]) + theta[4] 
+      
     } else if ((model =="Coutagne")|(model =="Coutagne_bis")){
       h = theta[1]*(1 + (theta[3]-1)*theta[2]*t)^(theta[3]*(1 - theta[3])) + theta[4] 
     }
+    
     return(h)
   }
   
+  
+  
+  
   #initialisation of the lists of plot objects:
-  reg.pool.plot=NULL; reg.pool.plot2=NULL;  seg.rec.plot=NULL; t.plot=NULL; t.plot2 =NULL; t.plot3 =NULL
-  t.plot4 = NULL; title.model=NULL; dir.rec.segm.test.param=NULL;
-  tau.results.df.rec =NULL; mu.results.df.rec=NULL; gamma.results.df.rec=NULL; df.shift.times.rec=NULL
-  df.shift.times.plus.rec=NULL; ts.res.before.rec=NULL; ts.res.rec=NULL; ts.res.plus.rec=NULL; Q2.ts.rec=NULL
-  Q97.ts.rec=NULL; Q2.mu.rec=NULL; mu.res.rec=NULL; Q97.mu.rec=NULL; Data.segm.rec=NULL; nS.ok.rec=NULL;
-  mcmc.seg.rec=NULL; pdf.ts.rec=NULL; gamma_segm_recess=NULL; gaugings.df.recess=NULL;
-  shift.times.recessions=NULL; data.annotate.recess=NULL; data.annotate.recess.adjust=NULL; 
-  X=NULL; X1=NULL; data.tmp= NULL;data.tmp.2= NULL; Ysim=NULL; time.adjust.before =NULL; 
-  time.adjust.plus=NULL; parameters =NULL; parameters.names =NULL;  model.title =0
-  #one selected model only: 
-  #####
+  reg.pool.plot = reg.pool.plot2 = seg.rec.plot = t.plot = t.plot2 = t.plot3 = t.plot4 = NULL; 
+  title.model = dir.rec.segm.test.param = tau.results.df.rec = mu.results.df.rec = gamma.results.df.rec = NULL;
+  df.shift.times.rec = df.shift.times.plus.rec = ts.res.before.rec = ts.res.rec = ts.res.plus.rec = NULL;
+  Q2.ts.rec = Q97.ts.rec= Q2.mu.rec = mu.res.rec = Q97.mu.rec = Data.segm.rec= nS.ok.rec = cmc.seg.rec = NULL; 
+  pdf.ts.rec = gamma_segm_recess = gaugings.df.recess = shift.times.recessions = data.annotate.recess = NULL;
+  data.annotate.recess.adjust = X = X1 = data.tmp = data.tmp.2 = Ysim = time.adjust.before = time.adjust.plus = parameters = parameters.names = NULL;  
+  model.title =0;
+  
+  
+  
+  
+  # one selected model only: 
+  #########################
   mod=1; model.names=0
   model.names[mod] = rec.model[mod]
   # read results of cooked mcmc:  
@@ -7002,124 +7110,258 @@ plot.all.recessions = function(dir.rec.pool.test,
   residuals.rec     = read.table(file=paste0(dir.rec.pool.test,"/Results_Residuals.txt"), header=TRUE)
   curves.data.rec   = read.table(file=paste0(dir.rec.pool.test,"/Curves_Data.txt"), header=TRUE)
   
+  
+  
   ######################################################################################################
   # Recessions regression plot:
   ######################################################################################################
   nsample      = length(data.MCMC.cooked[,1])
   tgrid        = seq(0, round(max(residuals.rec[,1]), 1), 0.5)    #seq(limits.x.recess[1],  limits.x.recess[2],  0.5) 
   Ncurves.pool = tail(curves.data.rec$Period,1)
+  
+  
+  
   #Initialisation:
   #########################################
   if (model.names[mod] =="3expWithAsympt"){
   #########################################
     model.title[mod] = TeX("$h(t,k) = \\alpha_1^{(k)} e^{-\\lambda_1 t} + \\alpha_2 e^{-\\lambda_2 t} +  \\alpha_3 e^{-\\lambda_3 t} + \\beta^{(k)}$")
     b1.var =FALSE
-    MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=10) # 9 param + # of period
-    MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=10)      # 9 param + # of period 
-    for(i in 1:Ncurves.pool){
-      col.num = c( i, Ncurves.pool+1,                                  #a1, b1,
-                   Ncurves.pool +2, Ncurves.pool + 3,                    #a2, b2
-                   Ncurves.pool +4, Ncurves.pool + 5,                      #a3, b3,
-                   Ncurves.pool +5 + i,                            #a4 (asymptotic level parameter)
-                   Ncurves.pool*2 + 5+1, Ncurves.pool*2 + 5+2)  #gamma1, gamma2
-      MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
-      MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+    
+    if (rec.model.gamma =='constant'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=9) # 8 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=9)      # 8 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool+1,                              # a1, b1,
+                     Ncurves.pool +2, Ncurves.pool + 3,              # a2, b2
+                     Ncurves.pool +4, Ncurves.pool + 5,              # a3, b3,
+                     Ncurves.pool +5 + i,                            # a4 (asymptotic level parameter)
+                     Ncurves.pool*2 + 5+1)                           # gamma1
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      } 
+    } else if (rec.model.gamma == "linear"){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=10) # 9 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=10)      # 9 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool+1,                              # a1, b1,
+                     Ncurves.pool +2, Ncurves.pool + 3,              # a2, b2
+                     Ncurves.pool +4, Ncurves.pool + 5,              # a3, b3,
+                     Ncurves.pool +5 + i,                            # a4 (asymptotic level parameter)
+                     Ncurves.pool*2 + 5+1, Ncurves.pool*2 + 5+2)     # gamma1, gamma2
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      } 
     }
+    
+    
+    
+    
     
   } else if (model.names[mod] =="3expWithAsympt_bis"){
     #####################################################
     model.title[mod] = TeX("$h(t,k) = \\alpha_1^{(k)} e^{-\\lambda_1 t} + \\alpha_2^{(k)} e^{-\\lambda_2 t} + \\alpha_3 e^{-\\lambda_3 t} + \\beta^{(k)}$")
-    MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=10) # 9 param + # of period
-    MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=10)      # 9 param + # of period 
-    for(i in 1:Ncurves.pool){
-      col.num = c( i, Ncurves.pool+1,                               #a1(var), b1,
-                   Ncurves.pool +1 + i, 2*Ncurves.pool + 2,         #a2(var), b2
-                   2*Ncurves.pool + 3, 2*Ncurves.pool + 4,          #a3, b3,
-                   2*Ncurves.pool + 4 + i,                          #a4(var) (asymptotic level parameter)
-                   3*Ncurves.pool + 4 + 1, 3*Ncurves.pool + 6)      #gamma1, gamma2
-      MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
-      MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
-    }  
+    
+    if (rec.model.gamma =='constant'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=9) # 8 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=9)      # 8 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool+1,                               #a1(var), b1,
+                     Ncurves.pool +1 + i, 2*Ncurves.pool + 2,         #a2(var), b2
+                     2*Ncurves.pool + 3, 2*Ncurves.pool + 4,          #a3, b3,
+                     2*Ncurves.pool + 4 + i,                          #a4(var) (asymptotic level parameter)
+                     3*Ncurves.pool + 4 + 1)                          #gamma1
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      }
+      
+    } else if (rec.model.gamma =='linear'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=10) # 9 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=10)      # 9 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool+1,                               #a1(var), b1,
+                     Ncurves.pool +1 + i, 2*Ncurves.pool + 2,         #a2(var), b2
+                     2*Ncurves.pool + 3, 2*Ncurves.pool + 4,          #a3, b3,
+                     2*Ncurves.pool + 4 + i,                          #a4(var) (asymptotic level parameter)
+                     3*Ncurves.pool + 4 + 1, 3*Ncurves.pool + 6)      #gamma1, gamma2
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      }
+    }
+    
+    
     
     
   }  else if (model.names[mod] =="2expWithAsympt_bis"){
     #####################################################
     model.title[mod] = TeX("$h(t,k) = \\alpha_1^{(k)} e^{-\\lambda_1 t} + \\alpha_2^{(k)} e^{-\\lambda_2 t}  + \\beta^{(k)}$")
-    MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=8) # 7 param + # of period
-    MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=8)      # 7 param + # of period 
-    for(i in 1:Ncurves.pool){
-      col.num = c( i, Ncurves.pool+1,                      #a1, b1,
-                   Ncurves.pool + 1 + i, Ncurves.pool*2 +1 + 1,   #a2, b2
-                   Ncurves.pool*2 +1+1+i,                       #a3,
-                   Ncurves.pool*3 + 2 + 1, Ncurves.pool*3 +2+2)  #gamma1, gamma2
-      MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
-      MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+    if (rec.model.gamma =='constant'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=7)     # 6 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=7)          # 6 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool+1,                             # a1, b1,
+                     Ncurves.pool + 1 + i, Ncurves.pool*2 +1 + 1,   # a2, b2
+                     Ncurves.pool*2 +1+1+i,                         # a3,
+                     Ncurves.pool*3 + 2 + 1)                        # gamma1
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      }
+      
+    } else if (rec.model.gamma =='linear'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=8)     # 7 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=8)          # 7 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool+1,                             # a1, b1,
+                     Ncurves.pool + 1 + i, Ncurves.pool*2 +1 + 1,   # a2, b2
+                     Ncurves.pool*2 +1+1+i,                         # a3,
+                     Ncurves.pool*3 + 2 + 1, Ncurves.pool*3 +2+2)   # gamma1, gamma2
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      }
     }
+    
+  
+          
+    
     
     
   }  else if ((model.names[mod] =="2expWithAsympt")|(model.names[mod] =="2expWithAsympt_rel")){
     ##############################################################################################
     model.title[mod] = TeX("$h(t,k) = \\alpha_1^{(k)} e^{-\\lambda_1 t} + \\alpha_2 e^{-\\lambda_2  t} + \\beta^{(k)}$")
-    MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=8) # 7 param + # of period
-    MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=8)      # 7 param + # of period 
-    for(i in 1:Ncurves.pool){
-      col.num = c( i, Ncurves.pool+1,                             #a1, b1,
-                   Ncurves.pool +2, Ncurves.pool +3,              #a2, b2
-                   Ncurves.pool + 3 + i,                           #a3,
-                   Ncurves.pool*2 + 3 + 1, Ncurves.pool*2 +3 +2)  #gamma1, gamma2
-      MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
-      MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+    
+    if (rec.model.gamma =='constant'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=7)     # 6 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=7)          # 6param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool+1,                             # a1, b1,
+                     Ncurves.pool +2, Ncurves.pool +3,              # a2, b2
+                     Ncurves.pool + 3 + i,                          # a3,
+                     Ncurves.pool*2 + 3 + 1)                        # gamma1
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      }
+      
+    } else if (rec.model.gamma =='linear'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=8)     # 7 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=8)          # 7 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool+1,                             # a1, b1,
+                     Ncurves.pool +2, Ncurves.pool +3,              # a2, b2
+                     Ncurves.pool + 3 + i,                          # a3,
+                     Ncurves.pool*2 + 3 + 1, Ncurves.pool*2 +3 +2)  # gamma1, gamma2
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      }
     }
+      
+    
+    
+    
     
     
   } else if (model.names[mod] =="1expWithAsympt"){
     ################################################
     model.title[mod] = TeX("$h(t,k) = \\alpha^{(k)} \\; e^{-\\lambda t} + \\beta^{(k)}$")
-    MCMC.save    = matrix(NA, nrow=Ncurves.pool*nsample, ncol=6) # 5 param + # of period
-    MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=6)      # 5 param + # of period 
-    for(i in 1:Ncurves.pool){
-      col.num = c( i, Ncurves.pool+1,                      #a1, b1,
-                   Ncurves.pool +1+ i,                      #a2
-                   Ncurves.pool*2 +1+1, Ncurves.pool*2 +1 + 2)  #gamma1, gamma2
-      MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
-      MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+    if (rec.model.gamma =='constant'){
+      MCMC.save    = matrix(NA, nrow=Ncurves.pool*nsample, ncol=5) # 4 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=5)         # 4 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool+1,                            # a1, b1,
+                     Ncurves.pool +1+ i,                           # a2
+                     Ncurves.pool*2 +1+1)                          # gamma1
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      } 
+    } else if (rec.model.gamma =='linear'){
+      MCMC.save    = matrix(NA, nrow=Ncurves.pool*nsample, ncol=6) # 5 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=6)         # 5 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool+1,                            # a1, b1,
+                     Ncurves.pool +1+ i,                           # a2
+                     Ncurves.pool*2 +1+1, Ncurves.pool*2 +1 + 2)   # gamma1, gamma2
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      } 
     }
+    
+    
+    
     
     
   } else if ((model.names[mod] =="expexp")|(model.names[mod] =="hyperb")|(model.names[mod] =="Coutagne")) {
     ##########################################################################################################
     model.title[mod] = TeX("$h(t,k) = \\alpha_1^{(k)} e^{-\\lambda_1 t}^{\\eta t} + \\beta^{(k)}$")
-    MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=7) # 6 param + # of period
-    MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=7)      # 6 param + # of period 
-    for(i in 1:Ncurves.pool){
-      col.num = c( i, Ncurves.pool + 1,                          # a1(k), b1,
-                   Ncurves.pool + 2,                             # n1
-                   Ncurves.pool + 2 + i,                         # a2(k) (asymptotic level parameter)
-                   Ncurves.pool*2 + 2 +1, Ncurves.pool*2 +2 +2)  # gamma1, gamma2
-      MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
-      MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+    
+    if (rec.model.gamma =='constant'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=6)    # 5 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=6)         # 5 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool + 1,                          # a1(k), b1,
+                     Ncurves.pool + 2,                             # n1
+                     Ncurves.pool + 2 + i,                         # a2(k) (asymptotic level parameter)
+                     Ncurves.pool*2 + 2 +1)                        # gamma1
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      }
+      
+    } else if (rec.model.gamma =='linear'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=7)    # 6 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=7)         # 6 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool + 1,                          # a1(k), b1,
+                     Ncurves.pool + 2,                             # n1
+                     Ncurves.pool + 2 + i,                         # a2(k) (asymptotic level parameter)
+                     Ncurves.pool*2 + 2 +1, Ncurves.pool*2 +2 +2)  # gamma1, gamma2
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      }
     }
+    
+    
+    
     
     
   } else if ((model.names[mod] =="expexp_bis")|(model.names[mod] =="hyperb_bis")|(model.names[mod] =="Coutagne_bis")){
     ####################################################################################################################
     model.title[mod] = TeX("$h(t,k) = \\alpha_1^{(k)} e^{-\\lambda_1 t}^{\\eta^{(k)} t} + \\beta^{(k)}$")
-    MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=7) # 6 param + # of period
-    MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=7)      # 6 param + # of period 
-    for(i in 1:Ncurves.pool){
-      col.num = c( i, Ncurves.pool + i,                     # a1(k), b1(k),
-                   Ncurves.pool*2 + 1,                      # n1
-                   Ncurves.pool*2 + 1 + i,                  # a2 (asymptotic level parameter)
-                   Ncurves.pool*3 + 2, Ncurves.pool*3 +3)   # gamma1, gamma2
-      MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
-      MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
-    } 
+    
+    if (rec.model.gamma =='constant'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=6) # 5 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=6)      # 5 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool + i,                       # a1(k), b1(k),
+                     Ncurves.pool*2 + 1,                        # n1
+                     Ncurves.pool*2 + 1 + i,                    # a2 (asymptotic level parameter)
+                     Ncurves.pool*3 + 2)                        # gamma1, gamma2
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      }
+      
+    } else if (rec.model.gamma =='linear'){
+      MCMC.save = matrix(NA, nrow=Ncurves.pool*nsample, ncol=7) # 6 param + # of period
+      MaxPost.save = matrix(NA, nrow=Ncurves.pool, ncol=7)      # 6 param + # of period 
+      for(i in 1:Ncurves.pool){
+        col.num = c( i, Ncurves.pool + i,                       # a1(k), b1(k),
+                     Ncurves.pool*2 + 1,                        # n1
+                     Ncurves.pool*2 + 1 + i,                    # a2 (asymptotic level parameter)
+                     Ncurves.pool*3 + 2, Ncurves.pool*3 +3)     # gamma1, gamma2
+        MCMC.save[(nsample*(i-1)+1):(i*nsample),] = cbind(data.MCMC.cooked[,col.num], rep(i, nsample) )
+        MaxPost.save[i,] = c(data.MCMC.MaxPost[col.num],i)
+      }
+    }
+    
   }
+  
+  
+  
+  
+  
+  
   
   #######################################################################################################
   # Apply recession model (total uncertainty and maxpost):
   message("- Plotting all Recession curves !!!  Wait ... "); flush.console()
-  Rec.Post    = apply(MCMC.save,    MARGIN=1, Recession.model,      model=model.names[mod],  t=tgrid) #add structural error:
+  Rec.Post    = apply(MCMC.save,    MARGIN=1, Recession.model,      model=model.names[mod], model.gamma = rec.model.gamma,  t=tgrid) # with structural error:
   Rec.MaxPost = apply(MaxPost.save, MARGIN=1, Recess.Maxpost.model, model=model.names[mod],  t=tgrid) # Maximum posterior 
   
   # Quantiles: 
@@ -7129,7 +7371,7 @@ plot.all.recessions = function(dir.rec.pool.test,
                      MARGIN=1, quantile, probs=c(0.025, 0.975),  na.rm=TRUE)
     List.Rec.quants[[i]] = data.frame(cbind(tgrid, 
                                             t(data.tmp - stage.scale.shift),
-                                            Rec.MaxPost[,i] - stage.scale.shift))  #!!!!!!!!!!!!!! 
+                                            Rec.MaxPost[,i] - stage.scale.shift))       #!!!!!!!!!!!!!! 
     colnames(List.Rec.quants[[i]]) = c("t", "inf", "sup", "maxpost")
   }
   
@@ -7140,10 +7382,10 @@ plot.all.recessions = function(dir.rec.pool.test,
   palette.per = palette.per[1:Ncurves.pool]
   data.plot.Rec = data.frame(do.call("rbind", 
                                      List.Rec.quants[inter.per]), 
-                             Period=rep(inter.per,each=length(tgrid)))
+                             Period=rep(inter.per, each=length(tgrid)))
   inter.null=which(data.plot.Rec$maxpost==0)
   data.rec.obs = read.table(paste0(dir.rec.pool.test,"/Curves_Data.txt"),
-                            header=TRUE,dec=".",sep="") # Gaugings loading
+                            header=TRUE,dec=".",sep="") # recession data uploading.
   
   ylim.wind = c(stage.limits[1],    stage.limits[2])
   xlim.wind = c(limits.x.recess[1], limits.x.recess[2])
@@ -7151,6 +7393,7 @@ plot.all.recessions = function(dir.rec.pool.test,
   pos.num =function(x.int){
     inter=which(x.int==data.rec.obs$period);
     return(inter)}
+  
   inter.rec.obs =unlist(sapply(inter.per, pos.num), recursive = TRUE, use.names = TRUE)
   data.Rec = data.plot.Rec #[-inter.null,]
   data.Rec$Period = factor(data.Rec$Period)

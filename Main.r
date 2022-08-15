@@ -134,23 +134,18 @@
                    if(!is.null(dev.list())) dev.off() # Clear plots
                    cat("\014") # Clear console
                    rm(list=ls())# Clean workspace
-                   setwd(dirname(rstudioapi::getActiveDocumentContext()$path))  # set the directory
-                   dir_code <- getwd()
-                   setwd(dir_code)
-                   # define the directory with the modules files:
-                   dir.modules = paste0(dir_code, "/Modules")
                    
                    #Libraries used  (it automatically detects and installs missing packages):
-                   options(repos = c(CRAN = "https://cran.rstudio.com"))
+                   # options(repos = c(CRAN = "https://cran.rstudio.com"))
                    #Packages:
-                   pack = c(
+                   pack = c("rstudioapi",
                      "methods", "lattice", "gridExtra", "reshape","reshape2", "ggplot2", 
                      "GGally",  "grid", "devtools", "gtable",  "extrafont",  "chron", 
                      "randomcoloR",  "plotly", "mcmc", "coda", "RColorBrewer", "ggpubr", 
                      "cowplot", "svDialogs", "tcltk", "psych",  "mosaicData", 
                      "mosaicCore", "latex2exp",  "scales", "pracma" , 
                      "segclust2d",  "changepoint",  "minpack.lm", "gganimate", 
-                     "magick", "patchwork", "egg",
+                     "magick", #"patchwork", "egg",
                      "dplyr", "tidyr", "gifski", "png", "transformr"
                    )
                    # for future versions add: "airGR", "rmarkdown"
@@ -168,8 +163,13 @@
                    }
                    #  Then try/install packages:
                    install_pack( pack ) 
-                   
-                   
+
+                   # set the directory
+                   setwd(dirname(rstudioapi::getActiveDocumentContext()$path))  
+                   dir_code <- getwd()
+                   setwd(dir_code)
+                   # define the directory with the modules files:
+                   dir.modules = paste0(dir_code, "/Modules")
                    
                    
                    
@@ -351,6 +351,10 @@
                     file.options.general     =  paste0(dir.case_study,"/Options_General.R")
                     file.options.SPD         =  paste0(dir.case_study,"/Options_BaRatinSPD.R")
                     file.options.recessions  =  paste0(dir.case_study,"/Options_Recession_analysis.R")
+                    
+                    # ATTENTION:
+                    # if limni is too dense you can filter it by setting "limni_filter" in the Options_general.R" file:  
+                    
                     # Extraction of stage-recessions (from "module_recession_analysis.R"):
                     rec.extraction = recession.selection(dir.exe               =  dir.exe,
                                                          dir.segment.rec       =  dir.segment.rec,
@@ -538,7 +542,7 @@
                     
                     
                     # apply a linear regression to the relation V - deltab:
-                    # using deltab (from baratinSPD) and V (from cumulative sediment transport for each reference event):^ù
+                    # using deltab (from baratinSPD) and V (from cumulative sediment transport for each reference event):
                     ST.linear.estim = linear.estimation(dir_code             = dir_code, 
                                                         dir.sed.transp       = SPD.reference.periods$dir.reference, 
                                                         df.deltab.V          = ST.segm$df.rel.deltab.V.TOT,      # df.rel.deltab.qscum.TOT,   #ST.SPD[[1]],

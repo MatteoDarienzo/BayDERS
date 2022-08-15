@@ -195,8 +195,12 @@ read.refer.morphogenic.events = function(dir.exe, dir.case_study, dir.Sedim.tran
            user.modify.ST    =   c()
            data.annotate.ST  =   res_gaug_recess$df_gaug_rec
            pdf.ts.ST         =   res_gaug_recess$pdf_gaug_rec
-           gaugings.P        =   gaugings; 
-           names(gaugings.P) =   c("hP", "QP", "uQP", "Period", "tP", "t.trueP")
+           if (!is.null(gaugings)){
+               gaugings.P        =   gaugings; 
+               names(gaugings.P) =   c("hP", "QP", "uQP", "Period", "tP", "t.trueP")
+           } else {
+               gaugings.P = NULL
+           }
            stage.record.NA = na.omit(stage.record)
            
            for (ii in 1:length(res_gaug_recess$df_gaug_rec$t.adj)){ 
@@ -224,6 +228,7 @@ read.refer.morphogenic.events = function(dir.exe, dir.case_study, dir.Sedim.tran
              message("")
              
              X11(width = 20, height = 10); print(
+               # call function from "module_gaugings_segmentation_plots.R"
                exemple_ts.plot(CdT.P        = gaugings.P, 
                                df.limni     = stage.record, 
                                Q10.ts       = res_gaug_recess$df_gaug_rec$q2, 

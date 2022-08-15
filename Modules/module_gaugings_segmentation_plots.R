@@ -332,7 +332,7 @@ GaugingsShifts_P_plot <- function(dir.seg.gaug,
              geom_point(data = gaugings, aes(x = h, y = Q), size = 1.7, pch =21, color ="gray90", fill = "gray90") +
              geom_errorbar(data = df.RC, 
                   aes(x = hP, ymin =QP-2*uQP, ymax = QP +2*uQP), 
-                  width=.05, size = 0.2, 
+                  width=0.02*(grid_RC.xlim[2] - grid_RC.xlim[1]), size = 0.3,
                   color = "black") +
              geom_point(data = df.RC, aes(x = hP, y = QP), size = 1.7, pch =21, fill = df.RC$color) +
   
@@ -373,7 +373,7 @@ GaugingsShifts_P_plot <- function(dir.seg.gaug,
                                                 grid_RC.xstep)) +
                 geom_point(data = gaugings, aes(x = h, y = Q), size = 1.7, pch =21, color ="gray90", fill = "gray90") +
                 geom_errorbar(data = df.RC, aes(x=hP, ymin =QP-2*uQP, ymax = QP+2*uQP), 
-                              color = "black",  width=.05, size = 0.2)+
+                              color = "black", width=0.02*(grid_RC.xlim[2] - grid_RC.xlim[1]), size = 0.3) +
                 geom_point(data = df.RC, aes(x = hP, y = QP), size = 1.7, pch =21, fill = df.RC$color) +
 
                 #scale_colour_manual(name = element_blank(), 
@@ -572,6 +572,7 @@ initial.ts.plot <- function(CdT.P,
           for (ss in 1:length(df_peaks)) {
             initial.ts.plot = initial.ts.plot +
               geom_vline(xintercept  = df_peaks[[ss]]$t_hmax,  color = col.ts.distrib[ss], lwd = 0.5, linetype = "dashed") +
+              geom_point(aes(x= df_peaks[[ss]]$t_hmax, y=df_peaks[[ss]]$hmax), color = col.ts.distrib[ss], pch=1, size=3) + 
               geom_vline(xintercept  = tflood[ss],             color = col.ts.distrib[ss], lwd =2,    linetype = "dotted")+
               annotate("text", label = df_peaks[[ss]]$t_hmax,  x = df_peaks[[ss]]$t_hmax, y =grid_limni.ylim[2], size = 4, 
                                colour = col.ts.distrib[ss], parse = TRUE, vjust = 0, angle = 90)
@@ -909,6 +910,7 @@ exemple_ts.plot <- function(CdT.P, df.limni, Q10.ts, Q90.ts, ts.res, ts.real, st
   leg.change.points      = "change points, tau"
   leg.col.shifts         = c("change points, tau" = "solid", "Shift times, s" = "dotted")
 
+  
   ts.exemple.plot <- ggplot()+
       geom_vline(xintercept = df_peaks$t_hmax, col= "red", lwd = 1) +
       geom_vline(aes(xintercept = ts.res, linetype = leg.change.points), col="blue", lwd =1.5) +
@@ -916,8 +918,6 @@ exemple_ts.plot <- function(CdT.P, df.limni, Q10.ts, Q90.ts, ts.res, ts.real, st
       geom_vline(aes(xintercept = ts.real, linetype = leg.shift.times), col="red", lwd =1.5) +
       annotate("text", label = df_peaks$t_hmax , x = df_peaks$t_hmax, y =grid_limni.ylim[2], size = 4, colour = "red", parse = TRUE, vjust = 0, angle = 90)+
       geom_line(data = df.limni, aes(x = t_limni, y = h_limni, color =leg.stage.record ), size = 1.2)+
-      #geom_point(aes(x = t_Gaug, y =h_Gaug), color = "gray60", size = 0.8) +
-      geom_point(data = CdT.P, aes(x = tP, y = hP, color = leg.gaugings), pch = 21, size = 4, fill="blue") +
       #scale_x_continuous(name=limni.labels[1], limits = c(1800, 2700) , expand = c(0,0)) +
       scale_x_continuous(name=limni.labels[1], limits = time_period, expand = c(0,0)) +
       scale_y_continuous(name=limni.labels[2], limits = c(grid_limni.ylim[1], grid_limni.ylim[2]), expand = c(0,0)) +
@@ -925,49 +925,63 @@ exemple_ts.plot <- function(CdT.P, df.limni, Q10.ts, Q90.ts, ts.res, ts.real, st
       #annotate("rect",xmin= (Q10.ts), xmax=(Q90.ts), ymin=-Inf, ymax=Inf, fill="blue", alpha=0.2) +
       #geom_vline(xintercept = ts.res, col= "blue", lwd = 1)+
       #geom_rect(mapping= aes(xmin= Q10.ts, xmax=Q90.ts ,ymin=-Inf, ymax=Inf), fill="blue", alpha=0.1) +
-
       coord_cartesian(clip = 'off') +
       #geom_point(aes(x=ts.real, y = c(-1)),  col="red", size = 2 , stroke =2,shape= 4)+
       # annotate("text", label = expression(t[s]^MAP), x = ts.res-2, y = -0.7, size = 3, colour = "blue", 
       #          parse = TRUE, vjust = 0, angle = 90)+
       # annotate("text", label = expression(t[flood]), x = ts.real+2, y = -0.7, size = 3, colour = "red", 
       #          parse = TRUE, angle = 90)+ 
-      scale_colour_manual(name     = element_blank(), 
-                          values   = leg.col.stage.gauging,
-                          breaks   = c(leg.stage.record, leg.gaugings),
-                          labels   = c(leg.stage.record, leg.gaugings),
-                          guide    = guide_legend(override.aes = list(
-                          linetype = c("solid", "blank"), shape = c(NA, 21),  fill = c(NA,"black"))))+
       scale_linetype_manual(name   = element_blank(),
                             values = leg.col.shifts,
                             breaks = c(leg.change.points, leg.shift.times),
-                            labels = c(unname(TeX("$ \\hat{\\tau_{1}}$")),
-                                       unname(TeX("$t_{flood,1}$"))),
-                            guide  = guide_legend(override.aes = list(
-                                     col =c("blue", "red")))) +
+                            labels = c(unname(TeX("$ \\hat{\\tau_{1}}$")), unname(TeX("$t_{flood,1}$"))),
+                            guide  = guide_legend(override.aes = list(col =c("blue", "red")))) +
       theme_bw(base_size=15)+
-      theme(axis.text        = element_text(size=15),
-            axis.title       = element_text(size=20),
-            #,panel.grid.major=element_line(size=1.2)
-            #,panel.grid.minor=element_line(size=0.8)
-            plot.margin      = unit(c(1, 1.5, 1.2, 0.5),"cm"),
-            axis.title.y     = element_text(margin = margin(t = 0, r = 30, b = 0, l = 0)),
-            axis.line        = element_line(colour = "black",  size = 0.4, linetype = "solid"),
-            axis.ticks.x     = element_line(colour = "black",  size = 0.4, linetype = "solid"),
-            axis.ticks.y     = element_line(colour = "black",  size = 0.4, linetype = "solid"),
-            axis.title.x     = element_blank(),
-            panel.grid.major = element_blank(), 
-            panel.grid.minor = element_blank(),
-            legend.key.size  = unit(1, "cm"),
-            legend.position  = "left",
-            legend.box       = "horizontal"
-           ,legend.direction = "horizontal"
-           ,legend.box.margin= margin(0, 0, 0, 50)
-           #,legend.spacing.x = unit(1.3, 'cm')
-           ,legend.text       = element_text(margin=margin(0,30,0,0.1), size=22)
-           ,legend.justification = c(0,1)
-           ,legend.key        = element_rect(colour = "transparent", fill = "transparent")
-           ,legend.background = element_rect(colour = "transparent", fill = "transparent"))
+      theme(axis.text       = element_text(size=15),
+          axis.title        = element_text(size=20),
+          #,panel.grid.major= element_line(size=1.2)
+          #,panel.grid.minor= element_line(size=0.8)
+          plot.margin       = unit(c(1, 1.5, 1.2, 0.5),"cm"),
+          axis.title.y      = element_text(margin = margin(t = 0, r = 30, b = 0, l = 0)),
+          axis.line         = element_line(colour = "black",  size = 0.4, linetype = "solid"),
+          axis.ticks.x      = element_line(colour = "black",  size = 0.4, linetype = "solid"),
+          axis.ticks.y      = element_line(colour = "black",  size = 0.4, linetype = "solid"),
+          axis.title.x      = element_blank(),
+          panel.grid.major  = element_blank(), 
+          panel.grid.minor  = element_blank(),
+          legend.key.size   = unit(1, "cm"),
+          legend.position   = "left",
+          legend.box        = "horizontal",
+          legend.direction  = "horizontal",
+          legend.box.margin = margin(0, 0, 0, 50),
+          #legend.spacing.x = unit(1.3, 'cm'),
+          legend.text       = element_text(margin=margin(0,30,0,0.1), size=22),
+          legend.justification = c(0,1),
+          legend.key        = element_rect(colour = "transparent", fill = "transparent"),
+          legend.background = element_rect(colour = "transparent", fill = "transparent"))
+      
+      if (!is.null(CdT.P)){
+            ts.exemple.plot = ts.exemple.plot +
+            #geom_point(aes(x = t_Gaug, y =h_Gaug), color = "gray60", size = 0.8) +
+            geom_point(data = CdT.P, aes(x = tP, y = hP, color = leg.gaugings), pch = 21, size = 4, fill="blue")+
+            scale_colour_manual(name     = element_blank(), 
+                                values   = leg.col.stage.gauging,
+                                breaks   = c(leg.stage.record, leg.gaugings),
+                                labels   = c(leg.stage.record, leg.gaugings),
+                                guide    = guide_legend(override.aes = list(
+                                  linetype = c("solid", "blank"), shape = c(NA, 21),  fill = c(NA,"black"))))
+      } else {
+          ts.exemple.plot = ts.exemple.plot +
+          scale_colour_manual(name     = element_blank(), 
+                              values   = leg.col.stage.gauging[1],
+                              breaks   = c(leg.stage.record),
+                              labels   = c(leg.stage.record),
+                              guide    = guide_legend(override.aes = list(
+                              linetype = c("solid"),  fill = c(NA))))
+      }
+      
+
+
   
   #----------------------------------------------------------------------------------------
   Utau = "Posterior pdf of the change point times"
@@ -1003,6 +1017,8 @@ exemple_ts.plot <- function(CdT.P, df.limni, Q10.ts, Q90.ts, ts.res, ts.real, st
     # scale_x_continuous(name=limni.labels[1], limits = c(1800, 2700) , expand = c(0,0))
     scale_x_continuous(name=limni.labels[1], limits = time_period, expand = c(0,0)) 
 
+  
+  
   
   ########################################################################################
   # Legend plot:
@@ -1103,7 +1119,7 @@ final.RC.plot <- function(gaug,
     #p <- p + env.par[[i]]
     p <- p + geom_point(data = gaug[[i]],    aes(x = X.h. , y= X.Q.), size = 3, pch =21, fill = colorGauging[j])
     p <- p + geom_errorbar(data = gaug[[i]], aes(x = X.h.,  ymin =X.Q.-2*X.uQ. , ymax =X.Q. +2*X.uQ.), 
-                           width=.05, size = 0.3, color = colorGauging[j])
+                           width=0.02*(grid_RC.xlim[2] - grid_RC.xlim[1]), size = 0.3, color = colorGauging[j])
   }
   }
   #coord_cartesian(xlim = c(-1, 2), ylim = c(0,6), expand = c(0))+
@@ -1177,7 +1193,7 @@ final.RC.plot.2 <- function(gaug,
        ylab(bquote(.(RC.y.labels) ~ .("[") ~ m^3*s^-1 ~ .("]"))) +  
        xlab(bquote(.(RC.x.labels) ~ .("[") ~ m ~ .("]")))+
        geom_errorbar(data=gaug, aes(x= X.h., ymin =X.Q.-2*X.uQ. , ymax =X.Q. +2*X.uQ.), 
-                     width=.05, size = 0.3, color = gaug$color) +
+                     width=0.02*(grid_RC.xlim[2] - grid_RC.xlim[1]), size = 0.3, color = gaug$color) +
        geom_point(size = 3, pch =21) + 
        #data = gaug, aes(x = X.h. , y= X.Q.), size = 3, pch =21, fill = gaug$color)+
        annotation_logticks(base = 10, sides = "l", scaled = TRUE, colour = "black", size = 0.5, linetype = 1)+

@@ -679,6 +679,7 @@ recession.regression   <-  function(dir.exe,
   source(file.options.recess)
   
   
+  
   ####################
   # Hardcoded options
   BayesianOption         = 2                             # Type of Bayesian model (1 = simple, 2 = pooling). only 2 is available!
@@ -690,7 +691,7 @@ recession.regression   <-  function(dir.exe,
   save.all.results       = TRUE                          # TRUE = save all segmentation computations
   plot.gamma.uncertainty = TRUE                          # plot structural uncertainty on the segmentation.
   segm_all_parameters    = FALSE
-  stage.scale.shift      = 1000                         # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
+  stage.scale.shift      = 1000                          # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
   stage.limits           = c(-150, 50, 50)               # limits for recession stage is in "cm" !!!
   limits.y               = stage.limits
   limits.x.recess        = c(0, 150, 30)                 # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
@@ -829,6 +830,7 @@ recession.regression   <-  function(dir.exe,
                                slim        = nslim.rec, 
                                burn        = nburn.rec,
                                prior       = prior.rec,
+                               gamma.model = gamma.model.rec,
                                prior.gamma = prior.gamma.rec)
             # Launch BaM.exe (Benjamin Renard)
             system2("BaM_recession_multi_model_final.exe")
@@ -1052,6 +1054,7 @@ recession.regression   <-  function(dir.exe,
            #****************************************************************************************************
            plot.all.recessions(dir.rec.pool.test     = dir.rec.pool.test,
                                rec.model             = rec.mod,
+                               rec.model.gamma       = gamma.model.rec,
                                stage.limits          = stage.limits,
                                limits.x.recess       = limits.x.recess,
                                stage.scale.shift     = stage.scale.shift,
@@ -1626,7 +1629,8 @@ BaM_config.pooling <- function( dir.exe ,
                                 jump.neg , 
                                 slim, 
                                 burn,
-                                prior, 
+                                prior,
+                                gamma.model,
                                 prior.gamma) {  
 ######################################################################################
 # This function writes the configuration files for BaM.exe for the estimation of
@@ -2626,7 +2630,7 @@ BaM_config.pooling <- function( dir.exe ,
   
   
   
-  #########################################################################
+  ###################################################################################################################
   file.name2 = paste0(dir.exe,"/Recession_h_pooling/Config_Data.txt")
   cat("'Recession_h_pooling\\Curves_Data.txt'", file =file.name2, sep="\n")# path to data file
   cat(1, file =file.name2,sep="\n",append = TRUE)      	# number of header lines
@@ -2707,25 +2711,37 @@ BaM_config.pooling <- function( dir.exe ,
   cat(".false." , file = file.Pred5, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
   #---------------------------------------------------------------------------- 
   file.remnant = paste0(dir.exe,"/Recession_h_pooling/Config_RemnantSigma.txt")
-  cat("'Linear'", file = file.remnant, sep="\n")                          #! Function f used in sdev=f(Qrc) 
-  cat(2, file = file.remnant, append = TRUE, sep="\n")                    #! Number of parameters gamma for f
-  cat("gamma1", file = file.remnant, append = TRUE, sep="\n")             #! Parameter Name
-  cat(prior.gamma[4], file = file.remnant, append = TRUE, sep="\n")       #! Initial Guess
-  cat(prior.gamma[3], file = file.remnant, append = TRUE, sep="\n")       #! Prior distribution
-  cat(prior.gamma[1],file =file.remnant, append = TRUE, sep=",")
-  cat(",",file =file.remnant, append = TRUE, sep=",")
-  cat(prior.gamma[2],file =file.remnant, append = TRUE, sep="\n")
-  #----------------------------------------------------------------
+  if (gamma.model == "constant"){
+    cat("'Constant'", file = file.remnant, sep="\n")                          #! Function f used in sdev=f(Qrc) 
+    cat(1, file = file.remnant, append = TRUE, sep="\n")                    #! Number of parameters gamma for f
+    cat("gamma", file = file.remnant, append = TRUE, sep="\n")             #! Parameter Name
+    cat(prior.gamma[4], file = file.remnant, append = TRUE, sep="\n")       #! Initial Guess
+    cat(prior.gamma[3], file = file.remnant, append = TRUE, sep="\n")       #! Prior distribution
+    cat(prior.gamma[1],file =file.remnant, append = TRUE, sep=",")
+    cat(",",file =file.remnant, append = TRUE, sep=",")
+    cat(prior.gamma[2],file =file.remnant, append = TRUE, sep="\n")
+    
+  } else if (gamma.model == "linear"){
+    cat("'Linear'", file = file.remnant, sep="\n")                          #! Function f used in sdev=f(Qrc) 
+    cat(2, file = file.remnant, append = TRUE, sep="\n")                    #! Number of parameters gamma for f
+    cat("gamma1", file = file.remnant, append = TRUE, sep="\n")             #! Parameter Name
+    cat(prior.gamma[4], file = file.remnant, append = TRUE, sep="\n")       #! Initial Guess
+    cat(prior.gamma[3], file = file.remnant, append = TRUE, sep="\n")       #! Prior distribution
+    cat(prior.gamma[1],file =file.remnant, append = TRUE, sep=",")
+    cat(",",file =file.remnant, append = TRUE, sep=",")
+    cat(prior.gamma[2],file =file.remnant, append = TRUE, sep="\n")
+    #----------------------------------------------------------------
+    cat("gamma2", file = file.remnant, append = TRUE, sep="\n")             #! Parameter Name
+    cat(prior.gamma[8], file = file.remnant, append = TRUE, sep="\n")       #! Initial Guess
+    cat(prior.gamma[7], file = file.remnant, append = TRUE, sep="\n")       #! Initial Guess
+    cat(prior.gamma[5],file =file.remnant, append = TRUE, sep=",")
+    cat(",",file =file.remnant, append = TRUE, sep=",")
+    cat(prior.gamma[6],file =file.remnant, append = TRUE, sep="\n")
+    # cat(gamma[2], file =file.remnant, append = TRUE,sep="\n")
+    # cat('"VAR"', file =file.remnant, append = TRUE,sep="\n")
+    # cat('"Config_g2_VAR.txt"', file =file.remnant, append = TRUE,sep="\n")
+  }
   
-  cat("gamma2", file = file.remnant, append = TRUE, sep="\n")             #! Parameter Name
-  cat(prior.gamma[8], file = file.remnant, append = TRUE, sep="\n")       #! Initial Guess
-  cat(prior.gamma[7], file = file.remnant, append = TRUE, sep="\n")       #! Initial Guess
-  cat(prior.gamma[5],file =file.remnant, append = TRUE, sep=",")
-  cat(",",file =file.remnant, append = TRUE, sep=",")
-  cat(prior.gamma[6],file =file.remnant, append = TRUE, sep="\n")
-  # cat(gamma[2], file =file.remnant, append = TRUE,sep="\n")
-  # cat('"VAR"', file =file.remnant, append = TRUE,sep="\n")
-  # cat('"Config_g2_VAR.txt"', file =file.remnant, append = TRUE,sep="\n")
   #--------------------------------------------------------------------------------  RUNNING OPTIONS
   file.Pred6 = paste0(dir.exe,"/Recession_h_pooling/Config_RunOptions.txt")
   cat(".true.", file = file.Pred6, sep="\n")                 # Do MCMC?
@@ -4819,16 +4835,15 @@ recession.regression.pooling <- function(t_limni, h_limni, rec.model, dir.case_s
   theta5.maxpost = 0; theta5.stdev= 0; theta5.Q10= 0; theta5.Q90 = 0; theta5.mean = 0;
   theta6.maxpost = 0; theta6.stdev= 0; theta6.Q10= 0; theta6.Q90 = 0; theta6.mean = 0;
   results.regression = 0;
-  
+  asymptote.h = 0; curve_good.h = 0; hpeakgood.h = 0; t.real.good.h =0; index.good.h = 0;
+  asymptote.h[0] = 1 #first asymptote starting point
+  d.h.pooling <- NULL
   
   
   
   # POOLING Recession h, all curves together
   #########################################################################################
-  #initialisation:
-  asymptote.h = 0; curve_good.h = 0; hpeakgood.h = 0; t.real.good.h =0; index.good.h = 0;
-  asymptote.h[0] = 1 #first asymptote starting point
-  d.h.pooling <- NULL
+  #directories:
   dir.create(paste(dir.regression,"/Pooling", sep=""))
   dir.rec.pool <- paste(dir.regression,"/Pooling", sep="")
   dir.create(paste(dir.rec.pool,"/test",2, sep=""))
@@ -5561,7 +5576,17 @@ A few information:
       }
     }
     tau.results.df  = cbind(tau.results.df, tflood = tflood) 
-    CdT.tot         = data.frame(tP = t_Gaug,  QP = Q_Gaug, hP = h_Gaug)
+    # gaugings <- data.frame("h"      = h_Gaug,
+    #                        "Q"      = Q_BaRatin,
+    #                        "uQ"     = uQ_Gaug,
+    #                        "Period" = 1 , 
+    #                        "t"      = t_Gaug,
+    #                        "t.true" = t_gaug.true)
+    if (!is.null(gaugings)){
+        CdT.tot         = data.frame(t = gaugings$t,  Q = gaugings$Q,  h = gaugings$h)      
+    } else {
+        CdT.tot = NULL
+    }
     initial.tsplot  = initial.ts.plot.rec(CdT.P           = CdT.tot, 
                                           df.limni        = stage.record, 
                                           tshift          = tau.results.df,
@@ -5569,8 +5594,6 @@ A few information:
                                           grid_limni.ylim = grid_limni.ylim, 
                                           dir.seg.gaug    = dir.segm.recessions.param[[param]],
                                           seg.iter        = 1, 
-                                          t_Gaug          = t_Gaug,
-                                          h_Gaug          = h_Gaug, 
                                           mcmc.segment    = mcmc.segment, 
                                           nS              = nS.ok)
     
@@ -5680,37 +5703,45 @@ A few information:
   }
   
   #######################################################################
+  
   # Gaugings:
   message("Determining periods of stability of gaugings ..."); flush.console()
-  color= colors.period
-  c_Gaug = 0; P_Gaug = 0;
-  if (!is.null(df.shift.times$ts.real)) {
-    for (i in 1:length(gaugings$t)) {
-      if(gaugings$t[i] <= df.shift.times$ts.real[1]) {
-        #points(x=hP[i], y=QP[i], log ="y", col = color[1],pch=1,lwd=4)
-        c_Gaug[i] = color[1]
-        P_Gaug[i] = 1
+  if (!is.null(gaugings)){
+      color= colors.period
+      c_Gaug = 0; P_Gaug = 0;
+      if (!is.null(df.shift.times$ts.real)) {
+          for (i in 1:length(gaugings$t)) {
+            if(gaugings$t[i] <= df.shift.times$ts.real[1]) {
+                #points(x=hP[i], y=QP[i], log ="y", col = color[1],pch=1,lwd=4)
+                c_Gaug[i] = color[1]
+                P_Gaug[i] = 1
+            }
+          }
+          for (j in 2:nS.ok) {
+            for (i in 1:length(gaugings$t)) {
+              if ((gaugings$t[i] <= tail(gaugings$t,1)) & 
+                 (gaugings$t[i] >  df.shift.times$ts.real[j-1])) {
+                  #points(x=hP[i], y=QP[i], log ="y", col = color[j],pch=1,lwd=4)
+                  c_Gaug[i] = color[j]
+                  P_Gaug[i] = j
+              }
+            }
+          }
+      } else {
+          for (i in 1:length(gaugings$t)) {
+            #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
+            c_Gaug[i] = color[1]
+            P_Gaug[i] = 1
+          }
       }
-    }
-    for (j in 2:nS.ok) {
-      for (i in 1:length(gaugings$t)) {
-        if ((gaugings$t[i] <= tail(gaugings$t,1)) & 
-            (gaugings$t[i] >  df.shift.times$ts.real[j-1])) {
-          #points(x=hP[i], y=QP[i], log ="y", col = color[j],pch=1,lwd=4)
-          c_Gaug[i] = color[j]
-          P_Gaug[i] = j
-        }
-      }
-    }
+      df.RC <- data.frame(gaugings$h, gaugings$Q, gaugings$uQ,  P_Gaug, gaugings$t, c_Gaug)
+      names(df.RC) = c("h","Q", "uQ", "Period", "t","color")
   } else {
-    for (i in 1:length(gaugings$t)) {
-      #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
-      c_Gaug[i] = color[1]
-      P_Gaug[i] = 1
-    }
+      message("No gaugings provided !!!"); flush.console()
+      df.RC = NULL
   }
-  df.RC <- data.frame(gaugings$h, gaugings$Q, gaugings$uQ,  P_Gaug, gaugings$t, c_Gaug)
-  names(df.RC) = c("h","Q", "uQ", "Period", "t","color")
+  
+  
   ############################################################################
   # plot results of segmentation:
   message("Saving and plotting results ..."); flush.console()
@@ -5956,10 +5987,15 @@ read.results.segment.recess = function(dir.segm.recessions.par,
   } else {
     data.annotate.off =NULL
   }
-  gaugings.df.recess = read.table(file =paste0(dir.segm.recessions.par, "/data_with_periods.txt"), header = TRUE)
   
+  if (!is.null(Gaugings)){
+      gaugings.df.recess = read.table(file =paste0(dir.segm.recessions.par, "/data_with_periods.txt"), header = TRUE)
+  } else {
+      gaugings.df.recess = NULL
+  }
   
-  
+
+    
   return(list(
     nS.ok                       = nS.ok.rec, 
     mcmc.segment                = mcmc.seg.rec,

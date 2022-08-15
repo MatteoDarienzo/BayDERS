@@ -23,48 +23,57 @@ plot.time.shifts.step1 <- function(dir,
   message("- Generating the plot, Please, Wait ... ")
   message(paste0("- Plot available also at ", dir, "/",save_file_name ))
   
-
-
-  
-  #preparing gauging data per periods:
-  #gaugings:
-  c_Gaug = 0; P_Gaug = 0;  names(gaug.1) = c("h","Q", "uQ", "Period", "t", "t.real")
-  if (!is.null(data.annotate.step1$t.adj)) {
-    for (i in 1:length(gaug.1$t)) {
-      if(gaug.1$t[i] <= data.annotate.step1$t.adj[1]) {
-        #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
-        c_Gaug[i] = color[1]
-        P_Gaug[i] = 1
-      }
-    }
-    for (j in 2:(length(data.annotate.step1$t.adj)+1)) {
-      for (i in 1:length(gaug.1$t)) {
-        if ((gaug.1$t[i] <= tail(gaug.1$t,1)) & (gaug.1$t[i] >  data.annotate.step1$t.adj[j-1])) {
-          #points(x=hP[i], y=QP[i], log ="y", col = colo[j],pch=1,lwd=4)
-          c_Gaug[i] = color[j]
-          P_Gaug[i] = j
-        }
-      }
-    }
-  } else {
-    for (i in 1:length(gaug.1$t)) {
-      #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
-      c_Gaug[i] = color[1]
-      P_Gaug[i] = 1
-    }
-  }
   
   
-  df.RC.step1 <- data.frame(gaug.1$h, gaug.1$Q, gaug.1$uQ, P_Gaug, gaug.1$t, c_Gaug)
-  #df.RC.step1 <- gaug.1
-  
-  names(df.RC.step1) = c("h","Q", "uQ", "Period", "t","color")
-  # save into files:
-  write.table(df.RC.step1, paste0(dir,"/data_with_periods.txt"), sep ="\t", row.names=FALSE)
+  # save results of shift times into new files:
   write.table(pdf.ts.3, paste0(dir,"/pdf_ts.txt"),  sep ="\t", row.names=FALSE)
   write.table(data.annotate.step1, paste0(dir,"/shift_times.txt"),  sep ="\t", row.names=FALSE)
   
   
+
+  
+  #preparing gauging data per periods:
+  if (!is.null(gaug.1)){
+      #gaugings:
+      c_Gaug = 0; P_Gaug = 0; 
+      names(gaug.1) = c("h","Q", "uQ", "Period", "t", "t.real")
+      if (!is.null(data.annotate.step1$t.adj)) {
+        for (i in 1:length(gaug.1$t)) {
+          if(gaug.1$t[i] <= data.annotate.step1$t.adj[1]) {
+              #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
+              c_Gaug[i] = color[1]
+              P_Gaug[i] = 1
+          }
+        }
+        for (j in 2:(length(data.annotate.step1$t.adj)+1)) {
+            for (i in 1:length(gaug.1$t)) {
+                if ((gaug.1$t[i] <= tail(gaug.1$t,1)) & (gaug.1$t[i] >  data.annotate.step1$t.adj[j-1])) {
+                    #points(x=hP[i], y=QP[i], log ="y", col = colo[j],pch=1,lwd=4)
+                    c_Gaug[i] = color[j]
+                    P_Gaug[i] = j
+                }
+            }
+        }
+      } else {
+        for (i in 1:length(gaug.1$t)) {
+            #points(x=hP[i], y=QP[i], log ="y", col = colo[1],pch=1,lwd=4)
+            c_Gaug[i] = color[1]
+            P_Gaug[i] = 1
+        }
+      }
+      
+      df.RC.step1 <- data.frame(gaug.1$h, gaug.1$Q, gaug.1$uQ, P_Gaug, gaug.1$t, c_Gaug)
+      names(df.RC.step1) = c("h","Q", "uQ", "Period", "t","color")
+      # save into files:
+      write.table(df.RC.step1, paste0(dir,"/data_with_periods.txt"), sep ="\t", row.names=FALSE)
+      
+  } else {
+      df.RC.step1 = NULL
+  }
+  
+
+
+
   
   
   
@@ -81,23 +90,32 @@ plot.time.shifts.step1 <- function(dir,
       #scale_x_continuous(name=limni.labels[1], expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
       scale_x_continuous(name=limni.labels[1], expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
   } else {
-    t.plot= t.plot + 
-      scale_x_continuous(name=limni.labels[1], expand = c(0,0), limits =c(0,tail(g.1$X.tP.,1)))
+    if (!is.null(df.RC.step1)){
+        t.plot= t.plot + 
+                scale_x_continuous(name=limni.labels[1], expand = c(0,0), limits =c(0,tail(df.RC.step1$t.,1)))+
+                geom_point(data=df.RC.step1, aes(x = t , y= h), size = 6, pch =21, fill= df.RC.step1$color)
+    }
   }
+  
   t.plot <- t.plot + 
-    geom_point(data=df.RC.step1, aes(x = t , y= h), size = 6, pch =21, fill= df.RC.step1$color) +
     scale_y_continuous(name   = limni.labels[2], expand = c(0,0), limits = c(grid_limni.ylim[1], grid_limni.ylim[2]), 
                        breaks = seq(grid_limni.ylim[1], grid_limni.ylim[2], grid_limni.ylim[3]))+
     ylab(limni.labels[2])+
     coord_cartesian(clip = 'off')+
     theme_bw(base_size=20)+
-    theme(axis.text=element_text(size=20),axis.title=element_text(size=30,face="bold")
-          ,panel.grid.major=element_blank(),panel.grid.minor=element_blank()
-          ,legend.text=element_text(size=20),legend.title=element_text(size=30)
-          ,legend.key.size=unit(1.5, "cm"),legend.position="none",
-          plot.margin=unit(c(0.5,0.5,2,0),"cm"),
-          axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
-          axis.line.x = element_blank())
+    theme(axis.text         = element_text(size=20)
+          ,axis.title       = element_text(size=30,face="bold")
+          ,panel.grid.major = element_blank()
+          ,panel.grid.minor = element_blank()
+          ,legend.text      = element_text(size=20)
+          ,legend.title     = element_text(size=30)
+          ,legend.key.size  = unit(1.5, "cm")
+          ,legend.position  = "none"
+          ,plot.margin      = unit(c(0.5,0.5,2,0),"cm")
+          ,axis.title.y     = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))
+          ,axis.line.x      = element_blank())
+  
+  
     # geom_vline(xintercept = tail(df.limni$t_limni,1), color="red", size= 2.5)+
     # annotate("text", 
     #          x = tail(df.limni$t_limni,1) + 50,
@@ -193,11 +211,12 @@ plot.time.shifts.step1 <- function(dir,
             ,axis.ticks.y = element_blank()
             ,axis.ticks.x = element_blank()) +
       ggtitle(title1)
-    if (is.null(df.limni)==FALSE) {
-      # t.plot2= t.plot2 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
-      t.plot2= t.plot2 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
+    if (!is.null(df.limni)){
+        t.plot2= t.plot2 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
     } else {
-      t.plot2= t.plot2 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(g.1$X.tP.,1)))
+        if (!is.null(df.RC.step1)){
+            t.plot2= t.plot2 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.RC.step1$t,1)))
+        }
     }
   
   
@@ -206,11 +225,6 @@ plot.time.shifts.step1 <- function(dir,
   
   
 
-  
-    
-    
-    
-    
     
     
   #------------------------------------------
@@ -293,13 +307,13 @@ plot.time.shifts.step1 <- function(dir,
     ggtitle(title2)
   if (is.null(df.limni)==FALSE) {
     # t.plot2= t.plot2 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
-    t.plot3= t.plot3 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
+    t.plot3 = t.plot3 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
   } else {
-    t.plot3= t.plot3 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(g.1$X.tP.,1)))
+    if (!is.null(df.RC.step1)){
+      t.plot3 = t.plot3 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.RC.step1$t,1)))
+    }
   }
 
-    
-    
     
   
   
@@ -389,9 +403,11 @@ plot.time.shifts.step1 <- function(dir,
             ,axis.ticks.x = element_blank()) +
       ggtitle(title3)
     if (is.null(df.limni)==FALSE) {
-      t.plot4= t.plot4 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
+        t.plot4= t.plot4 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
     } else {
-      t.plot4= t.plot4 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(g.1$X.tP.,1)))
+        if (!is.null(df.RC.step1)){
+          t.plot4 = t.plot4 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.RC.step1$t,1)))
+        }
     }
  
   
@@ -426,9 +442,11 @@ plot.time.shifts.step1 <- function(dir,
           ,axis.ticks.x     = element_blank()) +
     ggtitle(title4)
   if (is.null(df.limni)==FALSE) {
-    t.plot6= t.plot6 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
+      t.plot6= t.plot6 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.limni$t_limni,1)))
   } else {
-    t.plot6= t.plot6 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(g.1$X.tP.,1)))
+      if (!is.null(df.RC.step1)){
+        t.plot6 = t.plot6 + scale_x_continuous(name=element_blank(), expand = c(0,0), limits =c(0,tail(df.RC.step1$t,1)))
+      }
   }
   
   
