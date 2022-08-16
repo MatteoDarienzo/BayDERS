@@ -215,27 +215,33 @@ recession.selection <- function(  dir.exe,
                                   stage.record
                                   ) {
 ##########################################################################################################
-  
   if (is.null(stage.record)){
     message("***************************************************************************")
     message("***** ERROR: stage record (with times and values), 'df.limni' is required !!! ")
     message("***************************************************************************")
   }
-  
   # Read inputs and options for computation:
   source(file.options.general)
   source(file.options.recess)
-  ############################
+  
+  
+  
+  #####################################################################################
   # other hardcoded settings:
   index.period           = c(1:length(stage.record$t_limni))   # indexes of stage record to analyse
   stage.limni.u.m.       = "m"                                 # "m" or "cm"  unity of the stage record (df.limni$h_limni)
   tmax.rec               = 150                                 # max recession time (for plot) NOT USED !
   hmax.rec               = 100                                 # max recession stage (for plot) NOT USED !
-  #limits.x.recess        = c(0, 150, 30)                       # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
-  stage.scale.shift      = 1000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
+  #limits.x.recess        = c(0, 150, 30)                      # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
+  min_stage              = min(stage.record)*100 - 50    # min stage value in cm.
+  stage.scale.shift      = - min_stage                  # in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift  
   BayesianOption         = 2
-  toll                   = 0.1   # [cm] tolerance for the recession extraction. 
-  #############################
+  toll                   = 0.1                                 # [cm] tolerance for the recession extraction. 
+  #####################################################################################
+  
+  
+  
+  
   
   # directories:
   dir.segment.rec.test1  = paste0(dir.segment.rec,"/",name.folder.results.recession)
@@ -672,7 +678,8 @@ recession.regression   <-  function(dir.exe,
                                     file.options.recess,
                                     data.recess,
                                     initial.time.rec,
-                                    which.recession){
+                                    which.recession,
+                                    stage.record){
 #########################################################################################################
   # read inputs and options for computation:
   source(file.options.general)
@@ -691,7 +698,8 @@ recession.regression   <-  function(dir.exe,
   save.all.results       = TRUE                          # TRUE = save all segmentation computations
   plot.gamma.uncertainty = TRUE                          # plot structural uncertainty on the segmentation.
   segm_all_parameters    = FALSE
-  stage.scale.shift      = 1000                          # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
+  min_stage              = min(stage.record)*100 - 50    # min stage value in cm.
+  stage.scale.shift      = - min_stage                  # in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift  
   stage.limits           = c(-150, 50, 50)               # limits for recession stage is in "cm" !!!
   limits.y               = stage.limits
   limits.x.recess        = c(0, 150, 30)                 # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
@@ -809,10 +817,11 @@ recession.regression   <-  function(dir.exe,
             curve_data = "Recession_h_pooling/Curves_Data.txt"
             write.table(d.h, file = curve_data, append = FALSE, sep = "\t", eol = "\n",
                         na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh", "Period"))
+            
             if (prior.gamma.rec[7] == "'Uniform'"){
-                prior.gamma.rec[5] =  as.numeric(prior.gamma.rec[5])/stage.scale.shift
-                prior.gamma.rec[6] =  as.numeric(prior.gamma.rec[6])/stage.scale.shift
-                prior.gamma.rec[8] =  as.numeric(prior.gamma.rec[8])/stage.scale.shift
+                prior.gamma.rec[5] =  as.numeric(prior.gamma.rec[5]) #/stage.scale.shift
+                prior.gamma.rec[6] =  as.numeric(prior.gamma.rec[6]) #/stage.scale.shift
+                prior.gamma.rec[8] =  as.numeric(prior.gamma.rec[8]) #/stage.scale.shift
             }
             # Launch BaM application in Bayesian pooling:
             message("***************************************************************"); flush.console()
@@ -5114,10 +5123,11 @@ recession.segmentation <- function(dir.exe,
   save.all.results       = TRUE                                # TRUE = save all segmentation computations
   plot.gamma.uncertainty = TRUE                                # plot structural uncertainty on the segmentation.
   segm_all_parameters    = FALSE
-  stage.scale.shift      = 1000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
-  plot.recession.uncert  = TRUE                           # plot the total uncertainty ribbons of the recession curves.
-  plot.dates             = FALSE                             # plot tha shift times in date format
-
+  plot.recession.uncert  = TRUE                                # plot the total uncertainty ribbons of the recession curves.
+  plot.dates             = FALSE                               # plot tha shift times in date format
+  min_stage              = min(stage.record)*100 - 50    # min stage value in cm.
+  stage.scale.shift      = - min_stage                  # in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift  
+  
   # to remove in future:
   limits.Y.alpha         = c(0, 1000, 200)                     # Limits for the alpha (initial stage) plot.
   limits.Y.lambda        = c(0, 40, 10)                        # Limits for the lambda (recession rate) plot.
@@ -6256,15 +6266,25 @@ Segmentation_config.rec <- function(dir.exe, nobs, nS, tmin, tfirst, tfin,
   
   
 ###################################################################################################
-performance.recess.analysis = function() {
-###################################################################################################  
+performance.recess.analysis = function(stage.record) {
+################################################################################################### 
+  if (is.null(stage.record)){
+    message("***************************************************************************")
+    message("***** ERROR: stage record (with times and values), 'df.limni' is required !!! ")
+    message("***************************************************************************")
+  }
+  
+  # Read inputs and options for computation:
+  source(file.options.general)
+  source(file.options.recess)
+  
+  
   #plot DIC and other performance criteria to compare all models and all chi:
   plot.performance.model.comparison(model.names     =   c("1expWithAsympt", 
                                                           "2expWithAsympt", 
                                                           "2expWithAsympt_bis",
                                                           "3expWithAsympt", 
                                                           "3expWithAsympt_bis", 
-                                                          #"2expWithAsympt_rel",
                                                           "expexp", 
                                                           "expexp_bis",
                                                           "hyperb", 
@@ -6274,9 +6294,9 @@ performance.recess.analysis = function() {
                                     
                                     model.titles     = c("M1", "M2", "M3", "M4", "M5", "M6", 
                                                          "M7", "M8", "M9", "M10", "M11"),
-                                    chi.test        = c(10, 30, 50),  #for different values of chi
+                                    chi.test        = c(10, 30, 50),                 # for different values of chi
                                     dir.case_study  = dir.case_study, 
-                                    priors          = list(prior.param.rec[[1]],     #priors for the each model
+                                    priors          = list(prior.param.rec[[1]],     # priors for the each model
                                                            prior.param.rec[[2]],
                                                            prior.param.rec[[7]],
                                                            prior.param.rec[[3]],
@@ -6295,6 +6315,8 @@ performance.recess.analysis = function() {
                                     data.annotate.off   = data.annotate.off,
                                     time.limits         = limni.time.limits,
                                     grid_limni.ylim     = c(-2 , 4.5 , 1))
+  
+  
   
   
   # final results for the rating shift times detection method:

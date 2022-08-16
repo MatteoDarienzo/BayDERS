@@ -3296,3 +3296,29 @@ plot.time.shifts.step2.retro <- function(dir,
 
 
 
+
+
+
+
+
+
+
+# 
+# ############################################################################
+# plot.performance.model.comparison = function(model.names, model.titles, chi.test, dir.case_study, priors, 
+#                                              which.recession, bt.from.gaugingsss, pdf.ts.gaugings, data.annotate.off, time.limits, 
+#                                              grid_limni.ylim){
+# ############################################################################
+#   # this function performs the performance evaluation of the recession analysis.
+#   # It is designed specifically for the article Darienzo et al. 2022, 
+#   # for instance it is based and tested on the case study of Meyras, France.
+#   
+#   
+#   
+#   
+#   
+#   
+#   return()
+# }
+
+

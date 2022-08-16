@@ -352,7 +352,7 @@
                     file.options.SPD         =  paste0(dir.case_study,"/Options_BaRatinSPD.R")
                     file.options.recessions  =  paste0(dir.case_study,"/Options_Recession_analysis.R")
                     
-                    # ATTENTION:
+                    # !!! ATTENTION !!!!
                     # if limni is too dense you can filter it by setting "limni_filter" in the Options_general.R" file:  
                     
                     # Extraction of stage-recessions (from "module_recession_analysis.R"):
@@ -370,8 +370,8 @@
                                                           file.options.recess   =  paste0(dir.case_study,"/Options_Recession_analysis.R"),
                                                           data.recess           =  list(rec.extraction$d.h.selected, rec.extraction$t.real.good.h),
                                                           initial.time.rec      =  rec.extraction$t.real.good.h,
-                                                          which.recession       =  c(1:rec.extraction$Ncurves))  
-                    
+                                                          which.recession       =  c(1:rec.extraction$Ncurves),
+                                                          stage.record          =  df.limni)  
                     
                     
                     # Segmentation of the time series of the stage-recession specific parameters (e.g. the asymptotic stage): 
