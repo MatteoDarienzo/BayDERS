@@ -146,7 +146,7 @@
                      "mosaicCore", "latex2exp",  "scales", "pracma" , 
                      "segclust2d",  "changepoint",  "minpack.lm", "gganimate", 
                      "magick", #"patchwork", "egg",
-                     "dplyr", "tidyr", "gifski", "png", "transformr"
+                     "dplyr", "tidyr", "gifski", "png", "transformr", "lubridate" 
                    )
                    # for future versions add: "airGR", "rmarkdown"
                    
