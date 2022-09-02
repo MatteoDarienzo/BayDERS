@@ -240,6 +240,8 @@ if ((file_gaugings != FALSE)) {
   }
   Gaugings = Gaugings.raw[first.gaug:last,]
   
+  #### Order date increasing
+  Gaugings  =  arrange(Gaugings,dmy_hm(Gaugings$Date))
   
   # check if stage timings are in date format or numeric:
   #********************************************
