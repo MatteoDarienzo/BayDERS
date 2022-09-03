@@ -215,27 +215,33 @@ recession.selection <- function(  dir.exe,
                                   stage.record
                                   ) {
 ##########################################################################################################
-  
   if (is.null(stage.record)){
     message("***************************************************************************")
     message("***** ERROR: stage record (with times and values), 'df.limni' is required !!! ")
     message("***************************************************************************")
   }
-  
   # Read inputs and options for computation:
   source(file.options.general)
   source(file.options.recess)
-  ############################
+  
+  
+  
+  #####################################################################################
   # other hardcoded settings:
   index.period           = c(1:length(stage.record$t_limni))   # indexes of stage record to analyse
   stage.limni.u.m.       = "m"                                 # "m" or "cm"  unity of the stage record (df.limni$h_limni)
   tmax.rec               = 150                                 # max recession time (for plot) NOT USED !
   hmax.rec               = 100                                 # max recession stage (for plot) NOT USED !
-  #limits.x.recess        = c(0, 150, 30)                       # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
-  stage.scale.shift      = 1000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
+  #limits.x.recess        = c(0, 150, 30)                      # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
+  min_stage              = min(stage.record)*100 - 50    # min stage value in cm.
+  stage.scale.shift      = - min_stage                  # in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift  
   BayesianOption         = 2
-  toll                   = 0.1   # [cm] tolerance for the recession extraction. 
-  #############################
+  toll                   = 0.1                                 # [cm] tolerance for the recession extraction. 
+  #####################################################################################
+  
+  
+  
+  
   
   # directories:
   dir.segment.rec.test1  = paste0(dir.segment.rec,"/",name.folder.results.recession)
@@ -672,7 +678,8 @@ recession.regression   <-  function(dir.exe,
                                     file.options.recess,
                                     data.recess,
                                     initial.time.rec,
-                                    which.recession){
+                                    which.recession,
+                                    stage.record){
 #########################################################################################################
   # read inputs and options for computation:
   source(file.options.general)
@@ -691,7 +698,8 @@ recession.regression   <-  function(dir.exe,
   save.all.results       = TRUE                          # TRUE = save all segmentation computations
   plot.gamma.uncertainty = TRUE                          # plot structural uncertainty on the segmentation.
   segm_all_parameters    = FALSE
-  stage.scale.shift      = 1000                          # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
+  min_stage              = min(stage.record)*100 - 50    # min stage value in cm.
+  stage.scale.shift      = - min_stage                  # in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift  
   stage.limits           = c(-150, 50, 50)               # limits for recession stage is in "cm" !!!
   limits.y               = stage.limits
   limits.x.recess        = c(0, 150, 30)                 # [c(min, max, step)] limits for the recession period in days. by default = c(0, 150, 30).
@@ -809,10 +817,11 @@ recession.regression   <-  function(dir.exe,
             curve_data = "Recession_h_pooling/Curves_Data.txt"
             write.table(d.h, file = curve_data, append = FALSE, sep = "\t", eol = "\n",
                         na = "NA", dec = ".", row.names = FALSE, col.names=c("time", "h", "uh", "Period"))
+            
             if (prior.gamma.rec[7] == "'Uniform'"){
-                prior.gamma.rec[5] =  as.numeric(prior.gamma.rec[5])/stage.scale.shift
-                prior.gamma.rec[6] =  as.numeric(prior.gamma.rec[6])/stage.scale.shift
-                prior.gamma.rec[8] =  as.numeric(prior.gamma.rec[8])/stage.scale.shift
+                prior.gamma.rec[5] =  as.numeric(prior.gamma.rec[5]) #/stage.scale.shift
+                prior.gamma.rec[6] =  as.numeric(prior.gamma.rec[6]) #/stage.scale.shift
+                prior.gamma.rec[8] =  as.numeric(prior.gamma.rec[8]) #/stage.scale.shift
             }
             # Launch BaM application in Bayesian pooling:
             message("***************************************************************"); flush.console()
@@ -915,10 +924,11 @@ recession.regression   <-  function(dir.exe,
             message("- Plotting stage-recessions residuals ..."); flush.console()
             leg.obs  = "Observed recessions data"
             leg.sim  = "Simulated recessions data"
-            leg.obs.sim  = c("Observed recessions data" = "black", "Simulated recessions data" = "orange")
+            leg.obs.sim  = c("Observed recessions data" = "blue", "Simulated recessions data" = "orange")
             residuals.plot = ggplot(Results_residuals.pool) +
                              geom_point(aes(x = X1_obs,  y = Y1_sim, fill = leg.sim), pch =21, size = 1.8) +
-                             geom_point(aes(x = X1_obs,  y = Y1_obs, fill = leg.obs), pch =21, size = 1) +
+                             geom_point(aes(x = X1_obs,  y = Y1_obs, fill = leg.obs), pch =21, size = 0.7) +
+              
                              xlab("Recession time [day]") + ylab("Stage [m]") + 
                              scale_fill_manual(name=element_blank(), values=leg.obs.sim, breaks=c(leg.obs,leg.sim),labels=c(leg.obs,leg.sim)) +
                              theme_bw() + theme(legend.position = "bottom")
@@ -933,6 +943,10 @@ recession.regression   <-  function(dir.exe,
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
                 asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 1 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1 + Ncurves.pool +2]
+                }
                 #write.table(a1.mcmc, file = "a1.mcmc.txt", append = FALSE, row.names = FALSE)
             } else if (rec.mod == "2expWithAsympt"){ # a1(k), b1, a2, b2, a3(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
@@ -940,14 +954,23 @@ recession.regression   <-  function(dir.exe,
                 a2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
                 b2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 3]
                 asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 3 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 3 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 3 + Ncurves.pool +2]
+                }
             } else if (rec.mod == "2expWithAsympt_bis"){ # a1(k), b1, a2(k), b2, a3(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
                 a2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1+ which.recession]
                 b2.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 2]
                 asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 2 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 2 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 2 + Ncurves.pool +2]
+                }
             } else if (rec.mod == "2expWithAsympt_rel"){ # a1(k), b1, a2, b2, a3(k)
                 asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 3 + which.recession]
+                # not used anymore !!
             } else if (rec.mod == "3expWithAsympt"){   # a1(k), b1, a2, b2, a3, b3, a4(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
@@ -956,6 +979,10 @@ recession.regression   <-  function(dir.exe,
                 a3.mcmc   = Results_mcmc.pool[, Ncurves.pool + 4]
                 b3.mcmc   = Results_mcmc.pool[, Ncurves.pool + 5]
                 asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 5 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 5 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 5 + Ncurves.pool +2]
+                }
             } else if (rec.mod == "3expWithAsympt_bis"){   # a1(k), b1, a2, b2, a3, b3, a4(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
@@ -964,69 +991,129 @@ recession.regression   <-  function(dir.exe,
                 a3.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 3]
                 b3.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 4]
                 asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 4 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 4 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 4 + Ncurves.pool +2]
+                }
             } else if (rec.mod == "expexp"){    # a1(k), b1, n1, a2(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
                 n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
                 asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 2 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2 + Ncurves.pool +2]
+                }
             } else if (rec.mod == "expexp_bis"){    # a1(k), b1(k), n1, a2(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
                 n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
                 asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 1 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 1 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 1 + Ncurves.pool +2]
+                }
             } else if (rec.mod == "hyperb"){  # a1(k), b1, n1, a2(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
                 n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
                 asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 2 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2 + Ncurves.pool +2]
+                }
             } else if (rec.mod == "hyperb_bis"){  # a1(k), b1, n1, a2(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
                 n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
                 asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 1 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 1 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 1 + Ncurves.pool +2]
+                }
             } else if (rec.mod == "Boussinesq"){  # a1(k), b1,  a2(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
                 asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 1 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1 + Ncurves.pool +2]
+                }
             } else if (rec.mod == "Coutagne"){   # a1(k), b1, n1, a2(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
                 n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
                 asym.mcmc = Results_mcmc.pool[, Ncurves.pool + 2 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2 + Ncurves.pool +2]
+                }
             } else if (rec.mod == "Coutagne_bis"){   # a1(k), b1, n1, a2(k)
                 a1.mcmc   = Results_mcmc.pool[, which.recession]
                 b1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 1]
                 n1.mcmc   = Results_mcmc.pool[, Ncurves.pool + 2]
                 asym.mcmc = Results_mcmc.pool[, 2*Ncurves.pool + 1 + which.recession]
+                g1.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 1 + Ncurves.pool +1]
+                if (gamma.model.rec =='linear'){
+                  g2.mcmc   = Results_mcmc.pool[, 2*Ncurves.pool + 1 + Ncurves.pool +2]
+                }
             }
                              
             # Asymptote:
-            asym.df.pool        = data.frame(t(quantile(x = asym.mcmc[,1], p = c(0.025, 0.5, 0.975)))); 
-            names(asym.df.pool) = c("q2", "mean", "q97");
-            asym.df.pool        = cbind(asym.df.pool , stdev= std(asym.mcmc[,1]), t = data.recess[[2]][1])
-            for (aa in 2:Ncurves.pool) {
-                 asym.df.temp        = data.frame(t(quantile(x = asym.mcmc[,aa], p = c(0.025, 0.5, 0.975))))
-                 names(asym.df.temp) = c("q2", "mean", "q97")
-                 asym.df.pool        = rbind(asym.df.pool, cbind(  asym.df.temp,  stdev= std(asym.mcmc[,aa]), t = data.recess[[2]][aa]))
-            }
-            write.table(asym.df.pool, 
-                        file = paste0(dir.rec.pool.test, "/df.asymptote.txt"), append = FALSE, sep = "\t", eol = "\n", 
-                        na = "NA", dec = ".", row.names = FALSE, col.names=c("q2", "mean", "q97", "stdev", "time"))  
+            asym.df.pool        = data.frame(t(quantile(x = asym.mcmc[,1], p = c(0.025, 0.5, 0.975)))) 
+            names(asym.df.pool) = c("q2", "mean", "q97")
+            g1_50               = quantile(x = g1.mcmc, p = c(0.5))
             
-            # plot the time series of the asymptotic stage parameter:
+            if (gamma.model.rec =='linear'){
+                # linear model for structural error (param g1 and g2):
+                g2_50                 = quantile(x = g2.mcmc, p = c(0.5))
+                asym.df.pool          = cbind(asym.df.pool , stdev= std(asym.mcmc[,1]), t = data.recess[[2]][1], g1_50, g2_50)
+                for (aa in 2:Ncurves.pool) {
+                  asym.df.temp        = data.frame(t(quantile(x = asym.mcmc[,aa], p = c(0.025, 0.5, 0.975))))
+                  names(asym.df.temp) = c("q2", "mean", "q97")
+                  asym.df.pool        = rbind(asym.df.pool, cbind(  asym.df.temp,  stdev= std(asym.mcmc[,aa]), t = data.recess[[2]][aa], g1_50, g2_50 ))
+                }
+                col.names.file = c("q2", "mean", "q97", "stdev", "time",  "g1_mean", "g2_mean", "inf_tot", "sup_tot")
+            } else {
+                # constant model for structural error (only param g1):
+                asym.df.pool          = cbind(asym.df.pool , stdev= std(asym.mcmc[,1]), t = data.recess[[2]][1], g1_50)
+                for (aa in 2:Ncurves.pool) {
+                  asym.df.temp        = data.frame(t(quantile(x = asym.mcmc[,aa], p = c(0.025, 0.5, 0.975))))
+                  names(asym.df.temp) = c("q2", "mean", "q97")
+                  asym.df.pool        = rbind(asym.df.pool, cbind(  asym.df.temp,  stdev= std(asym.mcmc[,aa]), t = data.recess[[2]][aa], g1_50 ))
+                }
+                col.names.file = c("q2", "mean", "q97", "stdev", "time",  "g1_mean", "inf_tot", "sup_tot")
+            }
+   
+            
             error.max = 0
             error.min = 0
             for (iii in 1:length(asym.df.pool$t)) {
-                 error.min[iii] = asym.df.pool$q2[iii]  - stage.scale.shift   # )),  limits.y[1])
-                 error.max[iii] = asym.df.pool$q97[iii] - stage.scale.shift   # )),  limits.y[2])
+              if (gamma.model.rec =='linear'){
+                # error.min[iii] = asym.df.pool$q2[iii]  - stage.scale.shift  - 1*(asym.df.pool$g1_50[iii] + asym.df.pool$g2_50[iii]*asym.df.pool$mean[iii]) # )),  limits.y[1])
+                # error.max[iii] = asym.df.pool$q97[iii] - stage.scale.shift  + 1*(asym.df.pool$g1_50[iii] + asym.df.pool$g2_50[iii]*asym.df.pool$mean[iii])  # )),  limits.y[2])
+                error.min[iii] = asym.df.pool$mean[iii] - stage.scale.shift  - 2*((asym.df.pool$stdev[iii]^2 + (asym.df.pool$g1_50[iii] + asym.df.pool$g2_50[iii]*asym.df.pool$mean[iii])^2)^0.5) # )),  limits.y[1])
+                error.max[iii] = asym.df.pool$mean[iii] - stage.scale.shift  + 2*((asym.df.pool$stdev[iii]^2 + (asym.df.pool$g1_50[iii] + asym.df.pool$g2_50[iii]*asym.df.pool$mean[iii])^2)^0.5)  # )),  limits.y[2])
+              } else {
+                # error.min[iii] = asym.df.pool$q2[iii]  - stage.scale.shift  - 1*asym.df.pool$g1_50[iii] # )),  limits.y[1])
+                # error.max[iii] = asym.df.pool$q97[iii] - stage.scale.shift  + 1*asym.df.pool$g1_50[iii]  # )),  limits.y[2])
+                error.min[iii] = asym.df.pool$mean[iii] - stage.scale.shift  - 2*((asym.df.pool$stdev[iii]^2 + asym.df.pool$g1_50[iii]^2)^0.5)
+                error.max[iii] = asym.df.pool$mean[iii] - stage.scale.shift  + 2*((asym.df.pool$stdev[iii]^2 + asym.df.pool$g1_50[iii]^2)^0.5) 
+                
+              }
             }
-            asym.df.pool$error.max = error.max
-            asym.df.pool$error.min = error.min
+            asym.df.pool = cbind(asym.df.pool, error.min, error.max)
+            write.table(asym.df.pool, 
+                        file = paste0(dir.rec.pool.test, "/df.asymptote.txt"), append = FALSE, sep = "\t", eol = "\n", 
+                        na = "NA", dec = ".", row.names = FALSE, col.names=col.names.file)  
+            
+            
+            # plot the time series of the asymptotic stage parameter:
             message("- Plotting asymptotic stage time series ..."); flush.console()
             asympt.plot =  ggplot()+
                            geom_point(data = asym.df.pool, aes(x = t, y = mean - stage.scale.shift), colour = "black", size = 3) +
                            geom_line(data  = asym.df.pool, aes(x = t, y = mean - stage.scale.shift), colour = "gray90", size = 0.2) +
-                           geom_errorbar(data = asym.df.pool, aes(x = t, ymin = error.min, ymax = error.max), width=50, size = 0.3)+
+                           geom_errorbar(data = asym.df.pool, aes(x = t, ymin = asym.df.pool$error.min, ymax = asym.df.pool$error.max), width=50, size = 0.3)+
                            scale_y_continuous( expand = c(0,0)) + #, limits= c(limits.y[1], limits.y[2])) +
                            theme_bw(base_size = 15)+
                            xlab("Time [day]") + ylab("Asymptotic level [cm]") +
@@ -1036,6 +1123,7 @@ recession.regression   <-  function(dir.exe,
                            pdf(paste0(dir.rec.pool.test,"/Figure_asymptote_time_series.pdf"), 12, 6 ,useDingbats=F)
                            print(asympt.plot)
                            dev.off()
+                           
                            
            # saving results of the Bayesian recession estimation:
            #****************************************************************************************************
@@ -1052,6 +1140,7 @@ recession.regression   <-  function(dir.exe,
                                                                     stage.scale.shift   = stage.scale.shift,
                                                                     chi                 = chi)
            #****************************************************************************************************
+           
            plot.all.recessions(dir.rec.pool.test     = dir.rec.pool.test,
                                rec.model             = rec.mod,
                                rec.model.gamma       = gamma.model.rec,
@@ -2825,10 +2914,10 @@ read.results.regression.rec = function(dir.recess,
         summary.rec[[r]] = read.table(file=paste0(dir.recess,"/curves_regression/C", r,
                                                   "_long/BaM/Results_Summary.txt"),header=TRUE)
         h.infinity[[r]] = c(quantile(recess.mcmc[[r]][,7], p = c(0.025, 0.5, 0.975)), 
-                            mean =summary.rec[[r]]$a4[5],  
-                            stdev =  summary.rec[[r]]$a4[11], 
-                            MAP=  summary.rec[[r]]$a4[16], 
-                            t =rec.selection[[2]][r])
+                            mean  = summary.rec[[r]]$a4[5],  
+                            stdev = summary.rec[[r]]$a4[11], 
+                            MAP   = summary.rec[[r]]$a4[16], 
+                            t     = rec.selection[[2]][r])
         recess.data[[r]] = read.table(file=paste0(dir.recess,"/curves_regression/C",
                                                   r,"_long/BaM/Curves_Data.txt"),header=TRUE)
         recess.data[[r]] = cbind(recess.data[[r]], t= rep(r,length(recess.data[[r]][1]) ))
@@ -2840,10 +2929,10 @@ read.results.regression.rec = function(dir.recess,
         summary.rec[[r]] = read.table(file=paste0(dir.recess,"/curves_regression/C",
                                                   r,"/BaM/Results_Summary.txt"),header=TRUE)
         h.infinity[[r]] = c(quantile(recess.mcmc[[r]][,7], p = c(0.025, 0.5, 0.975)), 
-                            mean =summary.rec[[r]]$a4[5],  
-                            stdev =  summary.rec[[r]]$a4[11], 
-                            MAP=  summary.rec[[r]]$a4[16], 
-                            t =rec.selection[[2]][r])
+                            mean  = summary.rec[[r]]$a4[5],  
+                            stdev = summary.rec[[r]]$a4[11], 
+                            MAP   = summary.rec[[r]]$a4[16], 
+                            t     = rec.selection[[2]][r])
         recess.data[[r]] = read.table(file=paste0(dir.recess,"/curves_regression/C",
                                                   r,"/BaM/Curves_Data.txt"),header=TRUE)
         recess.data[[r]] = cbind(recess.data[[r]], t= rep(r,length(recess.data[[r]][1]) ))
@@ -2854,12 +2943,13 @@ read.results.regression.rec = function(dir.recess,
     df.h.infinity = data.frame(t(sapply(h.infinity, function(x) x[1:max(lengths(h.infinity))])))
     write.table(df.h.infinity, file =paste0(dir.segm.recessions,"/df.h.infinity.txt"),
                 sep="\t", row.names=FALSE, col.names = TRUE)
-    return(list(recess.mcmc=recess.mcmc, 
-                summary.rec=summary.rec,
-                h.infinity=h.infinity,
-                recess.data=recess.data,
-                recess.env=recess.env,
-                df.h.infinity=df.h.infinity))
+   
+    return(list(recess.mcmc   = recess.mcmc, 
+                summary.rec   = summary.rec,
+                h.infinity    = h.infinity,
+                recess.data   = recess.data,
+                recess.env    = recess.env,
+                df.h.infinity = df.h.infinity))
     
     
 
@@ -2880,22 +2970,27 @@ read.results.regression.rec = function(dir.recess,
     for (i in 1:length(list.files.pool)) {
              file.copy(list.files.pool[i], dir.segm.recessions.model.param ,overwrite = TRUE)
     }
+    
     # read results BaM files :
-    summary.rec   = read.table(file = paste0(dir.segm.recessions.model.param, "/Results_Summary.txt"), header=TRUE)
+    summary.rec   = read.table(file = paste0(dir.segm.recessions.model.param, "/Results_Summary.txt"),     header=TRUE)
     mcmc.rec      = read.table(file = paste0(dir.segm.recessions.model.param, "/Results_MCMC_cooked.txt"), header=TRUE)
-    residuals.rec = read.table(file = paste0(dir.segm.recessions.model.param, "/Results_Residuals.txt"), header=TRUE)
+    residuals.rec = read.table(file = paste0(dir.segm.recessions.model.param, "/Results_Residuals.txt"),   header=TRUE)
 
     # Info:
     #######
     # For each model there is a different parameterization (a1,b1, a2,b2, a3, ...). 
     # The last parameter is the asymptotic stage.
     # and (k) indicate wheter the parameter is recession-specific or stationary (in common between all recessions)
+    # save the asymptotic stage parameter:
+    ###############################################################################
+    
+    
     
     if (rec.model =="3expWithAsympt"){
       #################################################################################################     
       # read single parameters results :   a1(k) , b1, a2, b2, a3, b3, a4(k) 
       # a1:
-      a1.mcmc = mcmc.rec[,which.recession]
+      a1.mcmc    = mcmc.rec[,which.recession]
       a1.summary = summary.rec[,which.recession]
       a1.df = data.frame(  t(c(quantile(a1.mcmc[,1], p = c(0.025, 0.5, 0.975)),
                                mean    = mean(a1.mcmc[,1]), 
@@ -2906,9 +3001,10 @@ read.results.regression.rec = function(dir.recess,
         a1.df = rbind(a1.df, t(c(quantile(a1.mcmc[,i], p = c(0.025, 0.5, 0.975)), mean=mean(a1.mcmc[,i]), 
                                  stdev =std(a1.mcmc[,i]), maxpost = a1.summary[16,i]) ))
       }
-      a1.df.time = cbind(a1.df ,   t =  time.rec)
-      write.table(a1.df.time, file =paste0(dir.segm.recessions.model.param,"/df.a1.txt"),
+      a1.df.time = cbind(a1.df, t =  time.rec)
+      write.table(a1.df.time, file = paste0(dir.segm.recessions.model.param,"/df.a1.txt"),
                   sep="\t", row.names=FALSE, col.names = TRUE)
+      
       #b1:
       b1.mcmc = mcmc.rec[,tail(which.recession,1)+1]
       b1.summary = summary.rec[,tail(which.recession,1)+1]
@@ -2930,6 +3026,7 @@ read.results.regression.rec = function(dir.recess,
       b2.df = data.frame(  t(c(quantile(b2.mcmc, p = c(0.025, 0.5, 0.975)), mean=mean(b2.mcmc), 
                                stdev =std(b2.mcmc), maxpost = b2.summary[16])))
       names(b2.df) = c("2.5%", "50%", "97.5%", "mean", "stdev" , "maxpost")
+      
       
       #a3:
       a3.mcmc = mcmc.rec[,tail(which.recession,1)+4]
@@ -2957,11 +3054,26 @@ read.results.regression.rec = function(dir.recess,
       for (i in which.recession[-1]){
         a4.df = rbind(a4.df, t(c(quantile(a4.mcmc[,i], p = c(0.025, 0.5, 0.975)), mean=mean(a4.mcmc[,i]), 
                                  stdev =std(a4.mcmc[,i]), maxpost = a4.summary[16,i]) ))
-      }    
+      }
       a4.df[, c(1,2,3,4,6)] = a4.df[,c(1,2,3,4,6)]  -  stage.scale.shift
       h.infinity = cbind(a4.df ,   t =  time.rec)
-      write.table(h.infinity, file =paste0(dir.segm.recessions.model.param,"/df.a4.txt"),
-                  sep="\t", row.names=FALSE, col.names = TRUE)
+      
+      # g1.mcmc    = mcmc.rec[, Ncurves.pool + 5 + Ncurves.pool +1]
+      # g2.mcmc    = mcmc.rec[, Ncurves.pool + 5 + Ncurves.pool +2]
+      # g1_50      = quantile(x = g1.mcmc, p = c(0.5))
+      # g2_50      = quantile(x = g2.mcmc, p = c(0.5))
+      # error.max = 0
+      # error.min = 0
+      # for (iii in 1:length(asym.df.pool$t)) {
+      #   error.min[iii] = asym.df.pool$q2[iii]  - stage.scale.shift - asym.df.pool$g1_50[iii] - asym.df.pool$g2_50[iii]*asym.df.pool$mean[iii] # )),  limits.y[1])
+      #   error.max[iii] = asym.df.pool$q97[iii] - stage.scale.shift + asym.df.pool$g1_50[iii] + asym.df.pool$g2_50[iii]*asym.df.pool$mean[iii]  # )),  limits.y[2])
+      # }
+      # asym.df.pool = cbind(asym.df.pool, error.min, error.max)
+      # 
+      
+      
+      write.table(h.infinity, file = paste0(dir.segm.recessions.model.param,"/df.a4.txt"), sep="\t", row.names=FALSE, col.names = TRUE)
+
       # plots:
       p.a1 = ggplot(data = a1.df.time, aes(x=t, y=mean))+ 
              theme_bw(base_size = 20) + 
@@ -3915,12 +4027,12 @@ bt.from.gaugings <- function(nperiods,
                              dir.gaugings.results,   
                              t.shift.for.b, 
                              h_G, t_G, color_G,                                       
-                             times.uncert         ) {                                              
+                             times.uncert) {                                              
 #############################################################################################################
 # Author: Matteo Darienzo  
 # Objective: this function provides information on the river bed estimated by gaugings for each stable period
   
-  #Reading and plotting b1 and b2:
+  # Reading and plotting b1 and b2:
   #*******************************
   # Boxplots of b1 and b2:
   SPD.summary = read.table(file=paste0(dir.gaugings.results, "/Results_Summary.txt"))
@@ -5114,10 +5226,11 @@ recession.segmentation <- function(dir.exe,
   save.all.results       = TRUE                                # TRUE = save all segmentation computations
   plot.gamma.uncertainty = TRUE                                # plot structural uncertainty on the segmentation.
   segm_all_parameters    = FALSE
-  stage.scale.shift      = 1000                               # is in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift
-  plot.recession.uncert  = TRUE                           # plot the total uncertainty ribbons of the recession curves.
-  plot.dates             = FALSE                             # plot tha shift times in date format
-
+  plot.recession.uncert  = TRUE                                # plot the total uncertainty ribbons of the recession curves.
+  plot.dates             = FALSE                               # plot tha shift times in date format
+  min_stage              = min(stage.record)*100 - 50    # min stage value in cm.
+  stage.scale.shift      = - min_stage                  # in [cm]: parameter used to shift stage values and avoid negative values: h = h + stage.scale.shift  
+  
   # to remove in future:
   limits.Y.alpha         = c(0, 1000, 200)                     # Limits for the alpha (initial stage) plot.
   limits.Y.lambda        = c(0, 40, 10)                        # Limits for the lambda (recession rate) plot.
@@ -5135,9 +5248,7 @@ recession.segmentation <- function(dir.exe,
   dir.segm.recessions      = paste0(dir.segment.rec.test1,"/3_curves_segmentation")
   dir.create(paste0(dir.segment.rec,"/", name.folder.results.recession))
   dir.create( paste0(dir.segment.rec.test1,"/3_curves_segmentation"))
-  
   seg.rec = NULL; read.res.rec = NULL; results.segment = list()
-
   
   # # Read results of gaugings if any:
   # # Read river bed b (or b1 and b2) estimated from gaugings:
@@ -5267,6 +5378,7 @@ A few information:
        message(paste0("- Number of mcmc per cycle during segmentation: ", Nmcmc.rec.segment));  flush.console()
        message(paste0("- Fraction of mcmc that is burned: ", Nburn.rec.segment));  flush.console()
        message(paste0("- Minimum time between two shifts: ", tmin.rec));  flush.console()
+       
        if (shift.time.adjustment.type.rec == 1){
          message("- Shift time adjustment: always the Maximum A Posterior estimate.")
        } else if  (shift.time.adjustment.type.rec == 2){
@@ -5277,8 +5389,9 @@ A few information:
        if (plot.b.from.gaugings == TRUE) {
          message("- You have chosen to perform a comparison with gaugings segmentation.");  flush.console()
        } 
+       
+       
        message("Start segmentation ...")
- 
        dir.create(paste0(dir.segm.recessions.model.param,"/", param.var.model[param]))
        dir.segm.recessions.param[[param]] = paste0(dir.segm.recessions.model.param,"/",param.var.model[param])
        file.dir.with.data                 = paste0(dir.segm.recessions.model.param,"/df.",param.var.model[param],".txt")
@@ -6256,15 +6369,25 @@ Segmentation_config.rec <- function(dir.exe, nobs, nS, tmin, tfirst, tfin,
   
   
 ###################################################################################################
-performance.recess.analysis = function() {
-###################################################################################################  
+performance.recess.analysis = function(stage.record) {
+################################################################################################### 
+  if (is.null(stage.record)){
+    message("***************************************************************************")
+    message("***** ERROR: stage record (with times and values), 'df.limni' is required !!! ")
+    message("***************************************************************************")
+  }
+  
+  # Read inputs and options for computation:
+  source(file.options.general)
+  source(file.options.recess)
+  
+  
   #plot DIC and other performance criteria to compare all models and all chi:
   plot.performance.model.comparison(model.names     =   c("1expWithAsympt", 
                                                           "2expWithAsympt", 
                                                           "2expWithAsympt_bis",
                                                           "3expWithAsympt", 
                                                           "3expWithAsympt_bis", 
-                                                          #"2expWithAsympt_rel",
                                                           "expexp", 
                                                           "expexp_bis",
                                                           "hyperb", 
@@ -6274,9 +6397,9 @@ performance.recess.analysis = function() {
                                     
                                     model.titles     = c("M1", "M2", "M3", "M4", "M5", "M6", 
                                                          "M7", "M8", "M9", "M10", "M11"),
-                                    chi.test        = c(10, 30, 50),  #for different values of chi
+                                    chi.test        = c(10, 30, 50),                 # for different values of chi
                                     dir.case_study  = dir.case_study, 
-                                    priors          = list(prior.param.rec[[1]],     #priors for the each model
+                                    priors          = list(prior.param.rec[[1]],     # priors for the each model
                                                            prior.param.rec[[2]],
                                                            prior.param.rec[[7]],
                                                            prior.param.rec[[3]],
@@ -6295,6 +6418,8 @@ performance.recess.analysis = function() {
                                     data.annotate.off   = data.annotate.off,
                                     time.limits         = limni.time.limits,
                                     grid_limni.ylim     = c(-2 , 4.5 , 1))
+  
+  
   
   
   # final results for the rating shift times detection method:

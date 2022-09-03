@@ -4684,6 +4684,14 @@ plot.performance.model.comparison = function(model.names,
          }
        }
 
+       
+       
+       
+       
+       
+       
+       
+       
        ########################
        # Delta beta comparison:
        ########################
@@ -4720,7 +4728,11 @@ plot.performance.model.comparison = function(model.names,
          }
        }
 
-       ######
+       
+       
+       
+       
+       ###################################################################################################
        t.deltab.comparison[[chi.i]] <- ggplot(data = deltab.tot.df)+
          scale_x_continuous(expand = c(0,0), 
                             limits = time.limits) +
@@ -4889,13 +4901,11 @@ plot.performance.model.comparison = function(model.names,
   
   
   
-  
-  
+
   
   
   ##############################################################################################################
   # tshift_comparison
-  ###################
   ddd=NULL;   gglegend = NULL;  
   ts.shift.total.plot2=NULL; ts.shift.total.plot3 =NULL; 
   color.m = c("red", "blue", "green"); 
@@ -4911,7 +4921,6 @@ plot.performance.model.comparison = function(model.names,
              "chi = 50 cm" = "green",
              "Rating shift times obtained from gaugings" ="black",
              "Official dates of RC update" = "black")
-  
   oders.models.chi10 = c(1,2,4,5,11,3,9,6,8,10,7)   #put the models in the plot inorder of their performance
   
   # plot chi10:
@@ -5665,9 +5674,6 @@ plot.performance.model.comparison = function(model.names,
   # dev.off()
   
 }
-
-
-
 
 
 
