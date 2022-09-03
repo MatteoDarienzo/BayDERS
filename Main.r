@@ -370,7 +370,8 @@
                                                           file.options.recess   =  paste0(dir.case_study,"/Options_Recession_analysis.R"),
                                                           data.recess           =  list(rec.extraction$d.h.selected, rec.extraction$t.real.good.h),
                                                           initial.time.rec      =  rec.extraction$t.real.good.h,
-                                                          which.recession       =  c(1:rec.extraction$Ncurves))  
+                                                          which.recession       =  c(1:rec.extraction$Ncurves),
+                                                          stage.record          =  df.limni)  
                     
                     
                     
