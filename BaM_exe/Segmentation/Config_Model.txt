@@ -3,38 +3,38 @@
 1
 9
 "k1"
-0
-"Gaussian"
-0,50
+-150
+Uniform
+-150,50
 "k2"
-0
-"Gaussian"
-0,50
+-150
+Uniform
+-150,50
 "k3"
-0
-"Gaussian"
-0,50
+-150
+Uniform
+-150,50
 "k4"
-0
-"Gaussian"
-0,50
+-150
+Uniform
+-150,50
 "k5"
-0
-"Gaussian"
-0,50
+-150
+Uniform
+-150,50
 "tau1"
-6021.235
+1363.534
 'FlatPrior+'
  
 "tau2"
-6082.165
+2916.818
 'FlatPrior+'
  
 "tau3"
-6098.155
+4343.774
 'FlatPrior+'
  
 "tau4"
-6109.654
+5840.515
 'FlatPrior+'
  

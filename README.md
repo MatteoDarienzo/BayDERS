@@ -3,10 +3,12 @@ BAYesian Detection and Estimation of Rating Shifts
 
 
 - v. 1.0.0
-- Author: Matteo Darienzo (INRAE and CIMA Foundation)
-- Contributions from: Benjamin Renard, Jérome Le Coz, Michel Lang (INRAE)
+- Author: Matteo Darienzo (INRAE Lyon - France and CIMA Foundation Savona - Italy)
+- Contributions from: 
+  Benjamin Renard, Jérome Le Coz, Michel Lang, Felipe Mendez (INRAE), Olga Parshina.
 - Year: 2021
 - Funders: CNR, EDF, SCHAPI, INRAE
+- Last update: 04/09/2022
 
 
 Purpose:
@@ -40,10 +42,9 @@ For any question or feedback please contact us at:
 #############
 IMPORTANT !!!
 #############                                     
-
+BayDERS is available for Windows and Linux.
 Please, notice that you will need to include the following libraries .dll (freely available in the web) 
-in this folder "BaM_exe": 
-
+in this folder "BaM_exe":
 
 - libgcc_s_dw2-1.dll
 - libgcc_s_sjlj-1.dll

@@ -1,4 +1,4 @@
-'BaM_BaRatin_2\Gaugings_data.txt'
+'BaM_BaRatin_2/Gaugings_data.txt'
 1
 6
 4

@@ -3,7 +3,7 @@
 name.folder.results        = "mu50_DIC_stb1.5"
 prior.mu.segm              = c(0, 50)                   # prior for segments mean "mu" = N(mean, stdev): stdev must be of the Order of gaugings residuals !
 tmin                       = 0                          # mininum distance (in time) between two consecutive change points (it depends on time units!). By default =0
-nSmax                      = 5                          # Maximum number of segments in the series at each iteration
+nSmax                      = 2                          # Maximum number of segments in the series at each iteration
 Nmin                       = 1                          # minimum number of data in a segment ( >=1, by default = 1) 
 criterion                  = "DIC"                      # Criterion for the choice of the model ("AIC","BIC", "DIC", "HQC")
 shift.time.adjustment.type = 2                          # 1 = select always the MAP; 2= select always the largest closest flood peak; 3 = will ask to manually insert a value 
@@ -24,11 +24,11 @@ predictionQt         = FALSE
 predictionPrior      = FALSE
 simMCMC              = TRUE
 mcmc.prior           = 10000
-Ncycle.segment       = 1500
-Ncycles.max          = 2500
+Ncycle.segment       = 500
+Ncycles.max          = 1000
 Nmcmc.segment        = 100
 Nslim.segment        = 100
-Ncycle.baratin       = 500
+Ncycle.baratin       = 100
 
 
 

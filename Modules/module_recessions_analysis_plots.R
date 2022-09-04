@@ -5878,7 +5878,7 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
     data.MCMC.MaxPost = as.numeric(read.table(paste0(dir.rec.pool.test,"/Results_Summary.txt"), row.names=1,dec=".",sep="", skip = 16))
     colfunc           = colorRampPalette(c("red","orange","yellow","green","blue","grey","purple"))
     summary.rec       = read.table(file=paste0(dir.rec.pool.test,"/Results_Summary.txt"), header=TRUE)
-    mcmc.rec          = read.table(file=paste0(dir.rec.pool.test,"/Results_MCMC_cooked.txt"), header=TRUE)
+    mcmc.rec          = read.table(file=paste0(dir.rec.pool.test,"/Results_MCMC_Cooked.txt"), header=TRUE)
     residuals.rec     = read.table(file=paste0(dir.rec.pool.test,"/Results_Residuals.txt"), header=TRUE)
     curves.data.rec   = read.table(file=paste0(dir.rec.pool.test,"/Curves_Data.txt"), header=TRUE)
     
@@ -6015,16 +6015,15 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
     # }
     # 
     # #prepare plot:
-    inter.per     = seq(1,Ncurves.pool,1) 
-    nRec          = length(inter.per)
-    palette.per   = colfunc(Ncurves.pool)
-    palette.per   = palette.per[1:Ncurves.pool]
-    data.rec.obs  = read.table(paste0(dir.rec.pool.test,"/Curves_Data.txt"), header=TRUE,dec=".",sep="") # Gaugings loading
-    ylim.wind     = c(stage.limits[1],    stage.limits[2])
-    xlim.wind     = c(limits.x.recess[1], limits.x.recess[2])
-    pos.num = function(x.int){
-               inter = which(x.int==data.rec.obs$period);
-               return(inter)}
+    inter.per           = seq(1,Ncurves.pool,1) 
+    nRec                = length(inter.per)
+    palette.per         = colfunc(Ncurves.pool)
+    palette.per         = palette.per[1:Ncurves.pool]
+    data.rec.obs        = read.table(paste0(dir.rec.pool.test,"/Curves_Data.txt"), header=TRUE,dec=".",sep="") # Gaugings loading
+    ylim.wind           = c(stage.limits[1],    stage.limits[2])
+    xlim.wind           = c(limits.x.recess[1], limits.x.recess[2])
+    pos.num             = function(x.int){ inter = which(x.int==data.rec.obs$period);
+                                           return(inter)}
     inter.rec.obs       = unlist(sapply(inter.per, pos.num), recursive = TRUE, use.names = TRUE)
     data.rec.obs$Period = as.factor(data.rec.obs$Period)
     data.Rec            = read.table(file = paste0(dir.rec.pool.test,"/Rec_SPD_env.txt"), header=TRUE)
@@ -6032,8 +6031,9 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
     PltData.rec         = data.Rec[data.Rec$inf > -200,]
     
     
-    ###########################################
+    ###########################################  PLOT RECESSIONS:
     reg.pool.plot = ggplot(PltData.rec) +
+      ### recession uncertainties:
       # geom_smooth(aes(x=t,
       #                 y=maxpost,
       #                 ymax=sup, 
@@ -6041,6 +6041,7 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
       #                 group=Period, 
       #                 fill=Period), 
       #             size=0.1, stat='identity', alpha=0.1)  + #alpha=0.1
+      ### recession maxpost curves:
       geom_path(aes(x=t,   
                     y=maxpost, 
                     group=Period, 
@@ -6049,12 +6050,10 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
       geom_linerange(aes(x      = time, 
                          ymax   = (h + 2*uh) - stage.scale.shift, 
                          ymin   = (h-2*uh)   - stage.scale.shift, 
-                         colour = Period),
-                     data=data.rec.obs, size=0.2)+
+                         colour = Period), data=data.rec.obs, size=0.2)+
       geom_point(aes(x=time, 
                      y=h-stage.scale.shift,
-                     colour=Period), 
-                 data=data.rec.obs, shape=16, size=2)+
+                     colour=Period), data=data.rec.obs, shape=16, size=2)+
       ### Labels
       xlab("Recession time [days]")+
       ylab("Stage h [cm]") +
@@ -6275,15 +6274,17 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
         inddd = which((Data.segm.rec[[param]]$X97.5. < limits.Y.alpha[2]) & 
                         (Data.segm.rec[[param]]$X2.5. > limits.Y.alpha[1]))
       } 
+      
       dddf = Data.segm.rec[[param]][inddd,]
-      
       dddf = Data.segm.rec[[param]]
-      
       obs.uncertainty.y = TRUE
       limni.time.limits = c(df.limni$t_limni[1], tail(df.limni$t_limni,1))
       
+      
+      
+      
       ##################################################################
-      if ( nS.ok.rec[[param]] > 1) {
+      if ( nS.ok.rec[[param]] > 1) {   # ggplot:
       ##################################################################
         seg.rec.plot[[param]]  <- ggplot()
         obs.uncertainty.y = TRUE
@@ -6302,10 +6303,8 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
         # time.adjust.before[[param]] = c(0, data.annotate.recess[[param]]$t.adj)
         # time.adjust.plus[[param]]   = c(data.annotate.recess[[param]]$t.adj, 
         #                                        limni.time.limits[2])
-        
         time.adjust.before[[param]] = c(0, data.annotate.recess[[param]]$t.real)
         time.adjust.plus[[param]]   = c(data.annotate.recess[[param]]$t.real, limni.time.limits[2])
-        
         
         if (plot.gamma.uncertainty ==TRUE){
           for (jj in 1:nS.ok.rec[[param]]){
@@ -6343,7 +6342,6 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
           #      ymin = Q2.mu.rec[[param]]$x,
           #      ymax = Q97.mu.rec[[param]]$x, 
           #      fill ="red", alpha=0.2) +
-          
           # geom_point(data = Data.segm.rec[[param]], aes(x = t, y = mean), size = 2, pch=1) +
           # geom_line(data = Data.segm.rec[[param]], aes(x = t, y = mean), size = 0.1, color = "blue")+
           geom_point(data = dddf, aes(x = t, y = mean), size = 3, pch=21, fill="gray30", color= "gray30")
@@ -6373,9 +6371,8 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
               yend = mu.res.rec[[param]]$x),
               color ="red", size =1.5)
         } 
+        
         seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
-          theme_light(base_size = 20) +
-          theme(plot.title = element_text(hjust = 0.5))+
           scale_x_continuous(name = x.name, expand = c(0,0), limits = limni.time.limits) +
           # geom_segment(x = time.adjust.before[[param]],
           #              xend = time.adjust.plus[[param]],
@@ -6385,114 +6382,156 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
           #geom_vline(xintercept = read.res.rec$ts.res, col="black", lwd =0.5, linetype= "dashed")+
           # geom_vline(aes(xintercept = data.annotate.recess[[param]]$t.adj), linetype= "solid", lwd = 1.5, color="blue") +
           geom_vline(aes(xintercept = data.annotate.recess[[param]]$t.real), linetype= "solid", lwd = 1.5, color="blue") +
-          coord_cartesian(clip = "off") +
-          theme_light(base_size=20)+
-          theme(axis.text         = element_text(size=15)
+          coord_cartesian(clip = "off")+
+          theme_light(base_size=20)
+          
+        # get the labels number of digits in order to define margins:
+        maxY_plot2 = floor(max(mu.res.rec[[param]]$x, dddf$X97.5.))
+        minY_plot2 = floor(min(mu.res.rec[[param]]$x, dddf$X2.5.)) 
+        n.digitsY_plot2 = max(nchar(as.integer(maxY_plot2)), nchar(as.integer(minY_plot2)))
+        if (n.digitsY_plot2 ==3){
+          seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
+          theme( plot.title       = element_text(hjust = 0.5)
+                ,axis.text        = element_text(size=15)
                 ,axis.title       = element_text(size=20, face="plain")
                 ,panel.grid.major = element_blank() #element_line(size=1.2)
                 ,panel.grid.minor = element_blank()
                 ,legend.text      = element_text(size=20)
                 ,legend.title     = element_text(size=30)
-                #,plot.margin     = unit(c(0.5,0.5,0.5,0.5),"cm")
                 ,legend.key.size  = unit(1.5, "cm")
                 ,legend.position  = "none"
                 ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
-                ,axis.title.y     = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size=20, face="bold"))
+                #,plot.margin     = unit(c(0.5,0.5,0.5,0.5),"cm")
+                ,axis.title.y     = element_text(margin = margin(t = 0, r = 32, b = 0, l = 0),
+                                                 size=20, face="bold"))
+        } else if (n.digitsY_plot2 == 2){
+          seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
+            theme( plot.title       = element_text(hjust = 0.5)
+                   ,axis.text        = element_text(size=15)
+                   ,axis.title       = element_text(size=20, face="plain")
+                   ,panel.grid.major = element_blank() #element_line(size=1.2)
+                   ,panel.grid.minor = element_blank()
+                   ,legend.text      = element_text(size=20)
+                   ,legend.title     = element_text(size=30)
+                   ,legend.key.size  = unit(1.5, "cm")
+                   ,legend.position  = "none"
+                   ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
+                   #,plot.margin     = unit(c(0.5,0.5,0.5,0.5),"cm")
+                   ,axis.title.y     = element_text(margin = margin(t = 0, r = 42, b = 0, l = 0),
+                                                    size=20, face="bold"))
+        } else if (n.digitsY_plot2 == 4){
+          seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
+            theme( plot.title       = element_text(hjust = 0.5)
+                   ,axis.text        = element_text(size=15)
+                   ,axis.title       = element_text(size=20, face="plain")
+                   ,panel.grid.major = element_blank() #element_line(size=1.2)
+                   ,panel.grid.minor = element_blank()
+                   ,legend.text      = element_text(size=20)
+                   ,legend.title     = element_text(size=30)
+                   ,legend.key.size  = unit(1.5, "cm")
+                   ,legend.position  = "none"
+                   ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
+                   #,plot.margin     = unit(c(0.5,0.5,0.5,0.5),"cm")
+                   ,axis.title.y     = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0),
+                                                    size=20, face="bold"))
+        }
         
       ##############
       } else {
       #############
-        seg.rec.plot[[param]] = ggplot()
-        if (obs.uncertainty.y == TRUE) {
-          seg.rec.plot[[param]] =  seg.rec.plot[[param]] +  
-            # geom_errorbar(data = Data.segm.rec[[param]],
-            #               aes(x=t, 
-            #                   ymin= (mean - 2*stdev), 
-            #                   ymax = (mean+2*stdev)),
-            #               size = 0.3, width=40, col= "black")
-            geom_errorbar(data = dddf,
-                          aes(x    = t, 
-                              ymin = X2.5., 
-                              ymax = X97.5.),
-                          #size = 0.2, width=80,
-                          col= "gray30")
-        }
-        seg.rec.plot[[param]] =  seg.rec.plot[[param]] +  
-          #geom_line(data = Data.segm.rec[[param]], aes(x = t, y = mean), size = 0.1, color = "blue")+
-          geom_point(data = Data.segm.rec[[param]], aes(x = t, y = mean),  size = 3, pch=21, fill="gray30", color= "gray30") +
-          theme_light(base_size = 20) +  
-          coord_cartesian(clip = "off") +
-          theme(plot.title = element_text(hjust = 0.5))
-        
-        if (plot.gamma.uncertainty ==TRUE){
-          seg.rec.plot[[param]] =  seg.rec.plot[[param]]+
-            annotate("rect",  
-                     xmin = Data.segm.rec[[param]]$t[1], 
-                     xmax = tail(Data.segm.rec[[param]]$t,1),
-                     ymin = data.tmp.2[[param]][[1]][1],  #max(data.tmp.2[[param]][[1]][1],  stage.limits[1]),
-                     ymax = data.tmp.2[[param]][[1]][2],  #min(data.tmp.2[[param]][[1]][2],  stage.limits[2]),
-                     fill = "pink", alpha=0.3)
-        }
-        # annotate("rect", 
-        #          xmin= Data.segm.rec[[param]]$t[1], 
-        #          xmax= tail(Data.segm.rec[[param]]$t,1),
-        #          ymin= Q2.mu.rec[[param]]$x,
-        #          ymax= Q97.mu.rec[[param]]$x, 
-        #          fill="red", alpha=0.2) 
-        
-        if (param == length(parameters)) {
-        # plot segments means:
-          seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
-              geom_segment(aes(
-                x    = Data.segm.rec[[param]]$t[1],
-                xend = tail(Data.segm.rec[[param]]$t,1),
-                y    = mu.res.rec[[param]]$x,
-                yend = mu.res.rec[[param]]$x),
-                color ="red", size =1.5)
-          
-        } else if (parameters[param] == "b1") {
-          seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
-            geom_segment(aes(
-              x    = Data.segm.rec[[param]]$t[1],
-              xend = tail(Data.segm.rec[[param]]$t,1),
-              y    = mu.res.rec[[param]]$x,
-              yend = mu.res.rec[[param]]$x),
-              color ="red", size =1.5)
-        } else {
-          seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
-            geom_segment(aes(
-                     x    = Data.segm.rec[[param]]$t[1],
-                     xend = tail(Data.segm.rec[[param]]$t,1),
-                     y    = mu.res.rec[[param]]$x,
-                     yend = mu.res.rec[[param]]$x),
-                     color ="red", size =1.5)
-        } 
-        # geom_segment(x     = Data.segm.rec[[param]]$t[1], 
-        #              xend  = tail(Data.segm.rec[[param]]$t,1),
-        #              y     = mu.res.rec[[param]]$x, 
-        #              yend  = mu.res.rec[[param]]$x, 
-        #              color = "red") +
-        seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
-        scale_x_continuous(name = x.name, expand = c(0,0), limits =limni.time.limits)+
-        theme_light(base_size=20) +
-        theme(axis.text         = element_text(size=15)
-              ,axis.title       = element_text(size=20, face="plain")
-              ,panel.grid.major = element_blank() #element_line(size=1.2)
-              ,panel.grid.minor = element_blank()
-              ,legend.text      = element_text(size=20)
-              ,legend.title     = element_text(size=30)
-              #,plot.margin     = unit(c(0.5,0.5,0.5,0.5),"cm")
-              ,legend.key.size  = unit(1.5, "cm")
-              ,legend.position  = "none"
-              ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
-              ,axis.title.y     = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size=20, face="bold"))
+              seg.rec.plot[[param]] = ggplot()
+              if (obs.uncertainty.y == TRUE) {
+                seg.rec.plot[[param]] =  seg.rec.plot[[param]] +  
+                  # geom_errorbar(data = Data.segm.rec[[param]],
+                  #               aes(x=t, 
+                  #                   ymin= (mean - 2*stdev), 
+                  #                   ymax = (mean+2*stdev)),
+                  #               size = 0.3, width=40, col= "black")
+                  geom_errorbar(data = dddf,
+                                aes(x    = t, 
+                                    ymin = X2.5., 
+                                    ymax = X97.5.),
+                                #size = 0.2, width=80,
+                                col= "gray30")
+              }
+              seg.rec.plot[[param]] =  seg.rec.plot[[param]] +  
+                #geom_line(data = Data.segm.rec[[param]], aes(x = t, y = mean), size = 0.1, color = "blue")+
+                geom_point(data = Data.segm.rec[[param]], aes(x = t, y = mean),  size = 3, pch=21, fill="gray30", color= "gray30") +
+                theme_light(base_size = 20) +  
+                coord_cartesian(clip = "off") +
+                theme(plot.title = element_text(hjust = 0.5))
+              
+              if (plot.gamma.uncertainty ==TRUE){
+                seg.rec.plot[[param]] =  seg.rec.plot[[param]]+
+                  annotate("rect",  
+                           xmin = Data.segm.rec[[param]]$t[1], 
+                           xmax = tail(Data.segm.rec[[param]]$t,1),
+                           ymin = data.tmp.2[[param]][[1]][1],  #max(data.tmp.2[[param]][[1]][1],  stage.limits[1]),
+                           ymax = data.tmp.2[[param]][[1]][2],  #min(data.tmp.2[[param]][[1]][2],  stage.limits[2]),
+                           fill = "pink", alpha=0.3)
+              }
+              # annotate("rect", 
+              #          xmin= Data.segm.rec[[param]]$t[1], 
+              #          xmax= tail(Data.segm.rec[[param]]$t,1),
+              #          ymin= Q2.mu.rec[[param]]$x,
+              #          ymax= Q97.mu.rec[[param]]$x, 
+              #          fill="red", alpha=0.2) 
+              
+              if (param == length(parameters)) {
+                # plot segments means:
+                seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
+                  geom_segment(aes(
+                    x    = Data.segm.rec[[param]]$t[1],
+                    xend = tail(Data.segm.rec[[param]]$t,1),
+                    y    = mu.res.rec[[param]]$x,
+                    yend = mu.res.rec[[param]]$x),
+                    color ="red", size =1.5)
+                
+              } else if (parameters[param] == "b1") {
+                seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
+                  geom_segment(aes(
+                    x    = Data.segm.rec[[param]]$t[1],
+                    xend = tail(Data.segm.rec[[param]]$t,1),
+                    y    = mu.res.rec[[param]]$x,
+                    yend = mu.res.rec[[param]]$x),
+                    color ="red", size =1.5)
+              } else {
+                seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
+                  geom_segment(aes(
+                    x    = Data.segm.rec[[param]]$t[1],
+                    xend = tail(Data.segm.rec[[param]]$t,1),
+                    y    = mu.res.rec[[param]]$x,
+                    yend = mu.res.rec[[param]]$x),
+                    color ="red", size =1.5)
+              } 
+              # geom_segment(x     = Data.segm.rec[[param]]$t[1], 
+              #              xend  = tail(Data.segm.rec[[param]]$t,1),
+              #              y     = mu.res.rec[[param]]$x, 
+              #              yend  = mu.res.rec[[param]]$x, 
+              #              color = "red") +
+              seg.rec.plot[[param]] =  seg.rec.plot[[param]] +
+                scale_x_continuous(name = x.name, expand = c(0,0), limits =limni.time.limits)+
+                theme_light(base_size=20) +
+                theme(axis.text         = element_text(size=15)
+                      ,axis.title       = element_text(size=20, face="plain")
+                      ,panel.grid.major = element_blank() #element_line(size=1.2)
+                      ,panel.grid.minor = element_blank()
+                      ,legend.text      = element_text(size=20)
+                      ,legend.title     = element_text(size=30)
+                      #,plot.margin     = unit(c(0.5,0.5,0.5,0.5),"cm")
+                      ,legend.key.size  = unit(1.5, "cm")
+                      ,legend.position  = "none"
+                      ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
+                      ,axis.title.y     = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size=20, face="bold"))
       }
       
-      ####################################################################
+      
+      
+      #######################################################
       if (param == length(parameters)) {
         if (plot.b.from.gaugings == TRUE) {
           # uncomment this part if you want to plot the segments of "b1" obtained from gaugings!!!!!!
-          seg.rec.plot[[param]] =  seg.rec.plot[[param]] + 
+          seg.rec.plot[[param]] =  seg.rec.plot[[param]]
             # geom_segment(mapping= aes(x = c(limits.X[1], bt.from.gaugingsss$t.shift.for.b$treal), 
             #                           y = bt.from.gaugingsss$bt1.df$maxpost*100, 
             #                           xend = c(bt.from.gaugingsss$t.shift.for.b$treal, limits.X[2]),  
@@ -6504,21 +6543,20 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
             #                           y = bt.from.gaugingsss$bt2.df$maxpost*100, 
             #                           xend = c(bt.from.gaugingsss$t.shift.for.b$treal, limits.X[2]),  
             #                           yend = bt.from.gaugingsss$bt2.df$maxpost*100), 
-          #              color = "blue", 
-          #              size = 0.5,
-          #              linetype = "dashed")+
-          theme(axis.text         = element_text(size=15)
-                ,axis.title       = element_text(size=20, face="plain")
-                ,panel.grid.major = element_blank() #element_line(size=1.2)
-                ,panel.grid.minor = element_blank()
-                ,legend.text      = element_text(size=20)
-                ,legend.title     = element_text(size=30)
-                #,plot.margin     = unit(c(0.5,0.5,0.5,0.5),"cm")
-                ,legend.key.size  = unit(1.5, "cm")
-                ,legend.position  = "none"
-                ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
-                ,axis.title.y     = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size=20))
-          
+            #              color = "blue", 
+            #              size = 0.5,
+            #              linetype = "dashed")+
+          # theme( axis.text         = element_text(size=15)
+          #       ,axis.title       = element_text(size=20, face="plain")
+          #       #,panel.grid.major = element_blank() #element_line(size=1.2)
+          #       #,panel.grid.minor = element_blank()
+          #       ,legend.text      = element_text(size=20)
+          #       ,legend.title     = element_text(size=30)
+          #       #,plot.margin     = unit(c(0.5,0.5,0.5,0.5),"cm")
+          #       ,legend.key.size  = unit(1.5, "cm")
+          #       ,legend.position  = "none"
+          #       ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
+          #       ,axis.title.y     = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size=20))
           # geom_rect(mapping = aes(xmin = ts.before.gaug, 
           #                         xmax = ts.plus.gaug, 
           #                         ymin = bt2.df$X2.5.,
@@ -6530,9 +6568,9 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
         
         # fix the axis scale y for the asymptotic level:
         seg.rec.plot[[param]]   =  seg.rec.plot[[param]] + 
-          scale_y_continuous(name =  parameters.names[param], 
-                           #limits =c(asymptote.limits[1], asymptote.limits[2]), 
-                           expand = c(0.01, 0.01))
+                                   scale_y_continuous(name =  parameters.names[param], 
+                                                      #limits =c(asymptote.limits[1], asymptote.limits[2]), 
+                                                      expand = c(0.01, 0.01))
       ###########
       }  else if (parameters[param] == "b1") { 
       ###########
@@ -6571,38 +6609,35 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
       
     
     # combine the plots with the parameters time series:
-    if ((any(model.names =="2expWithAsympt_bis"))|(any(model.names =="3expWithAsympt_bis"))|(any(model.names =="expexp_bis"))|(any(model.names =="hyperb_bis"))|(any(model.names =="Coutagne_bis"))){
-      if (length(parameters)==2){
-        # t.plot3 = plot_grid(seg.rec.plot[[1]], NULL, NULL, seg.rec.plot[[2]],
-        #                         ncol = 1, nrow = 4, rel_heights = c(1, 1, 1, 1))
-        t.plot3 = seg.rec.plot[[2]]
+    if ((any(model.names =="2expWithAsympt_bis"))|(any(model.names =="3expWithAsympt_bis"))|
+        (any(model.names =="expexp_bis"))|
+        (any(model.names =="hyperb_bis"))|(any(model.names =="Coutagne_bis"))){
+        if (length(parameters)==2){
+              # t.plot3 = plot_grid(seg.rec.plot[[1]], NULL, NULL, seg.rec.plot[[2]],
+              #                         ncol = 1, nrow = 4, rel_heights = c(1, 1, 1, 1))
+              t.plot3 = seg.rec.plot[[2]]
         
-      } else if (length(parameters)==3){
-        t.plot3 = seg.rec.plot[[3]]
-      }
+        } else if (length(parameters)==3){
+              t.plot3 = seg.rec.plot[[3]]
+        }
     } else { 
-      t.plot3 = seg.rec.plot[[2]]
-      
+         t.plot3 = seg.rec.plot[[2]]
     } 
     
     
     
     
-    
-    
-    
+  
     
     
     ###########################################################################################
     #PLot of stage record with the shifts:
     print("plot 3")
-      
     # limni:
     #######
     message("- Plotting stage record with gaugings and the river bed estimates with uncertainty")
     # filter the time series of stage record removing the long periods with missing data (putting a NA instead):
-    dt_limni         = 0 
-    new_NA_limni     = 0   
+    dt_limni         = new_NA_limni   = 0   
     t_limni_filtered = df.limni$t_limni
     h_limni_filtered = df.limni$h_limni
     
@@ -6621,7 +6656,6 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
     } 
     df.limni_filtered = data.frame(t_limni = t_limni_filtered, h_limni = h_limni_filtered)
     
-    
     # gaugings:
     ###########
     # gaugings to plot in the stage record with the periods derived from segmentation:
@@ -6637,9 +6671,8 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
       gaugings.df.recess = NULL
     }
     
-      
-    # stage record plot:
-    t.plot <- ggplot()
+    # stage record  ggplot:
+      # t.plot <- ggplot()
       # if (is.null(df.limni)==FALSE) {
       #   t.plot= t.plot + 
       #     geom_line(data = df.limni_filtered, aes(x = t_limni, y = h_limni), color = "gray70",size = 0.2)+
@@ -6649,8 +6682,8 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
       #     scale_x_continuous(name=element_blank(), expand = c(0,0), limits = c(0,tail(g.s$X.tP.,1)))
       # }  
       # 
-      
     t.plot <- ggplot()+
+      theme_light(base_size=20) +
       scale_x_continuous(name=element_blank(), expand = c(0,0), limits =limni.time.limits) +
       scale_y_continuous(name=limni.labels[2], expand = c(0,0)) +
                         # limits = c(grid_limni.ylim[1],   grid_limni.ylim[2]), 
@@ -6663,36 +6696,72 @@ plot.segmentation.recession.one.model = function(dir.rec.pool.test,
         t.plot = t.plot + geom_point(data=gaugings.df.recess[[length(parameters)]],                 # gaugings
                                      aes(x = t , y= h), size = 3, color = gaugings.df.recess[[length(parameters)]]$color)
       }
-      t.plot = t.plot + 
-      theme_light(base_size=20) +
-      theme(axis.text.x.top   = element_blank()
-            ,axis.title       = element_text(size=20,face="plain")
-            ,axis.title.x     = element_blank()  
-            ,panel.grid.major = element_blank()
-            ,panel.grid.minor = element_blank()
-            ,legend.text      = element_text(size=20)
-            ,legend.title     = element_text(size=30)
-            ,legend.key.size  = unit(1.5, "cm")
-            ,legend.position  = "none"
-            ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
-            ,axis.title.y     = element_text(size=20, margin = margin(t = 0, r = 55, b = 0, l = 0))
-            ,axis.text.x      = element_blank()
-            ,axis.line.x      = element_blank())
     
-    ###################
-    if ( nS.ok.rec[[length(nS.ok.rec)]] >1) {
-      if (plot.gamma.uncertainty == TRUE){
-        for (jj in 1:nS.ok.rec[[length(nS.ok.rec)]]){
-          t.plot  = t.plot  + 
+      # get the labels number of digits in order to define margins:
+      maxY_plot3 = floor(max(max(df.limni_filtered$h_limni, na.rm=T), min(data.tmp.2[[length(nS.ok.rec)]][[jj]][2]/100)))
+      minY_plot3 = ceil(min(min(df.limni_filtered$h_limni, na.rm=T), max(data.tmp.2[[length(nS.ok.rec)]][[jj]][1]/100)))
+      n.digitsY_plot3 = max(nchar(as.integer(maxY_plot3)), nchar(as.integer(minY_plot3)))
+      if (n.digitsY_plot3 ==1){
+        t.plot = t.plot + 
+          theme(axis.text.x.top   = element_blank()
+                ,axis.title       = element_text(size=20,face="plain")
+                ,axis.title.x     = element_blank()  
+                ,panel.grid.major = element_blank()
+                ,panel.grid.minor = element_blank()
+                ,legend.text      = element_text(size=20)
+                ,legend.title     = element_text(size=30)
+                ,legend.key.size  = unit(1.5, "cm")
+                ,legend.position  = "none"
+                ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
+                ,axis.title.y     = element_text(size=20, margin = margin(t = 0, r = 55, b = 0, l = 0))
+                ,axis.text.x      = element_blank()
+                ,axis.line.x      = element_blank())
+      } else if (n.digitsY_plot3 ==2){
+        t.plot = t.plot + 
+          theme(axis.text.x.top   = element_blank()
+                ,axis.title       = element_text(size=20,face="plain")
+                ,axis.title.x     = element_blank()  
+                ,panel.grid.major = element_blank()
+                ,panel.grid.minor = element_blank()
+                ,legend.text      = element_text(size=20)
+                ,legend.title     = element_text(size=30)
+                ,legend.key.size  = unit(1.5, "cm")
+                ,legend.position  = "none"
+                ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
+                ,axis.title.y     = element_text(size=20, margin = margin(t = 0, r = 42, b = 0, l = 0))
+                ,axis.text.x      = element_blank()
+                ,axis.line.x      = element_blank())
+      } else if (n.digitsY_plot3 ==3){
+        t.plot = t.plot + 
+          theme(axis.text.x.top   = element_blank()
+                ,axis.title       = element_text(size=20,face="plain")
+                ,axis.title.x     = element_blank()  
+                ,panel.grid.major = element_blank()
+                ,panel.grid.minor = element_blank()
+                ,legend.text      = element_text(size=20)
+                ,legend.title     = element_text(size=30)
+                ,legend.key.size  = unit(1.5, "cm")
+                ,legend.position  = "none"
+                ,plot.margin      = unit(c(2, 0.5, 0, 1),"cm")
+                ,axis.title.y     = element_text(size=20, margin = margin(t = 0, r = 32, b = 0, l = 0))
+                ,axis.text.x      = element_blank()
+                ,axis.line.x      = element_blank())
+      }          
+      #####################
+      if ( nS.ok.rec[[length(nS.ok.rec)]] >1) {
+        if (plot.gamma.uncertainty == TRUE){
+          # add shift times uncertainties::
+          for (jj in 1:nS.ok.rec[[length(nS.ok.rec)]]){
+            t.plot  = t.plot  + 
             annotate("rect", 
                      xmin = time.adjust.before[[length(nS.ok.rec)]][jj], 
                      xmax = time.adjust.plus[[length(nS.ok.rec)]][jj], 
                      ymin = max(data.tmp.2[[length(nS.ok.rec)]][[jj]][1]/100), #stage.limits[1]/100),
                      ymax = min(data.tmp.2[[length(nS.ok.rec)]][[jj]][2]/100), #stage.limits[2]/100),
                      fill = "pink", alpha = 0.3)
+          }
         }
-      }
-      t.plot  = t.plot  + 
+        t.plot  = t.plot  + 
         # annotate("rect", 
         #          xmin = time.adjust.before[[length(nS.ok.rec)]], 
         #          xmax = time.adjust.plus[[length(nS.ok.rec)]], 
@@ -7112,7 +7181,7 @@ plot.all.recessions = function(dir.rec.pool.test,
   data.MCMC.MaxPost = as.numeric(read.table(paste0(dir.rec.pool.test,"/Results_Summary.txt"), row.names=1,dec=".",sep="", skip = 16))
   colfunc           = colorRampPalette(c("red","orange","yellow","green","blue","grey","purple"))
   summary.rec       = read.table(file=paste0(dir.rec.pool.test,"/Results_Summary.txt"), header=TRUE)
-  mcmc.rec          = read.table(file=paste0(dir.rec.pool.test,"/Results_MCMC_cooked.txt"), header=TRUE)
+  mcmc.rec          = read.table(file=paste0(dir.rec.pool.test,"/Results_MCMC_Cooked.txt"), header=TRUE)
   residuals.rec     = read.table(file=paste0(dir.rec.pool.test,"/Results_Residuals.txt"), header=TRUE)
   curves.data.rec   = read.table(file=paste0(dir.rec.pool.test,"/Curves_Data.txt"), header=TRUE)
   

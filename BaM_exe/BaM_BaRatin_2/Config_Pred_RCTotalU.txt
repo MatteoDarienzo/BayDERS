@@ -1,4 +1,4 @@
-'BaM_BaRatin_2\Hgrid.txt'
+'BaM_BaRatin_2/Hgrid.txt'
 370
 1
 .true.

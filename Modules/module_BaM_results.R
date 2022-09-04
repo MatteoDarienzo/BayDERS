@@ -499,7 +499,7 @@ plot.mcmc.segment <- function(workspace, seg.iter, nS) {
 ######################################################################################
   setwd(workspace)
   file.summary    = 'Results_Summary.csv'
-  model           = ReadModel('Config_model.txt')
+  model           = ReadModel('Config_Model.txt')
   vertical.length = length(model$par)*4  #Npar = Nseg*2
   mcmc = MCMCplot(doLogPost = T,
                   doPar     = T,
@@ -799,7 +799,9 @@ Convergence.test.segment <- function(dir.seg, npar, dir.plot) {
   dev.off()
   dev.set(dev.prev())
   #************************************************************************************************************
-  Rc= "Reduction factor Rc"; Ru="Upper confidence limit Ru"; limit= "threshold";
+  Rc= "Reduction factor Rc"
+  Ru="Upper confidence limit Ru" 
+  limit= "threshold"
   col.gelman = c("Reduction factor Rc"       = "blue", 
                  "Upper confidence limit Ru" = "red", 
                  "threshold"                 = "red")

@@ -4,16 +4,17 @@
 #####################################
 # 1) Recession extraction:
 #####################################
-name.folder.results.recession = "sim_felipe_ok_chi50_const"      # string with the name of the folder with results.
+name.folder.results.recession = "sim_felipe_ok_chi50_lin"      # string with the name of the folder with results.
 # name.folder.results.recession = "tburn0.1_grad-100_chi50_tgood50_dtmax50_uh0.5_glin_N10_dtmin0_fil1_mcmc5000_errold_shift150"      # string with the name of the folder with results.
 uh.rec                 = 0.5                               # assign a stdev to the stage obs error [in cm], by default is 0.
-tburn.rec              = 0.1                               # discard the first n days of recession, by default is 0.
+tburn.rec              = 0                                 # discard the first n days of recession, by default is 0.
 Nmin.rec               = 10                                # min number of data in a recession curve
-tgood                  = 100                                # min length of the recession in days
+tgood                  = 10                                # min length of the recession in days
 delta.t.min            = 0                                 # min days between two recess data
-delta.t.max            = 50                                # max days between two recess data
+delta.t.max            = 100                               # max days between two recess data
 chi                    = 50                                # max stage rise between two recess data
 gradient.max           = -100                              # max gradient dh/dt for the recession 
+limni_filter.rec       = 1                                 # consider a stage value every "limni_filter.rec" values. 
 
 
 
@@ -93,7 +94,7 @@ prior.param.rec[[7]]  = c( 0,                            1000,     "'Uniform'", 
 
 
 
-rec.model[[8]]                = c("hyperb_bis")
+rec.model[[8]]                = c("hyperb")
 prior.param.rec[[8]]  = c( 0,                            1000,      "'Uniform'",     200,                        "var",
                            -log((0.5))+log(log(2)) ,     1,         "'LogNormal'",   exp(-log(0.5)+log(log(2))), "static",
                            -log((0.5))+log(log(2)) ,     1,         "'LogNormal'",   exp(-log(0.5)+log(log(2))), "static",
@@ -112,7 +113,7 @@ prior.param.rec[[9]]  = c( 0,                            1000,      "'Uniform'",
 
 # Remnant error model (err = gamma1 + gamma2*h   or  err = gamma1):
 gamma.model.rec          = "linear"                     # Structural error model: "constant" or "linear".    
-prior.gamma.rec          = c(0, 100,   "'Uniform'", 10,     # Structural error prior gamma1 (intercept):  min or mean, max or stdev, distribution, starting value
+prior.gamma.rec          = c(0, 100,  "'Uniform'", 10,     # Structural error prior gamma1 (intercept):  min or mean, max or stdev, distribution, starting value
                              0, 10,   "'Uniform'", 1)      # Structural error prior gamma2 (slope):  min or mean, max or stdev, distribution, starting value
 Ncycles.mcmc.rec         = 500                            # number of mcmc cycles during the bayesian inference for recessions estimation
 nmcmc.rec                = 100                            # number of mcmc per cycle

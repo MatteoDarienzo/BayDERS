@@ -4,7 +4,7 @@
 .false.
 .false.
 -1
-'Qt_maxpost.spag'
+'Qt_Maxpost.spag'
 .true.
 .true.
 'Qt_Maxpost.env'

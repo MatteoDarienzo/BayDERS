@@ -1,6 +1,6 @@
-'Recession_h_pooling\Curves_Data.txt'
+'Recession_h_pooling/Curves_Data.txt'
 1
-6470
+7178
 4
 1
 0
