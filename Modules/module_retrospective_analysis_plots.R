@@ -101,8 +101,6 @@ plot.time.shifts.step1 <- function(dir,
     geom_point(data=df.RC.step1, aes(x = t , y= h), size = 6, pch =21, fill= df.RC.step1$color) +
     scale_y_continuous(name   = limni.labels[2], expand = c(0,0), limits = c(grid_limni.ylim[1], grid_limni.ylim[2]), 
                        breaks = seq(grid_limni.ylim[1], grid_limni.ylim[2], grid_limni.ylim[3]))+
-    scale_y_continuous(name   = limni.labels[2], expand = c(0,0), limits = c(grid_limni.ylim[1], grid_limni.ylim[2]), 
-                       breaks = seq(grid_limni.ylim[1], grid_limni.ylim[2], grid_limni.ylim[3]))+
     ylab(limni.labels[2])+
     coord_cartesian(clip = 'off')+
     theme_bw(base_size=20)+
