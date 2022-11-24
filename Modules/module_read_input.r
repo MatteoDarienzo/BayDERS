@@ -321,9 +321,11 @@ if ((file_gaugings != FALSE)) {
         if (file_limni != FALSE) {
           if (Gaug.time[1] <= t_limni.true[1]) {
             t_Gaug       = Gaug.time - Gaug.time[1]
+            t_limni      = t_limni.true - Gaug.time[1]
             initial.time = Gaug.time[1]
           } else {
             t_Gaug       = Gaug.time - t_limni.true[1]
+            t_limni      = t_limni.true - t_limni.true[1]
             initial.time = t_limni[1]
           }
         } else if (file_limni == FALSE) {
