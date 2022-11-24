@@ -133,7 +133,7 @@ read_all_results_shift_detection = function(dir.segment.g, dir.segment.rec, dir.
                                             MAP   = read.res.rec$data.annotate.recess$t,
                                             q90   = read.res.rec$Q90.ts, 
                                             q97   = read.res.rec$Q97.ts,
-                                            t.adj = read.res.rec$data.annotate.recess$t) # not the t.adj !
+                                            t.adj = read.res.rec$data.annotate.recess$t.adj) # not the t.adj !
       } else {
         read.res.rec = NULL
         data.annotate.recess = NULL
@@ -443,7 +443,7 @@ read_all_results_shift_detection2 = function(dir.segment.g, dir.segment.rec, dir
                                        MAP   = read.res.rec$data.annotate.recess$t,
                                        q90   = read.res.rec$Q90.ts, 
                                        q97   = read.res.rec$Q97.ts,
-                                       t.adj = read.res.rec$data.annotate.recess$t) # not the t.adj !
+                                       t.adj = read.res.rec$data.annotate.recess$t.adj) # not the t.adj !
   } else {
     read.res.rec = NULL
     data.annotate.recess = NULL
