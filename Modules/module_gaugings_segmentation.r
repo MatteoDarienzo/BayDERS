@@ -325,7 +325,7 @@ A few information:
       list.of.files   <- c(
          #paste(Dir.BaRatin.exe,"/Qt_maxpost.spag", sep=""), 
          #paste(Dir.BaRatin.exe,"/Qt_TotalU.spag", sep=""), paste(Dir.BaRatin.exe,"/Qt_TotalU.env", sep=""),
-         paste0(Dir.BaRatin.exe,"/Qrc_maxpost.spag"),
+         paste0(Dir.BaRatin.exe,"/Qrc_Maxpost.spag"),
          paste0(Dir.BaRatin.exe,"/Qrc_TotalU.spag"),
          paste0(Dir.BaRatin.exe,"/Qrc_TotalU.env"),
          paste0(Dir.BaRatin.exe,"/Qrc_ParamU.spag"),
