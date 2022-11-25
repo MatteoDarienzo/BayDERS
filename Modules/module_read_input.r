@@ -328,6 +328,9 @@ if ((file_gaugings != FALSE)) {
             t_limni      = t_limni.true - t_limni.true[1]
             initial.time = t_limni[1]
           }
+          # update dataframe of stage record (df.limni):
+          df.limni   = data.frame(t_limni, h_limni,  t_limni.true = t_limni.true)  #dataframe of limni
+          
         } else if (file_limni == FALSE) {
           t_Gaug       = Gaug.time - Gaug.time[1]
           initial.time = Gaug.time[1]
