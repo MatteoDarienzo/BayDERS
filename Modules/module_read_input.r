@@ -663,7 +663,7 @@ if (!is.null(df.limni)) {
   } else  if (( n_years > 50) & ( n_years <= 100)){
        ticks.date = 10
   } else  if (( n_years > 20) & ( n_years <= 50)){
-    ticks.date = 5
+    ticks.date = 5  ## 8 pour le cas de la Garonne
   } else  if (( n_years > 10) & ( n_years <= 20)){
     ticks.date = 2
   } else  if (n_years <= 10){
