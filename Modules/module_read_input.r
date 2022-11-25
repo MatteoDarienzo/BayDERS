@@ -515,15 +515,11 @@ if (official.shift.times != FALSE) {
     # start before gaugings then t=0 will be the first stage time.
     if (!is.null(t_Gaug)) {
         if (!is.null(t_limni)){
-           if (t_Gaug[1] <= t_limni[1]) {
-               officialShiftsTime <- t_official.numeric2 - t_gaug.numeric2[1]
+           officialShiftsTime <- t_official.numeric2 - initial.time
            } else {
-               officialShiftsTime <- t_official.numeric2 - t_limni.true[1]
-           }
-       } else {
            officialShiftsTime <- t_official.numeric2 - t_gaug.numeric2[1]
-       }
-    } else {
+           }
+      }else {
        if (!is.null(t_limni)){
            officialShiftsTime <- t_official.numeric2 - df.limni$t_limni.true[1]
        } else {
