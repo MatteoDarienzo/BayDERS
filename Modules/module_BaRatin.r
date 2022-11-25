@@ -99,7 +99,7 @@ BaRatin_config <- function(dir,
                            mcmc.prior,
                            remnant.err.model, g1.prior, g2.prior, g1.distr.type, g2.distr.type) {
 #########################################################################################################
-  Hmax = 10  ##### CAREFUL !!!!!!!!!!!!!
+  Hmax = 20  ##### CAREFUL !!!!!!!!!!!!!
   
   
   #prior progation of RC parameters:
