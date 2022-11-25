@@ -1491,7 +1491,7 @@ A few information:
                file.Y         <- paste0(dir.i,"/Qrc_TotalU.env")
                file.Ypar      <- paste0(dir.i,"/Qrc_ParamU.env")
                file.model     <- paste0(dir.i,"/Config_Model.txt")
-               file.maxpost   <- paste0(dir.i,"/Qrc_maxpost.spag")
+               file.maxpost   <- paste0(dir.i,"/Qrc_Maxpost.spag")
                file.summary   <- paste0(dir.i,"/Results_Summary.txt")
                gaug[[i]]      <- read.table(paste0(dir.i,"/data_with_time.txt"),fileEncoding="UTF-8", quote="",
                                             sep="", dec=".", header=TRUE);
@@ -2063,7 +2063,7 @@ Segmentation_config <- function(dir_code,
    }
    #####################################################
    file.name2 = paste(dir_code,"/BaM_exe/Segmentation/Config_Data.txt",sep="")
-   cat("'Segmentation\\Segm_data.txt'", file =file.name2,sep="\n")
+   cat("'Segmentation/Segm_data.txt'", file =file.name2,sep="\n")
    cat(1, file = file.name2, append = TRUE,sep="\n")
    cat(nobs, file = file.name2, append = TRUE,sep="\n") 
    cat(3, file =file.name2, append = TRUE,sep="\n")
