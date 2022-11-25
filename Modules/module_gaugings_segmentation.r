@@ -550,17 +550,17 @@ A few information:
 
                # Save results of segmentation:
                list.of.files.segment = c(
-                  paste0(dir.segmentation,"/Config_model.txt"),
+                  paste0(dir.segmentation,"/Config_Model.txt"),
                   paste0(dir.segmentation,"/Segm_data.txt"),
-                  paste0(dir.segmentation,"/Results_MCMC_cooked.txt")
+                  paste0(dir.segmentation,"/Results_MCMC_Cooked.txt")
                )
                for (ll in 1:length(list.of.files.segment)) {
                   file.copy(list.of.files.segment[ll], dir.nS, overwrite = TRUE)
                }
-               mcmc.segm    <- read.table(file=paste0(dir.segmentation,"/Results_MCMC_cooked.txt"),header=TRUE)
+               mcmc.segm    <- read.table(file=paste0(dir.segmentation,"/Results_MCMC_Cooked.txt"),header=TRUE)
                resid.segm   <- read.table(file=paste0(dir.segmentation,"/Results_Residuals.txt"),header=TRUE)
                summary.segm <- read.table(file=paste0(dir.segmentation,"/Results_Summary.txt"),header=TRUE)
-               write.table(mcmc.segm,    file=paste0(dir.nS,"/Results_MCMC_cooked_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
+               write.table(mcmc.segm,    file=paste0(dir.nS,"/Results_MCMC_Cooked_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
                write.table(resid.segm,   file=paste0(dir.nS,"/Results_Residuals_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
                write.table(summary.segm, file=paste0(dir.nS,"/Results_Summary_","it",seg.iter,"_","nS",nS,".csv"), sep=";")
                
@@ -696,7 +696,7 @@ A few information:
          Residuals       <- read.table(file=paste0(dir.nS.ok,"/Results_Residuals_","it",seg.iter,"_","nS",nS,".csv"),sep=";",header=TRUE)
          mu.s            <- as.numeric(Residuals[,5])
          Results.seg     <- read.table(file=paste0(dir.nS.ok,"/Results_Summary_","it",seg.iter,"_","nS",nS,".csv"),sep=";",header=TRUE)
-         mcmc.segment    <- read.table(file=paste0(dir.nS.ok,"/Results_MCMC_cooked_","it",seg.iter,"_","nS",nS,".csv"),sep=";",header=TRUE)
+         mcmc.segment    <- read.table(file=paste0(dir.nS.ok,"/Results_MCMC_Cooked_","it",seg.iter,"_","nS",nS,".csv"),sep=";",header=TRUE)
          #initialisation of results:
          Q2.ts = NULL; Q97.ts = NULL; Q2.mu = NULL; Q97.mu = NULL;
          
