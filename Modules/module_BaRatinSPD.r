@@ -529,7 +529,7 @@ BaRatin_SPD_config <- function(dir.BaM,
                 }
       # creation of Config_Data.txt
                 file.name2 = paste0(dir.SPD.config,"/Config_Data.txt")
-                cat("'BaRatin_SPD\\Gaugings_data_SPD.txt'", file =file.name2, sep="\n")
+                cat("'BaRatin_SPD/Gaugings_data_SPD.txt'", file =file.name2, sep="\n")
                 cat(1, file = file.name2, append = TRUE,sep="\n")
                 cat(nobs, file = file.name2, append = TRUE,sep="\n")
                 cat(4, file =file.name2, append = TRUE,sep="\n")
