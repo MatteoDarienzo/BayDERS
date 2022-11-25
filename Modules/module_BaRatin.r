@@ -233,7 +233,7 @@ BaRatin_config <- function(dir,
     cat("'Config_Pred_Prior.txt'", file =file.Pred1, append = TRUE,sep="\n")
     cat("'Config_Pred_Prior_Qt.txt'", file =file.Pred1, append = TRUE,sep="\n")
     file.Pred11 = paste0(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_Prior.txt")
-    cat("'BaM_BaRatin_2\\Hgrid.txt'", file =file.Pred11, sep="\n")
+    cat("'BaM_BaRatin_2/Hgrid.txt'", file =file.Pred11, sep="\n")
     cat(ngrid, file =file.Pred11, append = TRUE, sep="\n")
     cat("1", file = file.Pred11, append = TRUE,sep="\n")   #n of spaghetti
     cat(".true.", file = file.Pred11, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -249,7 +249,7 @@ BaRatin_config <- function(dir,
 
     ###################################################################
     file.Pred21 = paste0(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_Prior_Qt.txt")
-    cat("'BaM_BaRatin_2\\limni.txt'", file =file.Pred21,sep="\n")
+    cat("'BaM_BaRatin_2/limni.txt'", file =file.Pred21,sep="\n")
     cat(nlimni, file =file.Pred21, append = TRUE, sep="\n")
     cat("1", file = file.Pred21, append = TRUE,sep="\n")   #n of spaghetti
     cat(".true.", file = file.Pred21, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -273,7 +273,7 @@ BaRatin_config <- function(dir,
     cat("'Config_Pred_RCTotalU.txt'", file =file.Pred1, append = TRUE,sep="\n")
     ##################################################################
     file.Pred3 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_RCMaxpost.txt",sep="")
-    cat("'BaM_BaRatin_2\\Hgrid.txt'", file =file.Pred3, sep="\n")
+    cat("'BaM_BaRatin_2/Hgrid.txt'", file =file.Pred3, sep="\n")
     cat(ngrid, file =file.Pred3,sep="\n", append = TRUE)
     cat("1", file = file.Pred3, append = TRUE,sep="\n")   #n of spaghetti
     cat(".false.", file = file.Pred3, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -287,7 +287,7 @@ BaRatin_config <- function(dir,
     cat(".false." , file = file.Pred3, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
     ###################################################################
     file.Pred4 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_RCParamU.txt",sep="")
-    cat("'BaM_BaRatin_2\\Hgrid.txt'", file =file.Pred4, sep="\n")
+    cat("'BaM_BaRatin_2/Hgrid.txt'", file =file.Pred4, sep="\n")
     cat(ngrid, file =file.Pred4,sep="\n", append = TRUE)
     cat("1", file = file.Pred4, append = TRUE,sep="\n")                                   #n of spaghetti
     cat(".true.", file = file.Pred4, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -301,7 +301,7 @@ BaRatin_config <- function(dir,
     cat(".false." , file = file.Pred4, append = TRUE,sep="\n")                            #!!! Do state prediction? (size nState)
     ###################################################################
     file.Pred5 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_RCTotalU.txt",sep="")
-    cat("'BaM_BaRatin_2\\Hgrid.txt'", file =file.Pred5,sep="\n")
+    cat("'BaM_BaRatin_2/Hgrid.txt'", file =file.Pred5,sep="\n")
     cat(ngrid, file =file.Pred5, append = TRUE, sep="\n")
     cat("1", file = file.Pred5, append = TRUE,sep="\n")                                  #n of spaghetti
     cat(".true.", file = file.Pred5, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -324,7 +324,7 @@ BaRatin_config <- function(dir,
     cat("'Config_Pred_TotalU.txt'", file =file.Pred1, append = TRUE,sep="\n")
 
     file.Pred6 = paste0(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_Maxpost.txt")
-    cat("'BaM_BaRatin_2\\limni.txt'", file =file.Pred6,sep="\n")
+    cat("'BaM_BaRatin_2/limni.txt'", file =file.Pred6,sep="\n")
     cat(nlimni, file =file.Pred6, append = TRUE, sep="\n")
     cat("1", file = file.Pred6, append = TRUE,sep="\n")   #n of spaghetti
     cat(".false.", file = file.Pred6, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -339,7 +339,7 @@ BaRatin_config <- function(dir,
 
     
     file.Pred8 = paste0(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_ParamU.txt")
-    cat("'BaM_BaRatin_2\\limni.txt'", file =file.Pred8,sep="\n")
+    cat("'BaM_BaRatin_2/limni.txt'", file =file.Pred8,sep="\n")
     cat(nlimni, file =file.Pred8, append = TRUE, sep="\n")
     cat("1", file = file.Pred8, append = TRUE,sep="\n")   #n of spaghetti
     cat(".true.", file = file.Pred8, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -354,7 +354,7 @@ BaRatin_config <- function(dir,
 
     
     file.Pred7 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_TotalU.txt",sep="")
-    cat("'BaM_BaRatin_2\\limni.txt'", file =file.Pred7,sep="\n")
+    cat("'BaM_BaRatin_2/limni.txt'", file =file.Pred7,sep="\n")
     cat(nlimni, file =file.Pred7, append = TRUE, sep="\n")
     cat("1", file = file.Pred7, append = TRUE,sep="\n")   #n of spaghetti
     cat(".true.", file = file.Pred7, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -441,7 +441,7 @@ BaM_BaRatin_noPred <- function(nobs,ngrid) {
   cat("'Config_Pred_RCTotalU.txt'", file =file.Pred1, append = TRUE,sep="\n")
   
   file.Pred2 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_Prior.txt",sep="")
-  cat("'BaM_BaRatin_2\\Hgrid.txt'", file =file.Pred2, sep="\n")
+  cat("'BaM_BaRatin_2/Hgrid.txt'", file =file.Pred2, sep="\n")
   cat(ngrid, file =file.Pred2, append = TRUE, sep="\n")
   cat("1", file = file.Pred2, append = TRUE,sep="\n")   #n of spaghetti
   cat(".true.", file = file.Pred2, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -455,7 +455,7 @@ BaM_BaRatin_noPred <- function(nobs,ngrid) {
   cat(".false." , file = file.Pred2, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
   
   file.Pred3 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_RCMaxpost.txt",sep="")
-  cat("'BaM_BaRatin_2\\Hgrid.txt'", file =file.Pred3, sep="\n")
+  cat("'BaM_BaRatin_2/Hgrid.txt'", file =file.Pred3, sep="\n")
   cat(ngrid, file =file.Pred3,sep="\n", append = TRUE)
   cat("1", file = file.Pred3, append = TRUE,sep="\n")   #n of spaghetti
   cat(".false.", file = file.Pred3, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -469,7 +469,7 @@ BaM_BaRatin_noPred <- function(nobs,ngrid) {
   cat(".false." , file = file.Pred3, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
   
   file.Pred4 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_RCParamU.txt",sep="")
-  cat("'BaM_BaRatin_2\\Hgrid.txt'", file =file.Pred4, sep="\n")
+  cat("'BaM_BaRatin_2/Hgrid.txt'", file =file.Pred4, sep="\n")
   cat(ngrid, file =file.Pred4,sep="\n", append = TRUE)
   cat("1", file = file.Pred4, append = TRUE,sep="\n")   #n of spaghetti
   cat(".true.", file = file.Pred4, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -483,7 +483,7 @@ BaM_BaRatin_noPred <- function(nobs,ngrid) {
   cat(".false." , file = file.Pred4, append = TRUE,sep="\n")                           #!!! Do state prediction? (size nState)
   
   file.Pred5 = paste(dir_code,"/BaM_exe/BaM_BaRatin_2/Config_Pred_RCTotalU.txt",sep="")
-  cat("'BaM_BaRatin_2\\Hgrid.txt'", file =file.Pred5,sep="\n")
+  cat("'BaM_BaRatin_2/Hgrid.txt'", file =file.Pred5,sep="\n")
   cat(ngrid, file =file.Pred5, append = TRUE, sep="\n")
   cat("1", file = file.Pred5, append = TRUE,sep="\n")   #n of spaghetti
   cat(".true.", file = file.Pred5, append = TRUE,sep="\n")                              #!!! Propagate parametric uncertainty?
@@ -1099,7 +1099,7 @@ BaRatin_SPD_config <- function(dir.BaM, dir.SPD.config, pred, nobs, M,          
   }
   # creation of Config_Data.txt
   file.name2 = paste0(dir.SPD.config,"/Config_Data.txt")
-  cat("'BaRatin_SPD\\Gaugings_data_SPD.txt'", file =file.name2, sep="\n")
+  cat("'BaRatin_SPD/Gaugings_data_SPD.txt'", file =file.name2, sep="\n")
   cat(1, file = file.name2, append = TRUE,sep="\n")
   cat(nobs, file = file.name2, append = TRUE,sep="\n")
   cat(4, file =file.name2, append = TRUE,sep="\n")
@@ -1131,7 +1131,7 @@ BaRatin_SPD_config <- function(dir.BaM, dir.SPD.config, pred, nobs, M,          
   # creation of Config_ControlMatrix.txt
   file.matrix = paste(dir.SPD.config,"/Config_ControlMatrix.txt",sep="")
   write.table(M, file =file.matrix, row.names = FALSE, col.names = FALSE)   #M control matrix
-  cat("10.", file = file.matrix,  append = TRUE, sep="\n")  #hmax
+  cat("10", file = file.matrix,  append = TRUE, sep="\n")  #hmax
   # creation of Config_RemnantSigma.txt
   file.remnant = paste(dir.SPD.config,"/Config_RemnantSigma.txt",sep="")
   if (remnant == "Linear") {
