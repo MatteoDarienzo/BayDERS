@@ -966,30 +966,35 @@ A few information:
                      
                  ##################################### CHOICE 2      
                  }  else if (shift.time.adjustment.type == 2) {
-                    message(paste0("Adjusting shift time ", i, ". Some flood peaks in the CI:")) 
-                    cat(paste0(seq(1, length(h_peaks[[i]]$t_hmax),1) , ")  ", 
-                               round(h_peaks[[i]]$t_hmax,digits=2), " days   (h =", round(h_peaks[[i]]$hmax, digits =3), " m)\n"))
-                    message("")
-                    
-                    #check if the shift time has already been assigned before:
-                     if (any(ts.real==tflood[i]) | any(ts.all.real==tflood[i])){
-                         print("Searching for a second flood in the interval")
-                         hflood2[i] = hflood[i]
-                         tflood2[i] = tflood[i] + 0.01   # this must be improve in the future !!!!!!!!
-                         ts.real[i] = tau.results.df[[seg.iter]]$tau.MAP[i]
-                     } else {
-                         hflood2[i] = hflood[i]
-                         tflood2[i] = tflood[i]
-                         ts.real[i] = tflood2[i]
-                     }
-                     message(paste0("shift time ", i, " = nearest flood peak = ", ts.real[i]))
-                     ts.morpho.real = c(ts.morpho.real, ts.real[i])
-                     ts.morpho.MAP  = c(ts.morpho.MAP, ts.res[i])
-                     ts.morpho.q2   = c(ts.morpho.q2, Q2.ts[i])
-                     ts.morpho.q97  = c(ts.morpho.q97, Q97.ts[i])
+                    if (is.null(h_peaks[[i]])) {    # option 1: always chose the MAP of the shift time !!!
+                       message("No flood peak near  MAP, the shift time will be chosen according to the MAP criterion ")
+                       message(paste0("shift time ", i, " = Tau MAP = ", tau.results.df[[seg.iter]]$tau.MAP[i]))
+                       ts.real[i] = tau.results.df[[seg.iter]]$tau.MAP[i] 
+                    }else{
+                       message(paste0("Adjusting shift time ", i, ". Some flood peaks in the CI:")) 
+                       cat(paste0(seq(1, length(h_peaks[[i]]$t_hmax),1) , ")  ", 
+                                  round(h_peaks[[i]]$t_hmax,digits=2), " days   (h =", round(h_peaks[[i]]$hmax, digits =3), " m)\n"))
+                       message("")
+                       
+                       #check if the shift time has already been assigned before:
+                        if (any(ts.real==tflood[i]) | any(ts.all.real==tflood[i])){
+                            print("Searching for a second flood in the interval")
+                            hflood2[i] = hflood[i]
+                            tflood2[i] = tflood[i] + 0.01   # this must be improve in the future !!!!!!!!
+                            ts.real[i] = tau.results.df[[seg.iter]]$tau.MAP[i]
+                        } else {
+                            hflood2[i] = hflood[i]
+                            tflood2[i] = tflood[i]
+                            ts.real[i] = tflood2[i]
+                        }
+                        message(paste0("shift time ", i, " = nearest flood peak = ", ts.real[i]))
+                        ts.morpho.real = c(ts.morpho.real, ts.real[i])
+                        ts.morpho.MAP  = c(ts.morpho.MAP, ts.res[i])
+                        ts.morpho.q2   = c(ts.morpho.q2, Q2.ts[i])
+                        ts.morpho.q97  = c(ts.morpho.q97, Q97.ts[i])
+                        
                      
-                     
-                     
+                    }
                ###################################### CHOICE 3      
                }  else {
                   message(paste0("Adjusting shift time ", i, ". Some flood peaks in the CI:")) 
