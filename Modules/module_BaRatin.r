@@ -1131,7 +1131,7 @@ BaRatin_SPD_config <- function(dir.BaM, dir.SPD.config, pred, nobs, M,          
   # creation of Config_ControlMatrix.txt
   file.matrix = paste(dir.SPD.config,"/Config_ControlMatrix.txt",sep="")
   write.table(M, file =file.matrix, row.names = FALSE, col.names = FALSE)   #M control matrix
-  cat("10", file = file.matrix,  append = TRUE, sep="\n")  #hmax
+  cat("20", file = file.matrix,  append = TRUE, sep="\n")  #hmax
   # creation of Config_RemnantSigma.txt
   file.remnant = paste(dir.SPD.config,"/Config_RemnantSigma.txt",sep="")
   if (remnant == "Linear") {
